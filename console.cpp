@@ -1,6 +1,4 @@
-#include "console.h"
-#include "core/port.h"
-#include <stdarg.h>
+#include <console.h>
 
 int cursorRow = 0;
 int cursorCol = 0;
@@ -15,15 +13,78 @@ TextColor combineColors(TextColor foreground, TextColor background) {
 
 // Simple Debug Wrapper Function
 void DebugPrintf(const char* tag, const char* format, ...) {
-    printf(CYAN, "%s", tag);    // Print the tag
+    printf(LIGHT_RED, "%s", tag);    // Print the tag
+    printf(LIGHT_GRAY, ":");
 
     va_list args;
     va_start(args, format);
-    printf(CYAN, format, args); // Use the core printf
+    printf(LIGHT_GRAY, format, args); // Use the core printf
     va_end(args);
 
-    printf(CYAN, "\n");         // Add newline for better output separation
+    printf(DARK_GRAY, "\n");          // Add newline for better output separation
 }
+
+// Simple Wrapper Function
+void MSGPrintf(TextColor cTag, const char* tag, const char* format, ...) {
+    printf(cTag, "[%s]", tag); // Print the tag
+    printf(LIGHT_GRAY, ":");
+    if (!format || !*format) {
+        return; // Do nothing if the format is null or empty
+    }
+
+    // Check if the format string contains placeholders
+    bool hasPlaceholders = false;
+    for (const char* p = format; *p != '\0'; p++) {
+        if (*p == '%') {
+            hasPlaceholders = true;
+            break;
+        }
+    }
+
+    // If there are no placeholders, print the format string as is
+    if (!hasPlaceholders) {
+        printf(LIGHT_GRAY, format);
+        return;
+    }
+
+    // Process the format string with arguments
+    va_list args;
+    va_start(args, format);
+
+    for (const char* p = format; *p != '\0'; p++) {
+        if (*p == '%') {
+            p++;
+            switch (*p) {
+                case 's': { // String
+                    const char* str = va_arg(args, const char*);
+                    printf(LIGHT_GRAY, str);
+                    break;
+                }
+                case 'd': { // Decimal integer
+                    int num = va_arg(args, int);
+                    printf(LIGHT_GRAY, "%d", num);
+                    break;
+                }
+                case 'x': { // Hexadecimal
+                    int num = va_arg(args, int);
+                    printf(LIGHT_GRAY, "%x", num);
+                    break;
+                }
+                // Add more cases as needed
+                default:
+                    printf(LIGHT_GRAY, "%%");
+                    printf(LIGHT_GRAY, "%c", *p);
+                    break;
+            }
+        } else {
+            printf(LIGHT_GRAY, "%c", *p);
+        }
+    }
+
+    va_end(args);
+}
+
+
 
 void scrollScreen() {
     unsigned short* VideoMemory = (unsigned short*)VIDEO_MEMORY_ADDRESS;
@@ -111,7 +172,6 @@ void printf(TextColor color, const char* format, ...) {
                     break;
                 }
 
-
                 case 'u': { // Unsigned Integer
                     uint32_t num = va_arg(args, uint32_t);
                     char buffer[11];        // Enough for 0 to 4294967295
@@ -124,6 +184,32 @@ void printf(TextColor color, const char* format, ...) {
                         while (num > 0) {
                             buffer[--index] = (num % 10) + '0';
                             num /= 10;
+                        }
+                    }
+
+                    for (int j = index; buffer[j] != '\0'; j++) {
+                        int position = cursorRow * SCREEN_WIDTH + cursorCol;
+                        VideoMemory[position] = (color << 8) | buffer[j];
+                        cursorCol++;
+                        if (cursorCol >= SCREEN_WIDTH) { cursorCol = 0; cursorRow++; }
+                        if (cursorRow >= SCREEN_HEIGHT) { scrollScreen(); cursorRow = SCREEN_HEIGHT - 1; }
+                    }
+                    break;
+                }
+
+                case 'x': { // Hexadecimal
+                    uint32_t num = va_arg(args, uint32_t);
+                    char buffer[9];        // Enough for 8 hex digits + '\0'
+                    int index = 8;         // Start filling from the end
+                    buffer[index] = '\0';  // Null-terminate
+                    const char* hexDigits = "0123456789ABCDEF";
+
+                    if (num == 0) {
+                        buffer[--index] = '0';
+                    } else {
+                        while (num > 0) {
+                            buffer[--index] = hexDigits[num % 16];
+                            num /= 16;
                         }
                     }
 
@@ -183,3 +269,4 @@ void printf(TextColor color, const char* format, ...) {
     va_end(args);
     updateCursor(cursorRow, cursorCol);
 }
+

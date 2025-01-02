@@ -1,6 +1,9 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include <core/ports.h>
+#include <stdarg.h>
+
 // Base address for video memory in text mode
 #define VIDEO_MEMORY_ADDRESS 0xb8000  
 
@@ -9,7 +12,10 @@
 #define SCREEN_HEIGHT 25              
 
 // Macro for logging debug messages with a consistent format
-#define DEBUG_LOG(format, ...) DebugPrintf("[DEBUG]:", format, ##__VA_ARGS__)
+#define DEBUG_LOG(format, ...) DebugPrintf("[DEBUG]", format, ##__VA_ARGS__)
+
+// Macro for messages from modules with a consistent format
+#define PRINT(tag, format, ...) MSGPrintf(LIGHT_BLUE, tag, format, ##__VA_ARGS__)
 
 // Enum for text colors to represent foreground and background colors
 typedef enum {
@@ -36,6 +42,9 @@ void printf(TextColor color, const char* format, ...);
 
 // Function to print debug messages with a specific tag and format
 void DebugPrintf(const char* tag, const char* format, ...);
+
+// Function to print messages from modules with a specific tag and format
+void MSGPrintf(TextColor cTag, const char* tag, const char* format, ...);
 
 // Function to clear the entire screen
 void clearScreen();

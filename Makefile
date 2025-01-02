@@ -5,8 +5,12 @@ objects = asm/loader.o \
           kernel.o \
           console.o \
           core/gdt.o \
-          core/port.o \
-		  core/interrupts.o
+          core/ports.o \
+		  core/interrupts.o \
+		  core/driver.o \
+		  core/drivers/keyboard.o \
+		  core/drivers/mouse.o
+		  
 
 LD_PARAMS = -melf_i386
 
@@ -16,6 +20,9 @@ LD_PARAMS = -melf_i386
 
 # Compiling C++ files inside the core directory
 core/%.o: core/%.cpp
+	g++ $(GPP_PARAMS) -o $@ -c $<
+
+core/drivers%.o: core/drivers%.cpp
 	g++ $(GPP_PARAMS) -o $@ -c $<
 
 # Compiling assembly files
@@ -41,7 +48,7 @@ runvb: kernel.iso
 	(killall VirtualBox && sleep 1) || true
 	VirtualBox --startvm 'My Operating System' &
 
-kernel.iso: kernel.bin
+iso: kernel.bin
 	mkdir iso
 	mkdir iso/boot
 	mkdir iso/boot/grub
