@@ -7,19 +7,104 @@
 #include <console.h>
 #include <core/driver.h>
 
-// Mouse driver class
-class MouseDriver : public InterruptHandler, public Driver
-{
-    Port8Bit dataPort;
-    Port8Bit commandPort;
-    uint8_t buffer[3];
-    uint8_t offset;
-    uint8_t buttons;
+/**
+ * @brief Base class for handling mouse events.
+ * 
+ * This class provides a set of virtual methods that can be overridden
+ * to handle various mouse events such as movement, button presses and scrolling.
+ */
+class MouseEventHandler {
+public:
+    MouseEventHandler() {}
+
+    /**
+     * @brief Called when the mouse is moved.
+     * @param x The new X coordinate.
+     * @param y The new Y coordinate.
+     */
+    virtual void OnMouseMove(int x, int y) {}
+
+    /**
+     * @brief Called when the left mouse button is pressed.
+     * @param x The X coordinate at the time of the event.
+     * @param y The Y coordinate at the time of the event.
+     */
+    virtual void OnLeftMouseDown(int x, int y) {}
+
+    /**
+     * @brief Called when the left mouse button is released.
+     * @param x The X coordinate at the time of the event.
+     * @param y The Y coordinate at the time of the event.
+     */
+    virtual void OnLeftMouseUp(int x, int y) {}
+
+    /**
+     * @brief Called when the right mouse button is pressed.
+     * @param x The X coordinate at the time of the event.
+     * @param y The Y coordinate at the time of the event.
+     */
+    virtual void OnRightMouseDown(int x, int y) {}
+
+    /**
+     * @brief Called when the right mouse button is released.
+     * @param x The X coordinate at the time of the event.
+     * @param y The Y coordinate at the time of the event.
+     */
+    virtual void OnRightMouseUp(int x, int y) {}
+
+    /**
+     * @brief Called when the mouse scrolls up.
+     * @param x The X coordinate at the time of the event.
+     * @param y The Y coordinate at the time of the event.
+     */
+    virtual void OnScrollUp(int x, int y) {}
+
+    /**
+     * @brief Called when the mouse scrolls down.
+     * @param x The X coordinate at the time of the event.
+     * @param y The Y coordinate at the time of the event.
+     */
+    virtual void OnScrollDown(int x, int y) {}
+};
+
+/**
+ * @brief Mouse driver class for handling mouse hardware and events.
+ * 
+ * This class interfaces with the mouse hardware through ports, processes
+ * interrupts and notifies the event handler of mouse events.
+ */
+class MouseDriver : public InterruptHandler, public Driver {
+    Port8Bit dataPort;                ///< Port for reading mouse data.
+    Port8Bit commandPort;             ///< Port for sending commands to the mouse.
+    MouseEventHandler* eventHandler;  ///< Event handler for mouse events.
+    uint8_t buffer[3];                ///< Buffer for storing mouse packet data.
+    uint8_t offset;                   ///< Current offset in the buffer.
+    uint8_t buttons;                  ///< Current state of mouse buttons.
+    int8_t x = 40, y = 12;            ///< Cursor position.
 
 public:
-    MouseDriver(InterruptManager* manager);
+    /**
+     * @brief Constructs the MouseDriver object.
+     * @param manager Pointer to the interrupt manager.
+     * @param handler Pointer to the mouse event handler.
+     */
+    MouseDriver(InterruptManager* manager, MouseEventHandler* handler);
+
+    /**
+     * @brief Destructor for the MouseDriver.
+     */
     ~MouseDriver();
+
+    /**
+     * @brief Activates the mouse driver and initializes the hardware.
+     */
     void Activate();
+
+    /**
+     * @brief Handles mouse interrupts and processes mouse packets.
+     * @param esp Current stack pointer.
+     * @return Updated stack pointer after handling the interrupt.
+     */
     virtual uint32_t HandleInterrupt(uint32_t esp);
 };
 

@@ -6,71 +6,171 @@
 #include <core/gdt.h>
 #include <console.h>
 
-    class InterruptManager;
+/**
+ * @brief Forward declaration of the InterruptManager class.
+ * 
+ * Used to allow InterruptHandler to reference InterruptManager without including its full definition at this point.
+ */
+class InterruptManager;
 
-    class InterruptHandler
-    {
-    protected:
-        uint8_t InterruptNumber;
-        InterruptManager* interruptManager;
-        InterruptHandler(uint8_t InterruptNumber, InterruptManager* interruptManager);
-        ~InterruptHandler();
-    public:
-        virtual uint32_t HandleInterrupt(uint32_t esp);
-    };
+/**
+ * @class InterruptHandler
+ * @brief Base class for handling hardware interrupts.
+ * 
+ * Provides a common interface for handling interrupts and manages the association with an InterruptManager.
+ */
+class InterruptHandler {
+protected:
+    uint8_t InterruptNumber;               ///< The interrupt number associated with this handler.
+    InterruptManager* interruptManager;    ///< Pointer to the associated InterruptManager instance.
 
-    class InterruptManager
-    {
-        friend class InterruptHandler;
-        protected:
+    /**
+     * @brief Constructor for InterruptHandler.
+     * 
+     * Initializes the handler with an interrupt number and associates it with an InterruptManager.
+     * 
+     * @param InterruptNumber The interrupt number to handle.
+     * @param interruptManager Pointer to the InterruptManager managing this handler.
+     */
+    InterruptHandler(uint8_t InterruptNumber, InterruptManager* interruptManager);
 
-            static InterruptManager* ActiveInterruptManager;
-            InterruptHandler* handlers[256];
+    /**
+     * @brief Destructor for InterruptHandler.
+     * 
+     * Cleans up resources when an InterruptHandler is destroyed.
+     */
+    ~InterruptHandler();
 
-            struct GateDescriptor
-            {
-                uint16_t handlerAddressLowBits;
-                uint16_t gdt_codeSegmentSelector;
-                uint8_t reserved;
-                uint8_t access;
-                uint16_t handlerAddressHighBits;
+public:
+    /**
+     * @brief Virtual method to handle an interrupt.
+     * 
+     * Subclasses should override this method to provide specific handling logic.
+     * 
+     * @param esp The stack pointer at the time of the interrupt.
+     * @return The new stack pointer after the interrupt is handled.
+     */
+    virtual uint32_t HandleInterrupt(uint32_t esp);
+};
 
-            }__attribute__((packed));
+/**
+ * @class InterruptManager
+ * @brief Manages the handling of hardware interrupts.
+ * 
+ * Sets up and manages the Interrupt Descriptor Table (IDT), Programmable Interrupt Controller (PIC),
+ * and associated interrupt handlers.
+ */
+class InterruptManager {
+    friend class InterruptHandler; ///< Allows InterruptHandler to access private/protected members of InterruptManager.
 
-            static GateDescriptor interruptDescriptorTable[256];
+protected:
+    static InterruptManager* ActiveInterruptManager; ///< Pointer to the currently active InterruptManager instance.
+    InterruptHandler* handlers[256];                 ///< Array of interrupt handlers for each interrupt.
 
-            struct InterruptDescriptorTablePointer {
-                uint16_t size;
-                uint32_t base;
-            } __attribute__((packed));
+    /**
+     * @struct GateDescriptor
+     * @brief Represents an entry in the Interrupt Descriptor Table (IDT).
+     */
+    struct GateDescriptor {
+        uint16_t handlerAddressLowBits;   ///< Lower 16 bits of the interrupt handler's address.
+        uint16_t gdt_codeSegmentSelector; ///< Code segment selector in the Global Descriptor Table (GDT).
+        uint8_t reserved;                 ///< Reserved field, must be zero.
+        uint8_t access;                   ///< Access flags for the interrupt gate.
+        uint16_t handlerAddressHighBits;  ///< Upper 16 bits of the interrupt handler's address.
+    } __attribute__((packed));            ///< Prevents padding to ensure correct memory layout.
 
-            static void SetInterruptDescriptorTableEntry(
-                uint8_t InterruptNumber,
-                uint16_t codeSegmentSelectorOffset,
-                void (*handler)(),
-                uint8_t DescriptorPrivilegeLevel,
-                uint8_t DescriptorType
-            );
+    static GateDescriptor interruptDescriptorTable[256]; ///< The Interrupt Descriptor Table (IDT).
 
-            Port8BitSlow picMasterCommand;
-            Port8BitSlow picMasterData;
-            Port8BitSlow picSlaveCommand;
-            Port8BitSlow picSlaveData;
+    /**
+     * @struct InterruptDescriptorTablePointer
+     * @brief Pointer structure for loading the IDT using the `lidt` instruction.
+     */
+    struct InterruptDescriptorTablePointer {
+        uint16_t size;  ///< Size of the IDT in bytes.
+        uint32_t base;  ///< Base address of the IDT.
+    } __attribute__((packed)); ///< Prevents padding to ensure correct memory layout.
 
-        public:
-            InterruptManager(GlobalDescriptorTable* gdt);
-            ~InterruptManager();
+    /**
+     * @brief Sets an entry in the IDT.
+     * 
+     * Configures a specific interrupt gate in the IDT.
+     * 
+     * @param InterruptNumber The interrupt number to configure.
+     * @param codeSegmentSelectorOffset The code segment selector in the GDT.
+     * @param handler Pointer to the interrupt handler function.
+     * @param DescriptorPrivilegeLevel The privilege level (0-3) for accessing this interrupt.
+     * @param DescriptorType The type of descriptor (e.g., interrupt gate).
+     */
+    static void SetInterruptDescriptorTableEntry(
+        uint8_t InterruptNumber,
+        uint16_t codeSegmentSelectorOffset,
+        void (*handler)(),
+        uint8_t DescriptorPrivilegeLevel,
+        uint8_t DescriptorType
+    );
 
-            void Activate();
-            void Deactivate();
+    // Static methods to handle specific interrupts
+    static void IgnoreInterruptRequest();     ///< Handles ignored interrupts.
+    static void HandleInterruptRequest0x00(); ///< Handles timer interrupts.
+    static void HandleInterruptRequest0x01(); ///< Handles keyboard interrupts.
+    static void HandleInterruptRequest0x0C(); ///< Handles mouse interrupts.
 
-            static uint32_t handleInterrupt(uint8_t interruptNumber, uint32_t esp);
-            uint32_t DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp);
+    // I/O Ports for the Programmable Interrupt Controller (PIC)
+    Port8BitSlow picMasterCommand; ///< Command port for the master PIC.
+    Port8BitSlow picMasterData;    ///< Data port for the master PIC.
+    Port8BitSlow picSlaveCommand;  ///< Command port for the slave PIC.
+    Port8BitSlow picSlaveData;     ///< Data port for the slave PIC.
 
-            static void IgnoreInterruptRequest();
-            static void HandleInterruptRequest0x00();   // Timeout
-            static void HandleInterruptRequest0x01();   // Keyboard
-            static void HandleInterruptRequest0x0C();   // Mouse
-    };
+public:
+    /**
+     * @brief Constructor for the InterruptManager class.
+     * 
+     * Sets up the IDT and initializes the PIC.
+     * 
+     * @param gdt Pointer to the Global Descriptor Table (GDT).
+     */
+    InterruptManager(GlobalDescriptorTable* gdt);
+
+    /**
+     * @brief Destructor for the InterruptManager class.
+     */
+    ~InterruptManager();
+
+    /**
+     * @brief Activates the InterruptManager.
+     * 
+     * Makes this instance the active manager and enables interrupts.
+     */
+    void Activate();
+
+    /**
+     * @brief Deactivates the InterruptManager.
+     * 
+     * Disables interrupts and clears the active manager.
+     */
+    void Deactivate();
+
+    /**
+     * @brief Static method to handle an interrupt.
+     * 
+     * Passes the interrupt to the active InterruptManager for processing.
+     * 
+     * @param interruptNumber The interrupt number that occurred.
+     * @param esp The stack pointer at the time of the interrupt.
+     * @return The new stack pointer after the interrupt is handled.
+     */
+    static uint32_t handleInterrupt(uint8_t interruptNumber, uint32_t esp);
+
+    /**
+     * @brief Handles an interrupt for this manager instance.
+     * 
+     * Dispatches the interrupt to the appropriate handler.
+     * 
+     * @param interruptNumber The interrupt number that occurred.
+     * @param esp The stack pointer at the time of the interrupt.
+     * @return The new stack pointer after the interrupt is handled.
+     */
+    uint32_t DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp);
+};
 
 #endif

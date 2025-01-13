@@ -1,3 +1,12 @@
+/**
+ * @file        gdt.cpp
+ * @brief       Global Descriptor Table
+ * 
+ * @author      Malaka Gunawardana
+ * @date        13/01/2025
+ * @version     1.0.0
+ */
+
 #include <core/gdt.h>
 
 /**

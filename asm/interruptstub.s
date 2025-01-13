@@ -27,6 +27,9 @@ _ZN16InterruptManager26HandleInterruptRequest\num\()Ev:
 # Define handlers for specific IRQs using the `HandleInterruptRequest` macro.
 HandleInterruptRequest 0x00  # IRQ 0: Timer interrupt.
 HandleInterruptRequest 0x01  # IRQ 1: Keyboard interrupt.
+# :
+# :
+# :
 HandleInterruptRequest 0x0C  # IRQ 12: Mouse interrupt.
 
 int_bottom:

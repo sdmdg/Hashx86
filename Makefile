@@ -9,7 +9,8 @@ objects = asm/loader.o \
 		  core/interrupts.o \
 		  core/driver.o \
 		  core/drivers/keyboard.o \
-		  core/drivers/mouse.o
+		  core/drivers/mouse.o \
+		  core/pci.o
 		  
 
 LD_PARAMS = -melf_i386

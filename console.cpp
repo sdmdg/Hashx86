@@ -1,3 +1,12 @@
+/**
+ * @file        console.cpp
+ * @brief       Console
+ * 
+ * @author      Malaka Gunawardana
+ * @date        13/01/2025
+ * @version     1.0.0
+ */
+
 #include <console.h>
 
 int cursorRow = 0;
@@ -70,7 +79,6 @@ void MSGPrintf(TextColor cTag, const char* tag, const char* format, ...) {
                     printf(LIGHT_GRAY, "%x", num);
                     break;
                 }
-                // Add more cases as needed
                 default:
                     printf(LIGHT_GRAY, "%%");
                     printf(LIGHT_GRAY, "%c", *p);
@@ -83,7 +91,6 @@ void MSGPrintf(TextColor cTag, const char* tag, const char* format, ...) {
 
     va_end(args);
 }
-
 
 
 void scrollScreen() {
@@ -248,7 +255,15 @@ void printf(TextColor color, const char* format, ...) {
             }
         } else if (format[i] == '\n') {
             cursorRow++;
-            cursorCol = 0;
+            cursorCol = 0; // Reset column to the beginning
+
+            // Handle scrolling if we exceed the screen height
+            if (cursorRow >= SCREEN_HEIGHT) {
+                scrollScreen();
+                cursorRow = SCREEN_HEIGHT - 1; // Move cursor to the last row
+                cursorCol = 0; // Ensure cursor starts at the beginning of the row
+            }
+
         } else {
             int position = cursorRow * SCREEN_WIDTH + cursorCol;
             VideoMemory[position] = (color << 8) | format[i];
@@ -265,8 +280,8 @@ void printf(TextColor color, const char* format, ...) {
             }
         }
     }
-
     va_end(args);
     updateCursor(cursorRow, cursorCol);
 }
+
 

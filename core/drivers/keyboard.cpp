@@ -1,44 +1,71 @@
+/**
+ * @file        keyboard.cpp
+ * @brief       Generic Keyboard Driver for #x86
+ * 
+ * @author      Malaka Gunawardana
+ * @date        13/01/2025
+ * @version     1.0.0-beta
+ */
+
 #include <core/drivers/keyboard.h>
 
-// Track the state of Shift and Caps Lock
-bool LshiftPressed = false;
-bool RshiftPressed = false;
-bool LctrlPressed = false;
-bool RctrlPressed = false;
-
-bool LaltPressed = false;
-bool RaltPressed = false;
+// Modifier key states
+bool leftShiftPressed = false;
+bool rightShiftPressed = false;
+bool leftCtrlPressed = false;
+bool rightCtrlPressed = false;
+bool leftAltPressed = false;
+bool rightAltPressed = false;
 bool capsLockActive = false;
 
+/**
+ * KeyboardEventHandler constructor
+ */
+KeyboardEventHandler::KeyboardEventHandler() {}
 
-KeyboardEventHandler::KeyboardEventHandler()
-{
-}
+/**
+ * Virtual method to handle key press events
+ */
+void KeyboardEventHandler::OnKeyDown(const char* key) {}
 
-void KeyboardEventHandler::OnKeyDown(const char* key)
-{
-    printf(WHITE, "%s", key);
-}
+/**
+ * Virtual method to handle key release events
+ */
+void KeyboardEventHandler::OnKeyUp(const char* key) {}
 
-void KeyboardEventHandler::OnKeyUp(const char*)
-{
-}
+/**
+ * Virtual method to handle special key press events
+ */
+void KeyboardEventHandler::OnSpecialKeyDown(uint8_t key) {}
 
-KeyboardDriver::KeyboardDriver(InterruptManager* manager)
+/**
+ * Virtual method to handle special key release events
+ */
+void KeyboardEventHandler::OnSpecialKeyUp(uint8_t key) {}
+
+/**
+ * KeyboardDriver constructor
+ * 
+ * Initializes the keyboard driver with the interrupt manager and event handler.
+ */
+KeyboardDriver::KeyboardDriver(InterruptManager* manager, KeyboardEventHandler* handler)
     : InterruptHandler(0x21, manager),
       dataPort(0x60),
-      commandPort(0x64),
-      eventHandler()
+      commandPort(0x64) 
 {
-    driverName = "Generic Keyboard Driver  ";
+    this->eventHandler = handler;
+    this->driverName = "Generic Keyboard Driver  ";
 }
 
-KeyboardDriver::~KeyboardDriver()
-{
-}
+/**
+ * KeyboardDriver destructor
+ */
+KeyboardDriver::~KeyboardDriver() {}
 
-void KeyboardDriver::Activate()
-{
+/**
+ * Activates the keyboard driver and initializes the hardware
+ */
+void KeyboardDriver::Activate() {
     // Clear the keyboard buffer
     while (commandPort.Read() & 0x1)
         dataPort.Read();
@@ -46,9 +73,9 @@ void KeyboardDriver::Activate()
     // Enable the keyboard
     commandPort.Write(0xAE);
 
-    // Set keyboard configuration
+    // Configure keyboard settings
     commandPort.Write(0x20);
-    uint8_t status = (dataPort.Read() | 1) & ~0x10;
+    uint8_t status = (dataPort.Read() | 1) & ~0x10; // Enable IRQ1, disable key lock
     commandPort.Write(0x60);
     dataPort.Write(status);
 
@@ -56,8 +83,18 @@ void KeyboardDriver::Activate()
     dataPort.Write(0xF4);
 }
 
+/**
+ * Handles keyboard interrupts and processes key events
+ * 
+ * @param esp Current stack pointer
+ * @return Updated stack pointer after handling interrupt
+ */
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     uint8_t key = dataPort.Read();
+    
+    if(this->eventHandler == 0)
+        return esp;
+
     //printf(WHITE, "\nKey is 0x%x\n", key);
     static bool isExtendedScancode = false;
 
@@ -89,54 +126,68 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
         isExtendedScancode = false; // Reset the flag
         switch (key) {
             case 0x1D: // Right Ctrl Pressed
-                RctrlPressed = true;
-                DEBUG_LOG("R Ctrl pressed");
+                rightCtrlPressed = true;
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("R Ctrl pressed");
                 break;
             case 0x38: // Right Alt Pressed
-                RaltPressed = true;
-                DEBUG_LOG("R Alt pressed");
+                rightAltPressed = true;
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("R Alt pressed");
                 break;
             case 0x48: // Up Arrow
-                DEBUG_LOG("Up Arrow pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Up Arrow pressed");
                 break;
             case 0x50: // Down Arrow
-                DEBUG_LOG("Down Arrow pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Down Arrow pressed");
                 break;
             case 0x4B: // Left Arrow
-                DEBUG_LOG("Left Arrow pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Left Arrow pressed");
                 break;
             case 0x4D: // Right Arrow
-                DEBUG_LOG("Right Arrow pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Right Arrow pressed");
                 break;
             case 0x53: // Delete
-                DEBUG_LOG("Delete pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Delete pressed");
                 break;
             case 0x9D: // Right Ctrl Released
-                RctrlPressed = false;
-                DEBUG_LOG("R Ctrl released");
+                rightCtrlPressed = false;
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("R Ctrl released");
                 break;
             case 0xB8: // Right Alt Released
-                RaltPressed = false;
-                DEBUG_LOG("R Alt released");
+                rightAltPressed = false;
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("R Alt released");
                 break;
             case 0xC8: // Up Arrow Released
-                DEBUG_LOG("Up Arrow released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Up Arrow released");
                 break;
             case 0xD0: // Down Arrow Released
-                DEBUG_LOG("Down Arrow released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Down Arrow released");
                 break;
             case 0xCB: // Left Arrow Released
-                DEBUG_LOG("Left Arrow released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Left Arrow released");
                 break;
             case 0xCD: // Right Arrow Released
-                DEBUG_LOG("Right Arrow released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Right Arrow released");
                 break;
             case 0xD3: // Delete Released
-                DEBUG_LOG("Delete released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Delete released");
                 break;
             
             default:
-                printf(RED, "Unhandled extended key: 0x%x", key);
+                //DEBUG_LOG("Error : Unhandled extended key: 0x%x", key);
                 break;
         }
         return esp;
@@ -147,85 +198,106 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     if (key < 0x80) {
         switch (key) {
             case 0x1C: // Enter Pressed
-                DEBUG_LOG("Enter pressed");
+            eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Enter pressed");
                 break;
             case 0x2A: // Left Shift Pressed
-                LshiftPressed = true;
+                eventHandler->OnSpecialKeyDown(key);
+                leftShiftPressed = true;
                 //DEBUG_LOG("L Shift pressed");
                 break;
             case 0x36: // Right Shift Pressed
-                RshiftPressed = true;
+                eventHandler->OnSpecialKeyDown(key);
+                rightShiftPressed = true;
                 //DEBUG_LOG("R Shift pressed");
                 break;
             case 0x1D: // Left Ctrl Pressed
-                LctrlPressed = true;
-                DEBUG_LOG("L Ctrl pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                leftCtrlPressed = true;
+                //DEBUG_LOG("L Ctrl pressed");
                 break;
             case 0x38: // Left Alt Pressed
-                LaltPressed = true;
-                DEBUG_LOG("L Alt pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                leftAltPressed = true;
+                //DEBUG_LOG("L Alt pressed");
                 break;
             case 0x3A: // Caps Lock Pressed
+                eventHandler->OnSpecialKeyDown(key);
                 capsLockActive = !capsLockActive;
                 //DEBUG_LOG(capsLockActive ? "CAP activated" : "CAP deactivated");
                 break;
             case 0x0F: // Tab Pressed
-                DEBUG_LOG("Tab pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Tab pressed");
                 break;
             case 0x0E: // Backspace Pressed
-                DEBUG_LOG("Backspace pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("Backspace pressed");
                 break;
             
             case 0x01: // ESC
-                DEBUG_LOG("ESC pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("ESC pressed");
                 break;
             case 0x3B: // F1
-                DEBUG_LOG("F1 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F1 pressed");
                 break;
             case 0x3C: // F2
-                DEBUG_LOG("F2 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F2 pressed");
                 break;
             case 0x3D: // F3
-                DEBUG_LOG("F3 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F3 pressed");
                 break;
             case 0x3E: // F4
-                DEBUG_LOG("F4 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F4 pressed");
                 break;
             case 0x3F: // F5
-                DEBUG_LOG("F5 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F5 pressed");
                 break;
             case 0x40: // F6
-                DEBUG_LOG("F6 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F6 pressed");
                 break;
             case 0x41: // F7
-                DEBUG_LOG("F7 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F7 pressed");
                 break;
             case 0x42: // F8
-                DEBUG_LOG("F8 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F8 pressed");
                 break;
             case 0x43: // F9
-                DEBUG_LOG("F9 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F9 pressed");
                 break;  
             case 0x44: // F10
-                DEBUG_LOG("F10 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F10 pressed");
                 break;
             case 0x57: // F11
-                DEBUG_LOG("F11 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F11 pressed");
                 break; 
             case 0x58: // F12
-                DEBUG_LOG("F12 pressed");
+                eventHandler->OnSpecialKeyDown(key);
+                //DEBUG_LOG("F12 pressed");
                 break; 
             
             default:
                 if (key < 128) { // Valid keycode range
                     char character = normalKeyMap[key];
-                    if (((LshiftPressed || RshiftPressed) && !capsLockActive) ||
-                        (!(LshiftPressed || RshiftPressed) && capsLockActive && character >= 'a' && character <= 'z')) {
+                    if (((leftShiftPressed || rightShiftPressed) && !capsLockActive) ||
+                        (!(leftShiftPressed || rightShiftPressed) && capsLockActive && character >= 'a' && character <= 'z')) {
                         character = shiftKeyMap[key]; // Use shifted map
                     }
 
                     if (character != 0) { // Valid character
-                        eventHandler.OnKeyDown(&character);
+                        eventHandler->OnKeyDown(&character);
                     }
                 }
                 break;
@@ -234,73 +306,92 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     } else {
         switch (key) {
             case 0x9C: // Enter Released
-                DEBUG_LOG("Enter released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Enter released");
                 break;
             case 0xAA: // Left Shift Released
-                LshiftPressed = false;
+                leftShiftPressed = false;
+                eventHandler->OnSpecialKeyUp(key);
                 //DEBUG_LOG("L Shift released");
                 break;
             case 0xB6: // Right Shift Released
-                RshiftPressed = false;
+                rightShiftPressed = false;
+                eventHandler->OnSpecialKeyUp(key);
                 //DEBUG_LOG("R Shift released");
                 break;
             case 0x9D: // Left Ctrl Released
-                LctrlPressed = false;
-                DEBUG_LOG("L Ctrl released");
+                leftCtrlPressed = false;
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("L Ctrl released");
                 break;
             case 0xB8: // Left Alt Released
-                LaltPressed = false;
-                DEBUG_LOG("L Alt released");
+                leftAltPressed = false;
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("L Alt released");
                 break;
             case 0x8F: // Tab
-                DEBUG_LOG("Tab released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Tab released");
                 break;
             case 0x8E: // Backspace
-                DEBUG_LOG("Backspace released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("Backspace released");
                 break;
 
             case 0x81: // ESC
-                DEBUG_LOG("ESC released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("ESC released");
                 break;
             case 0xBB: // F1
-                DEBUG_LOG("F1 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F1 released");
                 break;
             case 0xBC: // F2
-                DEBUG_LOG("F2 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F2 released");
                 break;
             case 0xBD: // F3
-                DEBUG_LOG("F3 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F3 released");
                 break;
             case 0xBE: // F4
-                DEBUG_LOG("F4 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F4 released");
                 break;
             case 0xBF: // F5
-                DEBUG_LOG("F5 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F5 released");
                 break;
             case 0xC0: // F6
-                DEBUG_LOG("F6 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F6 released");
                 break;
             case 0xC1: // F7
-                DEBUG_LOG("F7 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F7 released");
                 break;
             case 0xC2: // F8
-                DEBUG_LOG("F8 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F8 released");
                 break;
             case 0xC3: // F9
-                DEBUG_LOG("F9 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F9 released");
                 break;  
             case 0xC4: // F10
-                DEBUG_LOG("F10 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F10 released");
                 break;
             case 0xD7: // F11
-                DEBUG_LOG("F11 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F11 released");
                 break; 
             case 0xD8: // F12
-                DEBUG_LOG("F12 released");
+                eventHandler->OnSpecialKeyUp(key);
+                //DEBUG_LOG("F12 released");
                 break; 
             
             default:
-                // Handle other key releases
                 break;
         }
     }
