@@ -4,6 +4,12 @@
 #include <types.h>  // Include for type definitions like uint16_t, uint8_t, etc.
 
 /**
+ * Functions representing a generic I/O. For direct acces without port constructor.
+ */
+uint8_t inb(uint16_t port);
+void outb(uint16_t port, uint8_t value);
+
+/**
  * Base class representing a generic I/O port.
  * Provides the foundation for accessing hardware ports at different data widths.
  */

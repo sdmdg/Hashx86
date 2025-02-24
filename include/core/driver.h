@@ -2,6 +2,8 @@
 #define DRIVER_H
 
 #include <console.h>
+#include <debug.h>
+
 
 /**
  * @brief Base class for hardware drivers.

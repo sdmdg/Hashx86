@@ -1,6 +1,9 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include <debug.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <console.h>
 #include <core/gdt.h>
 #include <core/interrupts.h>
@@ -8,6 +11,12 @@
 #include <core/drivers/mouse.h>
 #include <core/driver.h>
 #include <core/pci.h>
+#include <core/memory.h>
+#include <core/drivers/vga.h>
+#include <gui/gui.h>
+#include <core/multiboot.h>
+#include <core/drivers/vbe.h>
+
 
 /**
  * @typedef constructor
@@ -123,8 +132,9 @@ public:
     virtual void OnRightMouseUp(int x, int y);
 
 private:
-    int previousX = 40; ///< Previous x-coordinate of the mouse pointer.
-    int previousY = 12; ///< Previous y-coordinate of the mouse pointer.
+    int X = 80; ///< Previous x-coordinate of the mouse pointer.
+    int Y = 24; ///< Previous y-coordinate of the mouse pointer.
 };
+
 
 #endif // KERNEL_H

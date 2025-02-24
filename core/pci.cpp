@@ -2,8 +2,7 @@
  * @file        pci.cpp
  * @brief       Peripheral Component Interconnect for #x86
  * 
- * @author      Malaka Gunawardana
- * @date        13/01/2025
+ * @date        15/01/2025
  * @version     1.0.0-beta
  */
 
@@ -73,21 +72,32 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* dri
                 PeripheralComponentInterconnectDeviceDescriptor dev = GetDeviceDescriptor(bus, device, function);
 
                 if (dev.vendor_id == 0x0000 || dev.vendor_id == 0xFFFF) {
-                    break; // Invalid device, skip
+                    continue;
                 }
+
+                for(int barNum = 0; barNum < 6; barNum++)
+                {
+                    BaseAddressRegister bar = GetBaseAddressRegister(bus, device, function, barNum);
+                    if(bar.address && (bar.type == InputOutput))
+                        dev.portBase = (uint32_t)bar.address;
+                }
+
+                Driver* driver = GetDriver(dev, interrupts);
+                if(driver != 0)
+                    driverManager->AddDriver(driver);
 
                 // Match vendor and device IDs with the table
                 const PCIDevice* knownDevice = FindPCIDevice(dev.vendor_id, dev.device_id);
 
                 // Print PCI device information
-                printf(WHITE, "PCI BUS 0x%x, DEVICE 0x%x, FUNCTION 0x%x = ", 
+                printf("PCI BUS 0x%x, DEVICE 0x%x, FUNCTION 0x%x = ", 
                        (bus & 0xFF), (device & 0xFF), (function & 0xFF));
-                printf(WHITE, "VENDOR 0x%x, DEVICE 0x%x\n", dev.vendor_id, dev.device_id);
+                printf("VENDOR 0x%x, DEVICE 0x%x\n", dev.vendor_id, dev.device_id);
                 
                 if (knownDevice) {
-                    printf(combineColors(BLACK, GREEN), " %s - %s\n", knownDevice->vendorName, knownDevice->deviceName);
+                    printf(" %s - %s\n", knownDevice->vendorName, knownDevice->deviceName);
                 } else {
-                    printf(combineColors(BLACK, RED), " Unknown Device\n");
+                    printf(" Unknown Device\n");
                 }
 
             }
@@ -95,6 +105,75 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* dri
     }
 }
 
+BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressRegister(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar)
+{
+    BaseAddressRegister result;
+    
+    
+    uint32_t headertype = Read(bus, device, function, 0x0E) & 0x7F;
+    int maxBARs = 6 - (4*headertype);
+    if(bar >= maxBARs)
+        return result;
+    
+    
+    uint32_t bar_value = Read(bus, device, function, 0x10 + 4*bar);
+    result.type = (bar_value & 0x1) ? InputOutput : MemoryMapping;
+    uint32_t temp;
+    
+    
+    
+    if(result.type == MemoryMapping)
+    {
+        
+        switch((bar_value >> 1) & 0x3)
+        {
+            
+            case 0: // 32 Bit Mode
+            case 1: // 20 Bit Mode
+            case 2: // 64 Bit Mode
+                break;
+        }
+        
+    }
+    else // InputOutput
+    {
+        result.address = (uint8_t*)(bar_value & ~0x3);
+        result.prefetchable = false;
+    }
+
+    return result;
+}
+
+
+
+Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponentInterconnectDeviceDescriptor dev, InterruptManager* interrupts)
+{
+    Driver* driver = 0;
+    switch(dev.vendor_id)
+    {
+        case 0x1022: // AMD
+        case 0x1234: // Bochs
+        case 0x1B36: // QEMU
+        case 0x8086: // Intel
+            break;
+    }
+    
+    
+    switch(dev.class_id)
+    {
+        case 0x03: // graphics
+            switch(dev.subclass_id)
+            {
+                case 0x00: // VGA
+                    printf("VGA\n");
+                    break;
+            }
+            break;
+    }
+    
+    
+    return driver;
+}
 
 PeripheralComponentInterconnectDeviceDescriptor PeripheralComponentInterconnectController::GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function){
     PeripheralComponentInterconnectDeviceDescriptor result;

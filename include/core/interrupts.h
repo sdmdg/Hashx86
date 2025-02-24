@@ -5,6 +5,7 @@
 #include <core/ports.h>
 #include <core/gdt.h>
 #include <console.h>
+#include <debug.h>
 
 /**
  * @brief Forward declaration of the InterruptManager class.
@@ -114,6 +115,7 @@ protected:
     static void HandleInterruptRequest0x00(); ///< Handles timer interrupts.
     static void HandleInterruptRequest0x01(); ///< Handles keyboard interrupts.
     static void HandleInterruptRequest0x0C(); ///< Handles mouse interrupts.
+    //static void HandleInterruptRequest0x10();
 
     // I/O Ports for the Programmable Interrupt Controller (PIC)
     Port8BitSlow picMasterCommand; ///< Command port for the master PIC.

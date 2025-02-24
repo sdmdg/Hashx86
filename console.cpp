@@ -2,7 +2,6 @@
  * @file        console.cpp
  * @brief       Console
  * 
- * @author      Malaka Gunawardana
  * @date        13/01/2025
  * @version     1.0.0
  */
@@ -19,19 +18,6 @@ TextColor combineColors(TextColor foreground, TextColor background) {
     return (TextColor)((background << 4) | foreground);
 }
 
-
-// Simple Debug Wrapper Function
-void DebugPrintf(const char* tag, const char* format, ...) {
-    printf(LIGHT_RED, "%s", tag);    // Print the tag
-    printf(LIGHT_GRAY, ":");
-
-    va_list args;
-    va_start(args, format);
-    printf(LIGHT_GRAY, format, args); // Use the core printf
-    va_end(args);
-
-    printf(DARK_GRAY, "\n");          // Add newline for better output separation
-}
 
 // Simple Wrapper Function
 void MSGPrintf(TextColor cTag, const char* tag, const char* format, ...) {
@@ -96,26 +82,46 @@ void MSGPrintf(TextColor cTag, const char* tag, const char* format, ...) {
 void scrollScreen() {
     unsigned short* VideoMemory = (unsigned short*)VIDEO_MEMORY_ADDRESS;
 
+    // Scroll all rows up by one
     for (int row = 1; row < SCREEN_HEIGHT; row++) {
         for (int col = 0; col < SCREEN_WIDTH; col++) {
             VideoMemory[(row - 1) * SCREEN_WIDTH + col] = VideoMemory[row * SCREEN_WIDTH + col];
         }
     }
 
-    unsigned short blank = 0x20 | (WHITE << 8); // Space with white on black
+    // Clear the last row
+    unsigned short blank = 0x20 | (WHITE << 8); // Space with white text on black background
     for (int col = 0; col < SCREEN_WIDTH; col++) {
         VideoMemory[(SCREEN_HEIGHT - 1) * SCREEN_WIDTH + col] = blank;
     }
+
+    // Adjust the cursor position if it moves out of bounds
+    if (cursorRow > SCREEN_HEIGHT - 1) {
+        cursorRow = SCREEN_HEIGHT - 1;
+    }
 }
+
 
 void updateCursor(int row, int col) {
     unsigned short position = row * SCREEN_WIDTH + col;
 
-    port_1.Write(14);
-    port_2.Write(position >> 8);
-    port_1.Write(15);
+    // Set cursor start and enable blinking
+    port_1.Write(0x0A); // Cursor Start Register
+    port_2.Write(0x06); // Start at scanline 6 (enables blinking)
+
+    // Set cursor end
+    port_1.Write(0x0B); // Cursor End Register
+    port_2.Write(0x0F); // End at scanline 15
+
+    // Update the cursor position
+    port_1.Write(0x0E); // High byte of cursor position
+    port_2.Write((position >> 8) & 0xFF);
+
+    port_1.Write(0x0F); // Low byte of cursor position
     port_2.Write(position & 0xFF);
 }
+
+
 
 void clearScreen() {
     unsigned short* VideoMemory = (unsigned short*)VIDEO_MEMORY_ADDRESS;

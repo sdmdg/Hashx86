@@ -3,6 +3,7 @@
 
 #include <core/ports.h>
 #include <stdarg.h>
+#include <debug.h>
 
 // Base address for video memory in text mode
 #define VIDEO_MEMORY_ADDRESS 0xb8000  
@@ -10,29 +11,6 @@
 // Screen dimensions for text mode (80x25 characters)
 #define SCREEN_WIDTH 80                ///< Number of columns on the screen
 #define SCREEN_HEIGHT 25               ///< Number of rows on the screen
-
-/**
- * @brief Macro for logging debug messages with a consistent format.
- * 
- * Logs debug messages prefixed with "[DEBUG]". Accepts a format string and 
- * optional arguments to customize the message.
- * 
- * @param format Format string for the debug message.
- * @param ... Additional arguments for the format string.
- */
-#define DEBUG_LOG(format, ...) DebugPrintf("[DEBUG]", format, ##__VA_ARGS__)
-
-/**
- * @brief Macro for printing messages from modules with a consistent format.
- * 
- * Logs messages prefixed with the specified `tag`. The text is displayed in
- * light blue color by default.
- * 
- * @param tag The tag identifying the module or context of the message.
- * @param format Format string for the message.
- * @param ... Additional arguments for the format string.
- */
-#define PRINT(tag, format, ...) MSGPrintf(LIGHT_BLUE, tag, format, ##__VA_ARGS__)
 
 /**
  * @brief Enum representing text colors for foreground and background.
@@ -71,17 +49,6 @@ typedef enum {
 void printf(TextColor color, const char* format, ...);
 
 /**
- * @brief Prints debug messages with a specific tag and format.
- * 
- * Logs debug messages prefixed with a tag. Useful for debugging purposes.
- * 
- * @param tag The tag identifying the source of the debug message.
- * @param format Format string for the message.
- * @param ... Additional arguments for the format string.
- */
-void DebugPrintf(const char* tag, const char* format, ...);
-
-/**
  * @brief Prints messages from modules with a specific tag and format.
  * 
  * Logs messages prefixed with a tag. The color of the tag is customizable.
@@ -106,6 +73,11 @@ void clearScreen();
  * Moves all visible text up by one row to make space for new text at the bottom.
  */
 void scrollScreen();
+
+
+void updateCursor(int row, int col);
+void scrollScreen();
+
 
 /**
  * @brief Combines foreground and background colors into a single byte.

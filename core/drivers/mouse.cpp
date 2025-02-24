@@ -2,12 +2,32 @@
  * @file        mouse.cpp
  * @brief       Generic Mouse Driver for #x86
  * 
- * @author      Malaka Gunawardana
- * @date        13/01/2025
- * @version     1.0.0-beta
+ * @date        19/01/2025
+ * @version     1.0.2-beta
  */
 
 #include <core/drivers/mouse.h>
+
+/**
+ * MouseEventHandler constructor
+ */
+MouseEventHandler::MouseEventHandler(){}
+
+/**
+ * Virtual method to handle MouseMove events
+ */
+void MouseEventHandler::OnMouseMove(int dx, int dy){};
+
+/**
+ * Virtual method to handle MouseDown events
+ */
+void MouseEventHandler::OnMouseDown(uint8_t button){}
+
+/**
+ * Virtual method to handle MouseUp events
+ */
+void MouseEventHandler::OnMouseUp(uint8_t button){}
+
 
 /**
  * @brief Constructs the MouseDriver object.
@@ -34,12 +54,6 @@ MouseDriver::~MouseDriver() {}
  * @brief Activates the mouse driver and initializes the mouse hardware.
  */
 void MouseDriver::Activate() {
-    // Access video memory to demonstrate activation (optional)
-    unsigned short* VideoMemory = (unsigned short*)VIDEO_MEMORY_ADDRESS;
-    VideoMemory[80 * 12 + 40] = ((VideoMemory[80 * 12 + 40] & 0xF000) >> 4)
-                              | ((VideoMemory[80 * 12 + 40] & 0x0F00) << 4)
-                              | ((VideoMemory[80 * 12 + 40] & 0x00FF));
-
     // Enable the mouse
     commandPort.Write(0xAB); // Enable the auxiliary device (mouse)
 
@@ -63,50 +77,35 @@ void MouseDriver::Activate() {
  */
 uint32_t MouseDriver::HandleInterrupt(uint32_t esp) {
     uint8_t status = commandPort.Read();
-
-    // Check if mouse data is available and an event handler is set
-    if (!(status & 0x20) || eventHandler == nullptr)
+    if (!(status & 0x20))
         return esp;
 
-    // Read mouse packet data into buffer
     buffer[offset] = dataPort.Read();
+    
+    if(eventHandler == 0)
+        return esp;
+    
     offset = (offset + 1) % 3;
 
-    // Process the packet when all 3 bytes are received
-    if (offset == 0) {
-        int8_t dx = buffer[1];       // Mouse movement in X direction
-        int8_t dy = buffer[2];       // Mouse movement in Y direction (no scroll assumed)
-        uint8_t currentButtons = buffer[0]; // Current button states
-
-        // Handle mouse movement
-        if (dx != 0 || dy != 0) {
-            x += dx;
-            y -= dy; // Invert Y-axis to match screen coordinates
-
-            // Clamp cursor position within screen bounds
-            x = (x < 0) ? 0 : (x >= 80 ? 79 : x);
-            y = (y < 0) ? 0 : (y >= 25 ? 24 : y);
-
-            eventHandler->OnMouseMove(x, y);
+    if(offset == 0)
+    {
+        if(buffer[1] != 0 || buffer[2] != 0)
+        {
+            eventHandler->OnMouseMove((int8_t)buffer[1], -((int8_t)buffer[2]));
         }
 
-        // Handle left mouse button events
-        if ((currentButtons & 0x01) && !(buttons & 0x01)) {
-            eventHandler->OnLeftMouseDown(x, y);
-        } else if (!(currentButtons & 0x01) && (buttons & 0x01)) {
-            eventHandler->OnLeftMouseUp(x, y);
+        for(uint8_t i = 0; i < 3; i++)
+        {
+            if((buffer[0] & (0x1<<i)) != (buttons & (0x1<<i)))
+            {
+                if(buttons & (0x1<<i))
+                    eventHandler->OnMouseUp(i+1);
+                else
+                    eventHandler->OnMouseDown(i+1);
+            }
         }
-
-        // Handle right mouse button events
-        if ((currentButtons & 0x02) && !(buttons & 0x02)) {
-            eventHandler->OnRightMouseDown(x, y);
-        } else if (!(currentButtons & 0x02) && (buttons & 0x02)) {
-            eventHandler->OnRightMouseUp(x, y);
-        }
-
-        // Update the button state for the next interrupt
-        buttons = currentButtons;
+        buttons = buffer[0];
     }
-
+    
     return esp;
 }

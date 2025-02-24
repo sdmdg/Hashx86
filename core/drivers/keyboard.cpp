@@ -2,7 +2,6 @@
  * @file        keyboard.cpp
  * @brief       Generic Keyboard Driver for #x86
  * 
- * @author      Malaka Gunawardana
  * @date        13/01/2025
  * @version     1.0.0-beta
  */

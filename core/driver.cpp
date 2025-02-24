@@ -2,7 +2,6 @@
  * @file        driver.cpp
  * @brief       Driver class for #x86
  * 
- * @author      Malaka Gunawardana
  * @date        13/01/2025
  * @version     1.0.0-beta
  */
@@ -87,7 +86,7 @@ void DriverManager::ActivateAll() {
     for (int i = 0; i < numDrivers; i++) {
         PRINT("DriverManager", "Starting Driver: %s", drivers[i]->driverName); // Log driver name.
         drivers[i]->Activate(); // Activate the driver.
-        printf(LIGHT_GREEN, "[ OK ]\n"); // Indicate success for the driver.
+        printf("[ OK ]\n"); // Indicate success for the driver.
     }
-    printf(LIGHT_GREEN, "[ All OK ]\n\n"); // Indicate that all drivers were successfully activated.
+    printf("[ All OK ]\n\n"); // Indicate that all drivers were successfully activated.
 }

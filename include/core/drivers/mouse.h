@@ -15,56 +15,29 @@
  */
 class MouseEventHandler {
 public:
-    MouseEventHandler() {}
+    MouseEventHandler();
 
     /**
      * @brief Called when the mouse is moved.
      * @param x The new X coordinate.
      * @param y The new Y coordinate.
      */
-    virtual void OnMouseMove(int x, int y) {}
+    virtual void OnMouseMove(int dx, int dy);
 
     /**
-     * @brief Called when the left mouse button is pressed.
-     * @param x The X coordinate at the time of the event.
-     * @param y The Y coordinate at the time of the event.
+     * @brief Called when the left/Right mouse button is pressed.
+     * @param button The button at the time of the event.
      */
-    virtual void OnLeftMouseDown(int x, int y) {}
+    virtual void OnMouseDown(uint8_t button);
 
     /**
-     * @brief Called when the left mouse button is released.
-     * @param x The X coordinate at the time of the event.
-     * @param y The Y coordinate at the time of the event.
+     * @brief Called when the left/Right mouse button is released.
+     * @param button The button at the time of the event.
      */
-    virtual void OnLeftMouseUp(int x, int y) {}
+    virtual void OnMouseUp(uint8_t button);
 
-    /**
-     * @brief Called when the right mouse button is pressed.
-     * @param x The X coordinate at the time of the event.
-     * @param y The Y coordinate at the time of the event.
-     */
-    virtual void OnRightMouseDown(int x, int y) {}
-
-    /**
-     * @brief Called when the right mouse button is released.
-     * @param x The X coordinate at the time of the event.
-     * @param y The Y coordinate at the time of the event.
-     */
-    virtual void OnRightMouseUp(int x, int y) {}
-
-    /**
-     * @brief Called when the mouse scrolls up.
-     * @param x The X coordinate at the time of the event.
-     * @param y The Y coordinate at the time of the event.
-     */
-    virtual void OnScrollUp(int x, int y) {}
-
-    /**
-     * @brief Called when the mouse scrolls down.
-     * @param x The X coordinate at the time of the event.
-     * @param y The Y coordinate at the time of the event.
-     */
-    virtual void OnScrollDown(int x, int y) {}
+    //virtual void OnScrollUp(int x, int y);
+    //virtual void OnScrollDown(int x, int y);
 };
 
 /**

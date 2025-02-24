@@ -2,9 +2,8 @@
  * @file        interrupts.cpp
  * @brief       Interrupts Manager
  * 
- * @author      Malaka Gunawardana
- * @date        13/01/2025
- * @version     1.0.0
+ * @date        20/01/2025
+ * @version     1.0.0-beta
  */
 
 #include <core/interrupts.h>
@@ -93,6 +92,7 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
   picSlaveData(0xA1)
 {
     PRINT("InterruptManager", "Loading...\n");
+    const uint8_t HIOffset  = 0x20;
     uint16_t CodeSegment = gdt->CodeSegmentSelector();
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
 
@@ -103,9 +103,11 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
     }
 
     // Set specific handlers
-    SetInterruptDescriptorTableEntry(0x20, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HIOffset + 0x00, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HIOffset + 0x01, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HIOffset + 0x0C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
+    //SetInterruptDescriptorTableEntry(HIOffset + 0x10, CodeSegment, &HandleInterruptRequest0x10, 0, IDT_INTERRUPT_GATE);
+
 
     // Initialize the PIC
     picMasterCommand.Write(0x11);
@@ -146,7 +148,7 @@ void InterruptManager::Activate() {
     }
     ActiveInterruptManager = this;
     asm("sti");     // Enable interrupts
-    printf(LIGHT_GREEN, " [ OK ]\n\n");
+    printf(" [ OK ]\n\n");
 }
 
 /**
@@ -159,7 +161,7 @@ void InterruptManager::Deactivate() {
         PRINT("InterruptManager", "Deactivating InterruptManager...");
         ActiveInterruptManager = 0;
         asm("cli");  // Disable interrupts
-        printf(LIGHT_GREEN, " [ OK ]\n\n");
+        printf(" [ OK ]\n\n");
     }
 }
 
@@ -191,14 +193,14 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
  */
 uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
     if (interruptNumber >= 256) {
-        printf(RED, "INVALID INTERRUPT: 0x%x\n", interruptNumber);
+        printf("INVALID INTERRUPT: 0x%x\n", interruptNumber);
         return esp;
     }
 
     if (handlers[interruptNumber] != 0) {
         esp = handlers[interruptNumber]->HandleInterrupt(esp);
     } else if (0x20 != interruptNumber) {
-        printf(RED, "UNHANDLED INTERRUPT: 0x%x\n", interruptNumber);
+        printf("UNHANDLED INTERRUPT: 0x%x\n", interruptNumber);
     }
 
     // Acknowledge the interrupt if it was a hardware interrupt

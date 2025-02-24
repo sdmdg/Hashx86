@@ -2,12 +2,21 @@
  * @file        ports.cpp
  * @brief       Ports class for #x86
  * 
- * @author      Malaka Gunawardana
  * @date        13/01/2025
  * @version     1.0.0
  */
 
 #include <core/ports.h>
+
+
+uint8_t inb(uint16_t port) {
+    uint8_t result;
+    asm volatile ("inb %1, %0" : "=a"(result) : "Nd"(port));
+    return result;
+}
+void outb(uint16_t port, uint8_t value) {
+    asm volatile ("outb %0, %1" : : "a"(value), "Nd"(port));
+}
 
 /**
  * @brief Constructor for the Port class.

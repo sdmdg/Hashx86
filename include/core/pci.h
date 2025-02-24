@@ -38,7 +38,6 @@ static const PCIDevice pciDevices[] = {
     {0x15AD, 0x0405, "VMware", "SVGA II Adapter"},
     {0x80EE, 0xCAFE, "InnoTek Systemberatung GmbH", "VirtualBox Guest Service"},
 
-
     {0x1AF4, 0x1000, "Red Hat, Inc.", "Virtio Network Device"},
     {0x1D0F, 0xEC20, "Amazon.com, Inc.", "Elastic Network Adapter"},
     {0x1B36, 0x000D, "QEMU", "QEMU PCIe Host Bridge"},
@@ -70,6 +69,23 @@ public:
     ~PeripheralComponentInterconnectDeviceDescriptor();
 };
 
+enum BaseAddressRegisterType
+{
+    MemoryMapping = 0,
+    InputOutput = 1
+};
+
+
+
+class BaseAddressRegister
+{
+public:
+    bool prefetchable;
+    uint8_t* address;
+    uint32_t size;
+    BaseAddressRegisterType type;
+};
+
 class PeripheralComponentInterconnectController
 {
     Port32Bit dataPort;
@@ -86,6 +102,7 @@ public:
 
     void SelectDrivers(DriverManager* driverManager, InterruptManager* interrupts);
     PeripheralComponentInterconnectDeviceDescriptor GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function);
-
+    BaseAddressRegister GetBaseAddressRegister(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
+    Driver* GetDriver(PeripheralComponentInterconnectDeviceDescriptor dev, InterruptManager* interrupts);
 };
 #endif

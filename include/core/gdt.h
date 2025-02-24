@@ -41,6 +41,7 @@ private:
 public:
     GlobalDescriptorTable();
     ~GlobalDescriptorTable();
+    void LoadGDT();
     uint16_t CodeSegmentSelector();          ///< Offset for the code segment
     uint16_t DataSegmentSelector();          ///< Offset for the data segment
 };

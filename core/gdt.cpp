@@ -2,7 +2,6 @@
  * @file        gdt.cpp
  * @brief       Global Descriptor Table
  * 
- * @author      Malaka Gunawardana
  * @date        13/01/2025
  * @version     1.0.0
  */
@@ -13,7 +12,7 @@
  * Constructor for GlobalDescriptorTable.
  * 
  * Initializes the GDT with a null segment, an unused segment, a code segment,
- * and a data segment. Also loads the GDT using the `lgdt` instruction.
+ * and a data segment.
  */
 GlobalDescriptorTable::GlobalDescriptorTable()
     : nullSegmentSelector(0, 0, 0),                     // Null descriptor
@@ -21,6 +20,13 @@ GlobalDescriptorTable::GlobalDescriptorTable()
       codeSegmentSelector(0, 64 * 1024 * 1024, 0x9A),   // Code segment: execute/read
       dataSegmentSelector(0, 64 * 1024 * 1024, 0x92)    // Data segment: read/write
 {
+    LoadGDT();
+}
+
+/**
+ * Loads the GDT using the `lgdt` instruction.
+ */
+void GlobalDescriptorTable::LoadGDT(){
     uint32_t gdt_descriptor[2];
     gdt_descriptor[1] = (uint32_t)this;                 // Base address of GDT
     gdt_descriptor[0] = sizeof(GlobalDescriptorTable) << 16; // Limit (size - 1)
@@ -38,12 +44,13 @@ GlobalDescriptorTable::GlobalDescriptorTable()
         "retf\n"                   // Far return to update CS
         "1:\n"                     // Target of far return
         :
-        : "m"(*(((uint8_t *)gdt_descriptor) + 2)),      // Pass GDT descriptor
+        : "m"(*(((uint8_t *)gdt_descriptor) + 2)),  // Pass GDT descriptor
           "r"(CodeSegmentSelector()), 
           "r"(DataSegmentSelector())
         : "memory"
     );
 }
+
 
 /**
  * Destructor for GlobalDescriptorTable.
