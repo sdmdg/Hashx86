@@ -8,6 +8,7 @@
 #include <gui/window.h>
 #include <gui/label.h>
 #include <gui/button.h>
+#include <gui/messagebox.h>
 
 
 #endif // GUI_H

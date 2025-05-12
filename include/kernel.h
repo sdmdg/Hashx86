@@ -1,21 +1,80 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include <core/globals.h>
 #include <debug.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <console.h>
 #include <core/gdt.h>
+#include <core/gdt2.h>
 #include <core/interrupts.h>
+#include <core/syscalls.h>
+#include <gui/Hgui.h>
+#include <core/elf.h>
 #include <core/drivers/keyboard.h>
 #include <core/drivers/mouse.h>
+#include <core/drivers/ata.h>
 #include <core/driver.h>
 #include <core/pci.h>
+#include <core/pmm.h>
 #include <core/memory.h>
+#include <core/paging.h>
+#include <gui/renderer/nina.h>
 #include <core/drivers/vga.h>
 #include <gui/gui.h>
 #include <core/multiboot.h>
 #include <core/drivers/vbe.h>
+#include <core/process.h>
+#include <core/timing.h>
+
+
+// symbols from linker.ld for section addresses
+extern uint8_t __kernel_section_start;
+extern uint8_t __kernel_section_end;
+extern uint8_t __kernel_text_section_start;
+extern uint8_t __kernel_text_section_end;
+extern uint8_t __kernel_data_section_start;
+extern uint8_t __kernel_data_section_end;
+extern uint8_t __kernel_rodata_section_start;
+extern uint8_t __kernel_rodata_section_end;
+extern uint8_t __kernel_bss_section_start;
+extern uint8_t __kernel_bss_section_end;
+
+typedef struct {
+    struct {
+        uint32_t k_start_addr;
+        uint32_t k_end_addr;
+        uint32_t k_len;
+        uint32_t text_start_addr;
+        uint32_t text_end_addr;
+        uint32_t text_len;
+        uint32_t data_start_addr;
+        uint32_t data_end_addr;
+        uint32_t data_len;
+        uint32_t rodata_start_addr;
+        uint32_t rodata_end_addr;
+        uint32_t rodata_len;
+        uint32_t bss_start_addr;
+        uint32_t bss_end_addr;
+        uint32_t bss_len;
+    } kernel;
+
+    struct {
+        uint32_t total_memory;
+    } system;
+
+    struct {
+        uint32_t start_addr;
+        uint32_t end_addr;
+        uint32_t size;
+    } available;
+} KERNEL_MEMORY_MAP;
+
+extern KERNEL_MEMORY_MAP g_kmap;
+
+int get_kernel_memory_map(KERNEL_MEMORY_MAP *kmap, MultibootInfo *mboot_info);
+void display_kernel_memory_map(KERNEL_MEMORY_MAP *kmap);
+
 
 
 /**

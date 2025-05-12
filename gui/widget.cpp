@@ -18,16 +18,109 @@ Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h)
     this->h = h;
     this->colorIndex = colorIndex;
     this->Focussable = true;
+    cache = new uint32_t[w * h];
 }
 
 Widget::~Widget()
 {
+    delete[] cache;
 }
-            
+
+void Widget::MarkDirty()
+{
+    isDirty = true;
+    if (parent) parent->MarkDirty(); // propagate upward
+}
+
+void Widget::RedrawToCache()
+{
+}
+
 void Widget::GetFocus(Widget* widget)
 {
     if(parent != 0)
         parent->GetFocus(widget);
+}
+
+void Widget::SetFocussable(bool focussable)
+{
+    this->Focussable = focussable;
+}
+
+void Widget::SetPID(uint32_t PID)
+{
+    this->PID = PID;
+    childrenList.ForEach([&](Widget* c) {
+        c->PID = PID;
+    });
+}
+
+void Widget::SetID(uint32_t ID)
+{
+    this->ID = ID;
+}
+
+Widget* Widget::FindWidgetByID(uint32_t searchID)
+{
+    if (this->ID == searchID)
+        return this;
+
+    Widget* result = nullptr;
+
+    childrenList.ForEach([&](Widget* c) {
+        if (result) return; // Already found
+
+        if (c->ID == searchID)
+            result = c;
+        else {
+            Widget* nested = c->FindWidgetByID(searchID);
+            if (nested)
+                result = nested;
+        }
+    });
+
+    return result;
+}
+
+Widget* Widget::FindWidgetByPID(uint32_t PID)
+{
+    if (this->PID == PID)
+        return this;
+
+    Widget* result = nullptr;
+
+    childrenList.ForEach([&](Widget* c) {
+        if (result) return; // Already found
+
+        if (c->PID == PID)
+            result = c;
+        else {
+            Widget* nested = c->FindWidgetByID(PID);
+            if (nested)
+                result = nested;
+        }
+    });
+
+    return result;
+}
+
+bool Widget::AddChild(Widget* child)
+{
+    if (childrenList.GetSize() >= 100)
+        return false;
+
+    // Add to front
+    childrenList.Add(child);
+    return true;
+}
+
+
+
+bool Widget::RemoveChild(Widget* child)
+{
+    return childrenList.Remove([&](Widget* c) {
+        return c == child;
+    });
 }
 
 void Widget::ModelToScreen(int32_t &x, int32_t& y)
@@ -40,11 +133,19 @@ void Widget::ModelToScreen(int32_t &x, int32_t& y)
             
 void Widget::Draw(GraphicsContext* gc)
 {
-    int X = 0;
-    int Y = 0;
-    ModelToScreen(X,Y);
-    gc->FillRectangle(X,Y,w,h, colorIndex);
+    if(isDirty){
+        if (isVisible)
+        {
+            // Only redraw if dirty
+            RedrawToCache(); 
+            isDirty = false;
+        } else {
+            // Clear the cache
+            memset(cache, 0, sizeof(uint32_t) * w * h);
+        }
+    } 
 }
+
 
 void Widget::OnMouseDown(int32_t x, int32_t y, uint8_t button)
 {
@@ -70,12 +171,11 @@ void Widget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy)
 
 
 
-CompositeWidget::CompositeWidget(Widget* parent,
+CompositeWidget::CompositeWidget(CompositeWidget* parent,
                    int32_t x, int32_t y, int32_t w, int32_t h)
 : Widget(parent, x,y,w,h)
 {
     focussedChild = 0;
-    numChildren = 0;
 }
 
 CompositeWidget::~CompositeWidget()
@@ -85,63 +185,70 @@ CompositeWidget::~CompositeWidget()
 void CompositeWidget::GetFocus(Widget* widget)
 {
     this->focussedChild = widget;
-    if(parent != 0)
+    if (parent != nullptr)
         parent->GetFocus(this);
 }
-
-bool CompositeWidget::AddChild(Widget* child)
-{
-    if(numChildren >= 100)
-        return false;
-    children[numChildren++] = child;
-    return true;
-}
-
 
 void CompositeWidget::Draw(GraphicsContext* gc)
 {
     Widget::Draw(gc);
-    for(int i = numChildren-1; i >= 0; --i)
-        children[i]->Draw(gc);
+    childrenList.ReverseForEach([&](Widget* child) {
+        child->Draw(gc);
+    });
+    
 }
-
 
 void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button)
 {
-    for(int i = 0; i < numChildren; ++i)
-        if(children[i]->ContainsCoordinate(x - this->x, y - this->y))
-        {
-            children[i]->OnMouseDown(x - this->x, y - this->y, button);
-            break;
+    const int32_t localX = x - this->x;
+    const int32_t localY = y - this->y;
+
+    // One loop: Find + trigger + move to front
+    Widget* clicked = nullptr;
+
+    childrenList.ForEach([&](Widget* child) {
+        if (!clicked && child->ContainsCoordinate(localX, localY)) {
+            child->OnMouseDown(localX, localY, button);
+            clicked = child;
         }
+    });
+
+    if (clicked) {
+        // Modify only *after* iteration
+        childrenList.Remove([&](Widget* c) { return c == clicked; });
+        childrenList.Add(clicked); // Bring to front
+    }
 }
+
 
 void CompositeWidget::OnMouseUp(int32_t x, int32_t y, uint8_t button)
 {
-    for(int i = 0; i < numChildren; ++i)
-        if(children[i]->ContainsCoordinate(x - this->x, y - this->y))
-        {
-            children[i]->OnMouseUp(x - this->x, y - this->y, button);
+    for (auto it = childrenList.begin(); it != childrenList.end(); ++it) {
+        Widget* child = *it;
+        if (child->ContainsCoordinate(x - this->x, y - this->y)) {
+            child->OnMouseUp(x - this->x, y - this->y, button);
             break;
         }
+    }
 }
 
 void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy)
 {
-    int firstchild = -1;
-    for(int i = 0; i < numChildren; ++i)
-        if(children[i]->ContainsCoordinate(oldx - this->x, oldy - this->y))
-        {
-            children[i]->OnMouseMove(oldx - this->x, oldy - this->y, newx - this->x, newy - this->y);
-            firstchild = i;
-            break;
+    bool handledOld = false;
+    bool handledNew = false;
+
+    for (auto it = childrenList.begin(); it != childrenList.end(); ++it) {
+        Widget* child = *it;
+        bool inOld = child->ContainsCoordinate(oldx - this->x, oldy - this->y);
+        bool inNew = child->ContainsCoordinate(newx - this->x, newy - this->y);
+
+        if (inOld || inNew) {
+            child->OnMouseMove(oldx - this->x, oldy - this->y, newx - this->x, newy - this->y);
         }
 
-    for(int i = 0; i < numChildren; ++i)
-        if(children[i]->ContainsCoordinate(newx - this->x, newy - this->y))
-        {
-            if(firstchild != i)
-                children[i]->OnMouseMove(oldx - this->x, oldy - this->y, newx - this->x, newy - this->y);
-            break;
-        }
+        if (inOld) handledOld = true;
+        if (inNew) handledNew = true;
+
+        if (handledOld && handledNew) break;
+    }
 }

@@ -9,7 +9,7 @@
 #include <debug.h>
 
 void vprintf(const char* format, va_list args);
-void DebugPrintf(const char* tag, const char* format, ...);
+
 
 void initSerial() {
     outb(0x3F8 + 1, 0x00); // Disable interrupts
@@ -21,16 +21,19 @@ void initSerial() {
     outb(0x3F8 + 4, 0x0B); // IRQs enabled, RTS/DSR set
 }
 
+
 void writeSerial(char c) {
     while ((inb(0x3F8 + 5) & 0x20) == 0); // Wait for the transmit buffer to be empty
     outb(0x3F8, c);
 }
+
 
 void SerialPrint(const char* str) {
     for (size_t i = 0; str[i] != '\0'; i++) {
         writeSerial(str[i]);
     }
 }
+
 
 void printf(const char* format, ...) {
     va_list args;
@@ -136,10 +139,20 @@ void vprintf(const char* format, va_list args) {
     }
 }
 
-// Simple Debug Wrapper Function
+
 void DebugPrintf(const char* tag, const char* format, ...) {
     printf("%s:", tag);    // Print the tag and colon
 
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args); // Use vprintf to handle `va_list`
+    va_end(args);
+    printf("\n");           // Print the newline chr
+}
+
+
+void Printf(const char* tag, const char* format, ...) {
+    printf("%s:", tag);    // Print the tag and colon
     va_list args;
     va_start(args, format);
     vprintf(format, args); // Use vprintf to handle `va_list`

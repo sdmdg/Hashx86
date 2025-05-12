@@ -8,60 +8,29 @@
 
 #include <core/interrupts.h>
 
-/**
- * @brief Constructor for the InterruptHandler class.
- * 
- * Registers the handler for a specific interrupt number in the interrupt manager.
- * 
- * @param InterruptNumber  The interrupt number this handler will handle.
- * @param interruptManager Pointer to the interrupt manager managing this handler.
- */
+static uint16_t HWInterruptOffset = 0x20;
+
 InterruptHandler::InterruptHandler(uint8_t InterruptNumber, InterruptManager* interruptManager)
 {
     this->InterruptNumber = InterruptNumber;
     this->interruptManager = interruptManager;
-    interruptManager->handlers[InterruptNumber] = this; // Register this handler
+    interruptManager->handlers[InterruptNumber] = this;
 }
 
-/**
- * @brief Destructor for the InterruptHandler class.
- * 
- * Removes this handler from the interrupt manager if it is still registered.
- */
 InterruptHandler::~InterruptHandler()
 {
     if(interruptManager->handlers[InterruptNumber] == this)
-        interruptManager->handlers[InterruptNumber] = 0; // Deregister the handler
+        interruptManager->handlers[InterruptNumber] = 0;
 }
 
-/**
- * @brief Default interrupt handler.
- * 
- * This is a placeholder that simply returns the stack pointer unchanged.
- * 
- * @param esp Stack pointer at the time of the interrupt.
- * @return    Updated stack pointer (unchanged in this case).
- */
 uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
 {
     return esp;
 }
 
-// Static members of InterruptManager
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
-InterruptManager* InterruptManager::ActiveInterruptManager = 0;
+InterruptManager* InterruptManager::activeInstance = 0;
 
-/**
- * @brief Sets an entry in the Interrupt Descriptor Table (IDT).
- * 
- * Configures the IDT entry for a specific interrupt number with the given handler.
- * 
- * @param interruptNumber The interrupt number to configure.
- * @param codeSegmentSelectorOffset Code segment selector in the GDT.
- * @param handler Pointer to the interrupt handler function.
- * @param DescriptorPrivilegeLevel Privilege level required to invoke the interrupt.
- * @param DescriptorType Type of the descriptor (interrupt gate, trap gate, etc.).
- */
 void InterruptManager::SetInterruptDescriptorTableEntry(
     uint8_t interruptNumber,
     uint16_t codeSegmentSelectorOffset,
@@ -78,138 +47,213 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
-/**
- * @brief Constructor for the InterruptManager class.
- * 
- * Initializes the interrupt manager, sets up the IDT and configures the PIC.
- * 
- * @param gdt Pointer to the global descriptor table.
- */
-InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
+InterruptManager::InterruptManager(GlobalDescriptorTable* gdt, ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager)
 : picMasterCommand(0x20),
   picMasterData(0x21),
   picSlaveCommand(0xA0),
   picSlaveData(0xA1)
 {
-    PRINT("InterruptManager", "Loading...\n");
-    const uint8_t HIOffset  = 0x20;
     uint16_t CodeSegment = gdt->CodeSegmentSelector();
+    this->processManager = processManager;
+    this->vbe = vbe;
+    this->pager = pager;
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
 
-    // Initialize the IDT with default handlers
-    for (uint16_t i = 0; i < 256; i++) {
+    for (uint16_t i = 0; i < 256; i++){
         SetInterruptDescriptorTableEntry(i, CodeSegment, &IgnoreInterruptRequest, 0, IDT_INTERRUPT_GATE);
         handlers[i] = 0;
-    }
+    };
 
-    // Set specific handlers
-    SetInterruptDescriptorTableEntry(HIOffset + 0x00, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(HIOffset + 0x01, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(HIOffset + 0x0C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
-    //SetInterruptDescriptorTableEntry(HIOffset + 0x10, CodeSegment, &HandleInterruptRequest0x10, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x00, CodeSegment, &HandleException0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x01, CodeSegment, &HandleException0x01, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x02, CodeSegment, &HandleException0x02, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x03, CodeSegment, &HandleException0x03, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x04, CodeSegment, &HandleException0x04, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x05, CodeSegment, &HandleException0x05, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x06, CodeSegment, &HandleException0x06, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x07, CodeSegment, &HandleException0x07, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x08, CodeSegment, &HandleException0x08, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x09, CodeSegment, &HandleException0x09, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0A, CodeSegment, &HandleException0x0A, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0B, CodeSegment, &HandleException0x0B, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0C, CodeSegment, &HandleException0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0D, CodeSegment, &HandleException0x0D, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0E, CodeSegment, &HandleException0x0E, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0F, CodeSegment, &HandleException0x0F, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x10, CodeSegment, &HandleException0x10, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x11, CodeSegment, &HandleException0x11, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x12, CodeSegment, &HandleException0x12, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x13, CodeSegment, &HandleException0x13, 0, IDT_INTERRUPT_GATE);
 
 
-    // Initialize the PIC
+
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x00, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x01, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x02, CodeSegment, &HandleInterruptRequest0x02, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x03, CodeSegment, &HandleInterruptRequest0x03, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x04, CodeSegment, &HandleInterruptRequest0x04, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x05, CodeSegment, &HandleInterruptRequest0x05, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x06, CodeSegment, &HandleInterruptRequest0x06, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x07, CodeSegment, &HandleInterruptRequest0x07, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x08, CodeSegment, &HandleInterruptRequest0x08, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x09, CodeSegment, &HandleInterruptRequest0x09, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0A, CodeSegment, &HandleInterruptRequest0x0A, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0B, CodeSegment, &HandleInterruptRequest0x0B, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0D, CodeSegment, &HandleInterruptRequest0x0D, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
+
+    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x81, CodeSegment, &HandleInterruptRequest0x81, 0, IDT_INTERRUPT_GATE);
+
+
+
+    
     picMasterCommand.Write(0x11);
     picSlaveCommand.Write(0x11);
-    picMasterData.Write(0x20); // Master PIC vector offset
-    picSlaveData.Write(0x28);  // Slave PIC vector offset
-    picMasterData.Write(0x04); // Tell Master PIC there is a Slave PIC at IRQ2
-    picSlaveData.Write(0x02);  // Tell Slave PIC its cascade identity
-    picMasterData.Write(0x01); // 8086/88 mode
-    picSlaveData.Write(0x01);  // 8086/88 mode
-    picMasterData.Write(0x00); // Unmask interrupts
-    picSlaveData.Write(0x00);  // Unmask interrupts
 
-    // Load the IDT
+    picMasterData.Write(0x20);
+    picSlaveData.Write(0x28);
+
+    picMasterData.Write(0x04);
+    picSlaveData.Write(0x02);
+
+    picMasterData.Write(0x01);
+    picSlaveData.Write(0x01);
+
+    picMasterData.Write(0x00);
+    picSlaveData.Write(0x00);
+
+    // Mask
+    //picMasterData.Write(0xFD);
+    //picSlaveData.Write(0xFF);
+
     InterruptDescriptorTablePointer idt;
-    idt.size = 256 * sizeof(GateDescriptor) - 1;
-    idt.base = (uint32_t)interruptDescriptorTable;
+    idt.size  = 256 * sizeof(GateDescriptor) - 1;
+    idt.base  = (uint32_t)interruptDescriptorTable;
     asm volatile("lidt %0" : : "m" (idt));
 }
 
-/**
- * @brief Destructor for the InterruptManager class.
- * 
- * Performs cleanup when the interrupt manager is destroyed.
- */
-InterruptManager::~InterruptManager() {}
+InterruptManager::~InterruptManager() {
+}
 
-/**
- * @brief Activates the interrupt manager.
- * 
- * Sets this interrupt manager as the active one and enables interrupts.
- */
-void InterruptManager::Activate() {
-    PRINT("InterruptManager", "Activating InterruptManager...");
-    if (ActiveInterruptManager != 0) {
+void InterruptManager:: Activate() {
+    DEBUG_LOG("Activating InterruptManager.");
+    if (activeInstance != 0){
         DEBUG_LOG("An active InterruptManager found.");
-        ActiveInterruptManager->Deactivate();
+        activeInstance->Deactivate();
     }
-    ActiveInterruptManager = this;
-    asm("sti");     // Enable interrupts
-    printf(" [ OK ]\n\n");
+    activeInstance = this;
+    asm("sti");
+    DEBUG_LOG("InterruptManager Activated.");
 }
 
-/**
- * @brief Deactivates the interrupt manager.
- * 
- * Disables interrupts and removes this manager as the active one.
- */
-void InterruptManager::Deactivate() {
-    if (ActiveInterruptManager == this) {
-        PRINT("InterruptManager", "Deactivating InterruptManager...");
-        ActiveInterruptManager = 0;
-        asm("cli");  // Disable interrupts
-        printf(" [ OK ]\n\n");
+void InterruptManager:: Deactivate() {
+    if (activeInstance == this){
+        DEBUG_LOG("Deactivating InterruptManager.");
+        activeInstance = 0;
+        asm("cli");
+        DEBUG_LOG("InterruptManager Deactivated.");
     }
 }
 
-/**
- * @brief Main interrupt handler.
- * 
- * Delegates interrupt handling to the active interrupt manager.
- * 
- * @param interruptNumber The interrupt number that occurred.
- * @param esp The stack pointer at the time of the interrupt.
- * @return    Updated stack pointer.
- */
 uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp) {
-    if (ActiveInterruptManager != 0) {
-        return ActiveInterruptManager->DoHandleInterrupt(interruptNumber, esp);
+    if (activeInstance != 0){
+        return activeInstance->DoHandleInterrupt(interruptNumber, esp);
     } else {
         return esp;
     }
 }
 
-/**
- * @brief Handles a specific interrupt.
- * 
- * Calls the appropriate handler if registered, or logs an error if unhandled.
- * 
- * @param interruptNumber The interrupt number to handle.
- * @param esp The stack pointer at the time of the interrupt.
- * @return    Updated stack pointer.
- */
+uint32_t InterruptManager::handleException(uint8_t interruptNumber, uint32_t esp) {
+    if (activeInstance != 0){
+        return activeInstance->DohandleException(interruptNumber, esp);
+    } else {
+        return esp;
+    }
+}
+
 uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
+    CPUState* state = (CPUState*)esp;
+    Process* p = ProcessManager::activeInstance->getCurrentProcess();
+    asm("cli");
+
+    if(interruptNumber == HWInterruptOffset)
+    {
+        timerTicks++;
+        esp = (uint32_t)processManager->Schedule((CPUState*)esp);
+    }
+
     if (interruptNumber >= 256) {
         printf("INVALID INTERRUPT: 0x%x\n", interruptNumber);
         return esp;
     }
 
     if (handlers[interruptNumber] != 0) {
+        //printf("Handling interrupt: 0x%x, Handler address: 0x%x\n", interruptNumber, handlers[interruptNumber]);
         esp = handlers[interruptNumber]->HandleInterrupt(esp);
-    } else if (0x20 != interruptNumber) {
-        printf("UNHANDLED INTERRUPT: 0x%x\n", interruptNumber);
     }
 
-    // Acknowledge the interrupt if it was a hardware interrupt
-    uint16_t hardwareInterruptOffset = 0x20;
-    if (hardwareInterruptOffset <= interruptNumber && interruptNumber < hardwareInterruptOffset + 16) {
-        picMasterCommand.Write(0x20);    // Acknowledge master PIC
-        if (hardwareInterruptOffset + 8 <= interruptNumber)
-            picSlaveCommand.Write(0x20); // Acknowledge slave PIC
+    else if(0x20 != interruptNumber)
+        printf("UNHANDLED INTERRUPT: 0x%x, Handler address: 0x%x\n", interruptNumber, handlers[interruptNumber]);
+
+
+    if(HWInterruptOffset <= interruptNumber && interruptNumber < HWInterruptOffset + 16)
+    {
+        picMasterCommand.Write(0x20);
+        if(HWInterruptOffset + 8 <= interruptNumber)
+            picSlaveCommand.Write(0x20);
     }
+
+    asm("sti");
+    return esp;
+}
+
+uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t esp) {
+    CPUState* state = (CPUState*)esp;
+    Deactivate();
+    this->pager->switch_page_directory(this->pager->KernelPageDirectory);
+    
+
+    
+    // Print exception details
+    DEBUG_LOG("Exception 0x%x occurred. Error Code: 0x%x", interruptNumber, state->error);
+    DEBUG_LOG("EIP: 0x%x, CS: 0x%x, EFLAGS: 0x%x", state->eip, state->cs, state->eflags);
+
+
+    // BLUE SCREEN
+        vbe->FillRectangle(0,0,1152, 864, 0x0055C6);
+        vbe->DrawBitmap(100,200,(const uint32_t*)icon_blue_screen_face_200x200,200,200);
+        vbe->VBE_font->setSize(XLARGE);
+        vbe->DrawString(120,400,"Your PC ran into a problem and needs to restart.\n\nWe'll restart it for you.",0xFFFFFFFF);
+        vbe->VBE_font->setSize(MEDIUM);
+        vbe->DrawString(120,600,"Stop code : 0x",0xFFFFFFFF);
+        vbe->DrawString(220, 600, (const char*)itoa(interruptNumber, Buffer, 32), 0xFFFFFFFF);
+
+/*         switch (interruptNumber)
+            {
+            case 0x00:
+                vbe->DrawString(120+text2.getStringLength("Stop code : "),600,"Division Error",&text2,0xFFFFFFFF);break;
+            default:
+                break;
+        }  */
+
+        vbe->Flush();
+        wait(2000000);
+    // END OF BLUE SCREEN
+
+    while (1) {
+        asm volatile ("hlt");
+    }
+    
+    /* // Use a triple fault to restart the system (Not the best way, but for now this is good :) )
+    asm volatile (
+        "cli;"
+        "lidt (%0);"  // Load an invalid IDT
+        "int3;"       // Trigger an interrupt
+        ::"r"(0)
+    ); */
 
     return esp;
 }

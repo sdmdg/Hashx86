@@ -34,5 +34,29 @@ struct MultibootInfo {
     uint8_t color_info[6];
 };
 
+struct multiboot_module {
+    uint32_t mod_start; // Start address of the module
+    uint32_t mod_end;   // End address of the module
+    uint32_t cmdline;   // Command line string (if any)
+    uint32_t pad;       // Padding
+};
+
+typedef enum {
+    MULTIBOOT_MEMORY_AVAILABLE = 1,
+    MULTIBOOT_MEMORY_RESERVED,
+    MULTIBOOT_MEMORY_ACPI_RECLAIMABLE,
+    MULTIBOOT_MEMORY_NVS,
+    MULTIBOOT_MEMORY_BADRAM
+} MULTIBOOT_MEMORY_TYPE;
+
+typedef struct {
+    uint32_t size;
+    uint32_t addr_low;
+    uint32_t addr_high;
+    uint32_t len_low;
+    uint32_t len_high;
+    MULTIBOOT_MEMORY_TYPE type;
+} MULTIBOOT_MEMORY_MAP;
+
 
 #endif // MULTIBOOT_H

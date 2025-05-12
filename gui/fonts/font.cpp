@@ -26,6 +26,7 @@ uint8_t Font::getStringLength(const char* str) {
 }
 
 
+
 void Font::setSize(FontSize size)
 {
     this->fontSize = size;
