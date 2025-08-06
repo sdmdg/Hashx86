@@ -2,35 +2,37 @@
 #  @file        loader.s
 #  @brief       Main loader of #x86
 #  
-#  @author      Malaka Gunawardana
 #  @date        01/02/2025
 #  @version     1.0.0-beta
 #
 
+# Refer to https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Header-layout for more info.
+
 # ---------------------------------------------------------------------------------------------- #
-# Multiboot header (VBE VESA Graphics with 1024x768x32) NOTE : If you want to use VBE graphics,  #
+# Multiboot header (VBE VESA Graphics with 1152x864x32) NOTE : If you want to use VBE graphics,  #
 #                                                              uncomment this section            #
 # ---------------------------------------------------------------------------------------------- #
 .set ALIGN,    1 << 0						# align loaded modules on page boundaries            #
 .set MEMINFO,  1 << 1						# provide memory map                                 #
 .set VIDINFO,  1 << 2						# OS wants video mode set                            #
-                                                                                                 #
+#                                                                                                #
 .set FLAGS,    ALIGN | MEMINFO | VIDINFO	# this is the multiboot 'flag' field                 #
 .set MAGIC,    0x1BADB002					# 'magic number' lets bootloader find the header     #
 .set CHECKSUM, -(MAGIC + FLAGS)				# checksum required                                  #
-                                                                                                 #
+#                                                                                                #
 # NOTE :                                                                                         #
 #     *) Yes, I hard-coded the VESA Graphics config into this assembly file because I'm lazy.    #
 #     *) If future me wants to make this configurable, too bad.                                  #
 #                                                                              - Past me         #
 #                                                                                  :)            #
+#                                                                                                #
 .section .multiboot                                                                              #
     .long MAGIC                             # Store the magic number                             #
     .long FLAGS                             # Store the flags value                              #
     .long CHECKSUM                          # Store the checksum value                           #
     .long 0, 0, 0, 0, 0					    # This is load address stuff we don't care for       #
     .long 0									# Set graphics mode                                  #
-    .long 1024, 768, 32						# Width, height, depth                               #
+    .long 1152, 864, 32						# Width, height, depth                               #
 # ---------------------------------------------------------------------------------------------- #
 
 
@@ -60,7 +62,7 @@ loader:
     
     push %eax                 # Save the value of EAX register (for passing data)
     push %ebx                 # Save the value of EBX register (for passing data)
-    
+
     call kernelMain           # Call the kernel's main entry function
 
 # Infinite loop to halt the CPU if something goes wrong
@@ -71,6 +73,6 @@ _stop:
 
 # Define the BSS section where uninitialized data
 .section .bss
-.space 20*1024*1024;          # Allocate 20 MB of space for the kernel's stack
+.space 32*1024*1024;          # Allocate 8 MB of space for the kernel's stack
 
 kernel_stack:                 # Label for the start of the kernel stack

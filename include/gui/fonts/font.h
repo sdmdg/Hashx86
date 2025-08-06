@@ -31,8 +31,9 @@ public:
     uint8_t chrHeight = 0;
 
     virtual uint8_t getStringLength(const char* str);
-    void setType(FontType type); 
-    void setSize(FontSize size); 
+    void FormatString(const char* input, char* output, uint32_t maxWidth);
+    void setType(FontType type);
+    void setSize(FontSize size);
 private:
     virtual void update();
 };

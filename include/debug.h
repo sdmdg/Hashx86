@@ -10,6 +10,7 @@
 
 void initSerial();
 void SerialPrint(const char* str);
+void writeSerial(char c);
 
 /**
  * @brief Macro for logging debug messages with a consistent format.
@@ -32,7 +33,7 @@ void SerialPrint(const char* str);
  * @param format Format string for the message.
  * @param ... Additional arguments for the format string.
  */
-#define PRINT(tag, format, ...) DebugPrintf(tag, format, ##__VA_ARGS__)
+#define PRINT(tag, format, ...) Printf(tag, format, ##__VA_ARGS__)
 
 /**
  * @brief Prints debug messages with a specific tag and format.
@@ -50,6 +51,7 @@ void printf(const char* format, ...);
 // Simple Debug Wrapper Function
 void DebugPrintf(const char* tag, const char* format, ...);
 
-
+// Simple Printf Wrapper Function
+void Printf(const char* tag, const char* format, ...);
 
 #endif // DEBUG_H

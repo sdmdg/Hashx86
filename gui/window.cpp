@@ -8,16 +8,41 @@
 
 #include <gui/window.h>
 
-Window::Window(Widget* parent,
+Window::Window(CompositeWidget* parent,
             int32_t x, int32_t y, int32_t w, int32_t h)
 : CompositeWidget(parent, x,y,w,h)
 {
     Dragging = false;
     this->windowTitle = "Untitled";
+    this->font = new SegoeUI();
+
+    closeButton = new ACRButton(this, w - 22, 4, "x");
+    closeButton->OnClick(this, [](void* instance) {
+        static_cast<Window*>(instance)->OnClose();
+    });
+    
+    this->AddChild(closeButton);
 }
 
 Window::~Window()
 {
+    delete font;
+    delete closeButton;
+}
+
+void Window::update()
+{
+    // Clear the cache
+    memset(cache, 0, sizeof(uint32_t) * w * h);
+
+    isDirty = true;
+}
+
+
+void Window::OnClose()
+{
+    Event* new_event = new Event{this->ID, ON_WINDOW_CLOSE};
+    ProcessManager::activeInstance->getProcessByPID(this->PID)->eventQueue.Add(new_event);
 }
 
 void Window::Draw(GraphicsContext* gc)
@@ -27,26 +52,71 @@ void Window::Draw(GraphicsContext* gc)
     ModelToScreen(X,Y);
 
     // Draw window background
-    gc->FillRoundedRectangle(X, Y, w, h, 6, WINDOW_BACKGROUND_COLOR);
-
-    // Draw title bar
-    //gc->FillRoundedRectangle(X, Y, w, 25, 6, 0xFFFF2020);
-    gc->DrawBitmap(X + 4, Y + 2, (const uint32_t*)icon_main_20x20, 20, 20);
-    gc->DrawString(X + 28, Y + 8, this->windowTitle, this->font, WINDOW_TITLE_COLOR);
-
-    // Draw children (below title bar)
-    for (int i = numChildren - 1; i >= 0; --i) {
-        children[i]->Draw(gc);
+    ///gc->DrawRoundedRectangleShadow(X+10, Y+10, w-20, h-20, 36, 20, ((this == this->parent->children[0])? WINDOW_SHADOW_COLOR_FOCUSED : WINDOW_SHADOW_COLOR_NORMAL));
+    for (auto& child : childrenList) {
+        if (child->isDirty) {
+            this->isDirty = true;
+        }  
     }
+    
+    if(isDirty){
+        if (isVisible)
+        {
+            // Only redraw if dirty
+            RedrawToCache(); 
+            isDirty = false;
+        } else {
+            // Clear the cache
+            memset(cache, 0, sizeof(uint32_t) * w * h);
+        }
+    } 
+    
+    gc->DrawBitmap(X, Y, (const uint32_t*)cache, w, h);
+}
+
+void Window::RedrawToCache()
+{
+    // Draw self to cache
+    //DEBUG_LOG("Window %d: Updating", this->ID);
+    NINA::activeInstance->FillRoundedRectangle(cache, w, h, 0, 0, w, h, 6, WINDOW_BACKGROUND_COLOR);
+    
+    // Draw title bar
+    NINA::activeInstance->DrawBitmap(cache, w, h, 4, 2, (const uint32_t*)icon_main_20x20, 20, 20);
+    NINA::activeInstance->DrawString(cache, w, h, 28, 8, windowTitle, font, WINDOW_TITLE_COLOR);
+
+    // Draw children into this widget's cache
+    for (auto& child : childrenList) {
+        if (child->isDirty && child->isVisible) {
+            child->RedrawToCache();
+        }
+
+        NINA::activeInstance->DrawBitmapToBuffer(
+            cache, w, h,
+            child->x, child->y,
+            child->cache,
+            child->w, child->h
+        );
+    }
+
+    isDirty = false;
+}
+
+void Window::setVisible(bool val){
+    this->isVisible = val;
+    closeButton->isVisible = val;
+    
 }
 
 void Window::setWindowTitle(const char* title){
-    this->windowTitle = title;
+    delete[] this->windowTitle;
+    this->windowTitle = new char[strlen(title) + 1];
+    strcpy(this->windowTitle, title);
+    update();
 }
 
 void Window::OnMouseDown(int32_t x, int32_t y, uint8_t button)
 {
-    if (this->x < x & this->y < y & this->x + w > x & this->y + 25 > y){
+    if (this->x < x & this->y < y & this->x + w - 26 > x & this->y + 25 > y){
         Dragging = button == 1;
     }
     CompositeWidget::OnMouseDown(x,y,button);

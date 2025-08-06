@@ -2,7 +2,6 @@
 #define VBE_H
 
 #include <types.h>
-#include <core/interrupts.h>
 #include <core/ports.h>
 #include <core/driver.h>
 #include <gui/fonts/font.h>
@@ -21,16 +20,16 @@ class VESA_BIOS_Extensions
 {
 protected:
     /// Default screen resolution (VGA mode)
-    uint32_t VGA_SCREEN_WIDTH = 1024;
-    uint32_t VGA_SCREEN_HEIGHT = 768;
+    uint32_t VGA_SCREEN_WIDTH = 1152;
+    uint32_t VGA_SCREEN_HEIGHT = 864;
     uint8_t VGA_SCREEN_BPP; // Bits per pixel (BPP)
 
     /// Pointer to the raw framebuffer memory
     uint32_t* framebuffer;
 
     /// Maximum allowed screen dimensions
-    static constexpr int MAX_WIDTH = 1024;
-    static constexpr int MAX_HEIGHT = 768;
+    static constexpr int MAX_WIDTH = 1152;
+    static constexpr int MAX_HEIGHT = 864;
 
     /// Back buffer for off-screen rendering (avoids flickering)
     uint32_t backBuffer[MAX_WIDTH * MAX_HEIGHT];
@@ -44,6 +43,8 @@ protected:
     void PrecomputeAlphaTable();
 
 public:
+    SegoeUI* VBE_font = new SegoeUI();
+    
     /**
      * @brief Constructs a VESA BIOS Extensions instance using Multiboot information.
      * 
@@ -119,6 +120,13 @@ public:
      */
     void DrawRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t radius, uint32_t colorIndex);
 
+
+
+    
+    void DrawRoundedRectangleShadow(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t shadowSize, uint32_t shadowRadius, uint32_t shadowColor);
+ 
+
+
     /**
      * @brief Draws the outline of a circle.
      */
@@ -148,6 +156,11 @@ public:
      * @brief Draws a string of characters using a font.
      */
     void DrawString(int32_t x, int32_t y, const char* str, Font* font, uint32_t colorIndex);
+    
+    /**
+     * @brief Draws a string of characters without a font.
+     */
+    void DrawString(int32_t x, int32_t y, const char* str, uint32_t colorIndex);
 
     /**
      * @brief Applies a blur effect to a rounded rectangle.

@@ -4,7 +4,6 @@
 #include <types.h>
 #include <core/interrupts.h>
 #include <core/ports.h>
-#include <console.h>
 #include <core/driver.h>
 
 /**

@@ -2,37 +2,59 @@
 #define WIDGET_H
 
 #include <types.h>
+#include <utils/string.h>
 #include <gui/graphicscontext.h>
 #include <gui/fonts/font.h>
 #include <gui/fonts/segoeui.h>
 #include <gui/icons.h>
 #include <core/drivers/keyboard.h>
+#include <core/memory.h>
 #include <gui/config/config.h>
-
-const SegoeUI mainfont;
+#include <gui/renderer/nina.h>
+#include <debug.h>
+#include <utils/linkedList.h>
 
 class Widget : public KeyboardEventHandler
 {
+    friend class CompositeWidget;
 protected:
+
+    Font* font;
+
+    uint32_t colorIndex;
+    bool Focussable;
+
+    
+
+public:
+    Widget(Widget* parent,
+            int32_t x, int32_t y, int32_t w, int32_t h);
+    ~Widget();
+    LinkedList<Widget*> childrenList;
+
     Widget* parent;
     int32_t x;
     int32_t y;
     int32_t w;
     int32_t h;
-    Font* font  = (SegoeUI*) &mainfont;
- 
-    uint32_t colorIndex;
-    bool Focussable;
-    uint32_t GUI_SCREEN_WIDTH = 1024;
-    uint32_t GUI_SCREEN_HEIGHT = 768;
-
-public:
-
-    Widget(Widget* parent,
-            int32_t x, int32_t y, int32_t w, int32_t h);
-    ~Widget();
+    uint32_t* cache;
+    bool isDirty = true;
+    bool isVisible = true;
+    
+    uint32_t PID = 0;
+    uint32_t ID = 0;
+    virtual void MarkDirty();
+    virtual void RedrawToCache(); 
     
     virtual void GetFocus(Widget* widget);
+    virtual void SetFocussable(bool focussable);
+    virtual void SetPID(uint32_t PID);
+    virtual void SetID(uint32_t ID);
+    virtual Widget* FindWidgetByID(uint32_t searchID);
+    virtual Widget* FindWidgetByPID(uint32_t PID);
+    virtual bool AddChild(Widget* child);
+    virtual bool RemoveChild(Widget* child);
+
     virtual void ModelToScreen(int32_t &x, int32_t& y);
     virtual bool ContainsCoordinate(int32_t x, int32_t y);
     
@@ -46,18 +68,14 @@ public:
 class CompositeWidget : public Widget
 {
 private:
-
     Widget* focussedChild;
     
 public:
-    Widget* children[100];
-    int numChildren;
-    CompositeWidget(Widget* parent,
+    CompositeWidget(CompositeWidget* parent,
             int32_t x, int32_t y, int32_t w, int32_t h);
     ~CompositeWidget();            
     
     virtual void GetFocus(Widget* widget);
-    virtual bool AddChild(Widget* child);
     
     virtual void Draw(GraphicsContext* gc);
     virtual void OnMouseDown(int32_t x, int32_t y, uint8_t button);

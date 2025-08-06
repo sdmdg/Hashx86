@@ -37,13 +37,22 @@ private:
     SegmentDescriptor unusedSegmentSelector; ///< Reserved (not used)
     SegmentDescriptor codeSegmentSelector;   ///< Code segment descriptor
     SegmentDescriptor dataSegmentSelector;   ///< Data segment descriptor
+    SegmentDescriptor userCodeSegmentSelector; ///< User Code segment descriptor
+    SegmentDescriptor userDataSegmentSelector; ///< User Data segment descriptor
+    SegmentDescriptor tssSegmentSelector;
 
 public:
     GlobalDescriptorTable();
     ~GlobalDescriptorTable();
     void LoadGDT();
+    static GlobalDescriptorTable* activeInstance;
+
     uint16_t CodeSegmentSelector();          ///< Offset for the code segment
     uint16_t DataSegmentSelector();          ///< Offset for the data segment
+    uint16_t UserCodeSegmentSelector();      ///< Offset for the user code segment
+    uint16_t UserDataSegmentSelector();      ///< Offset for the user data segment
+    uint16_t TSSSegmentSelector();
+    
 };
 
 #endif // GDT_H

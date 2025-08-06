@@ -9,21 +9,61 @@
 #include <gui/label.h>
 
 Label::Label(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, const char* text)
-    : Widget(parent, x, y, w, h), text(text) {
-        this->y += 10;
-        this->w = this->font->getStringLength(text) + 10;
-        this->h = 6 + font->chrHeight;
-    }
-
-Label::~Label() {}
-
-void Label::SetText(const char* text) {
-    this->text = text;
+    : Widget(parent, x, y, w, h)
+{
+    this->y += 10;
+    this->font = new SegoeUI();
+    
+    //char* formattedText[512]; // Adjust size as needed
+    //font->FormatString(text, *formattedText, w);
+    //DEBUG_LOG(*formattedText);
+    this->text = new char[strlen(text) + 1];
+    strcpy(this->text, text);
 }
 
-void Label::Draw(GraphicsContext* gc) {
+Label::~Label()
+{
+    delete[] cache;
+    delete[] text;
+}
+
+void Label::update()
+{
+    // Clear the cache
+    memset(cache, 0, sizeof(uint32_t) * w * h);
+
+    isDirty = true;
+}
+
+void Label::setText(const char* text)
+{
+    delete[] this->text;
+    this->text = new char[strlen(text) + 1];
+    strcpy(this->text, text);
+    update();
+}
+
+void Label::setSize(FontSize size)
+{
+    this->font->setSize(size);
+    DEBUG_LOG("updating size %x", size);
+    update();
+}
+
+void Label::setType(FontType type)
+{
+/*     this->font->setType(type);
+    update(); */
+}
+
+void Label::RedrawToCache()
+{
+    NINA::activeInstance->DrawString(cache, w, h, 2, 2, text, font, LABEL_TEXT_COLOR_NORMAL);
+    isDirty = false;
+}
+
+
+void Label::Draw(GraphicsContext* gc)
+{
     Widget::Draw(gc);
-    int X = 0, Y = 0;
-    ModelToScreen(X, Y);
-    //gc->DrawString(X + 2, Y + 2, text, 0);
 }

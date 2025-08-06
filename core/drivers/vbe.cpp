@@ -8,16 +8,13 @@
 
 #include <core/drivers/vbe.h>
 
-/**
- * @brief Constructs a VESA BIOS Extensions (VBE) interface and initializes the framebuffer.
- * 
- * @param mbinfo Pointer to the Multiboot information structure containing framebuffer details.
- */
+
 VESA_BIOS_Extensions::VESA_BIOS_Extensions(MultibootInfo* mbinfo) 
 {
     // Check if the framebuffer information is available in the Multiboot structure
     if (mbinfo->flags & (1 << 12)) {
         this->framebuffer = (uint32_t*)mbinfo->framebuffer_addr; // Set framebuffer pointer
+        DEBUG_LOG("Frame Buffer : 0x%x", framebuffer);
         this->VGA_SCREEN_WIDTH = mbinfo->framebuffer_width;      // Set screen width
         this->VGA_SCREEN_HEIGHT = mbinfo->framebuffer_height;    // Set screen height
         this->VGA_SCREEN_BPP = mbinfo->framebuffer_bpp;          // Set bits per pixel (BPP)
@@ -29,15 +26,10 @@ VESA_BIOS_Extensions::VESA_BIOS_Extensions(MultibootInfo* mbinfo)
         PrecomputeAlphaTable();
 
         // Fill the entire screen with black (initial clearing)
-        this->FillRectangle(0, 0, VGA_SCREEN_WIDTH, VGA_SCREEN_HEIGHT, 0x0);
+        this->FillRectangle(0, 0, VGA_SCREEN_WIDTH, VGA_SCREEN_HEIGHT, 0xFF000000);
     }
 }
 
-/**
- * @brief Precomputes an alpha blending table for efficient per-pixel alpha blending.
- * 
- * The table stores precomputed values for blending color intensity based on alpha values.
- */
 void VESA_BIOS_Extensions::PrecomputeAlphaTable() {
     for (int c = 0; c < 256; c++) {
         for (int a = 0; a < 256; a++) {
@@ -46,31 +38,18 @@ void VESA_BIOS_Extensions::PrecomputeAlphaTable() {
     }
 }
 
-/**
- * @brief Destructor for the VESA_BIOS_Extensions class.
- */
+
 VESA_BIOS_Extensions::~VESA_BIOS_Extensions()
 {
 }
 
-/**
- * @brief Copies the contents of the back buffer to the framebuffer, updating the display.
- */
+
 void VESA_BIOS_Extensions::Flush()
 {
     memcpy(framebuffer, backBuffer, VGA_SCREEN_WIDTH * VGA_SCREEN_HEIGHT * sizeof(uint32_t));
 }
 
-/**
- * @brief Draws a pixel on the screen with individual alpha, red, green, and blue values.
- * 
- * @param x X-coordinate of the pixel.
- * @param y Y-coordinate of the pixel.
- * @param a Alpha (transparency) value (0-255).
- * @param r Red color component (0-255).
- * @param g Green color component (0-255).
- * @param b Blue color component (0-255).
- */
+
 void VESA_BIOS_Extensions::PutPixel(int32_t x, int32_t y, uint8_t a, uint8_t r, uint8_t g, uint8_t b)
 {
     // Combine ARGB values into a single 32-bit color index
@@ -80,13 +59,7 @@ void VESA_BIOS_Extensions::PutPixel(int32_t x, int32_t y, uint8_t a, uint8_t r, 
     this->PutPixel(x, y, colorIndex);
 }
 
-/**
- * @brief Draws a pixel on the screen with a 32-bit color value, applying alpha blending.
- * 
- * @param x X-coordinate of the pixel.
- * @param y Y-coordinate of the pixel.
- * @param colorIndex The 32-bit color value in ARGB format.
- */
+
 void VESA_BIOS_Extensions::PutPixel(int32_t x, int32_t y, uint32_t colorIndex)
 {
     // Bounds checking: Ensure the pixel coordinates are within the screen limits
@@ -127,118 +100,188 @@ void VESA_BIOS_Extensions::PutPixel(int32_t x, int32_t y, uint32_t colorIndex)
 }
 
 
-void VESA_BIOS_Extensions::DrawBitmap(int32_t x, int32_t y, const uint32_t* bitmapData, int32_t bitmapWidth, int32_t bitmapHeight)
-{
-    for (int32_t row = 0; row < bitmapHeight; ++row)
-    {
+void VESA_BIOS_Extensions::DrawBitmap(int32_t x, int32_t y, const uint32_t* bitmapData, int32_t bitmapWidth, int32_t bitmapHeight) {
+    // Clip top and bottom
+    int32_t startRow = 0;
+    int32_t endRow = bitmapHeight;
+    if (y < 0) startRow = -y;
+    if (y + bitmapHeight > VGA_SCREEN_HEIGHT) endRow = VGA_SCREEN_HEIGHT - y;
+
+    // Clip left and right
+    int32_t startCol = 0;
+    int32_t endCol = bitmapWidth;
+    if (x < 0) startCol = -x;
+    if (x + bitmapWidth > VGA_SCREEN_WIDTH) endCol = VGA_SCREEN_WIDTH - x;
+
+    for (int32_t row = startRow; row < endRow; ++row) {
         int32_t screenY = y + row;
-        if ((uint32_t)screenY >= (uint32_t)VGA_SCREEN_HEIGHT) continue;
+        const uint32_t* bmpPtr = &bitmapData[row * bitmapWidth];
+        uint32_t* rowDst = &backBuffer[screenY * VGA_SCREEN_WIDTH];
 
-        int32_t rowOffset = screenY * VGA_SCREEN_WIDTH + x;
-        int32_t bmpRowOffset = row * bitmapWidth;
-
-        for (int32_t col = 0; col < bitmapWidth; col += 4) // Process 4 pixels per iteration (loop unrolling)
-        {
+        for (int32_t col = startCol; col < endCol; ++col) {
             int32_t screenX = x + col;
-            if ((uint32_t)screenX >= (uint32_t)VGA_SCREEN_WIDTH) continue;
 
-            PutPixel(screenX, screenY, bitmapData[bmpRowOffset + col]);
-            if (screenX + 1 < VGA_SCREEN_WIDTH) PutPixel(screenX + 1, screenY, bitmapData[bmpRowOffset + col + 1]);
-            if (screenX + 2 < VGA_SCREEN_WIDTH) PutPixel(screenX + 2, screenY, bitmapData[bmpRowOffset + col + 2]);
-            if (screenX + 3 < VGA_SCREEN_WIDTH) PutPixel(screenX + 3, screenY, bitmapData[bmpRowOffset + col + 3]);
+            uint32_t srcColor = bmpPtr[col];
+            uint8_t alpha = (srcColor >> 24) & 0xFF;
+
+            if (alpha == 255) {
+                rowDst[screenX] = srcColor;
+            } else if (alpha > 0) {
+                uint32_t dstColor = rowDst[screenX];
+                uint32_t invAlpha = 255 - alpha;
+
+                uint8_t srcRed   = (srcColor >> 16) & 0xFF;
+                uint8_t srcGreen = (srcColor >> 8)  & 0xFF;
+                uint8_t srcBlue  =  srcColor        & 0xFF;
+
+                uint8_t dstRed   = (dstColor >> 16) & 0xFF;
+                uint8_t dstGreen = (dstColor >> 8)  & 0xFF;
+                uint8_t dstBlue  =  dstColor        & 0xFF;
+
+                uint8_t blendedRed   = alphaTable[alpha][srcRed] + alphaTable[invAlpha][dstRed];
+                uint8_t blendedGreen = alphaTable[alpha][srcGreen] + alphaTable[invAlpha][dstGreen];
+                uint8_t blendedBlue  = alphaTable[alpha][srcBlue] + alphaTable[invAlpha][dstBlue];
+
+                rowDst[screenX] = (blendedRed << 16) | (blendedGreen << 8) | blendedBlue;
+            }
         }
     }
 }
 
 
-void VESA_BIOS_Extensions::FillRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t colorIndex)
-{
-    // Clip negative x, y values
+void VESA_BIOS_Extensions::FillRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t colorIndex) {
+    // Clip boundaries
     int32_t startX = (x < 0) ? 0 : x;
     int32_t startY = (y < 0) ? 0 : y;
-
-    int32_t endX = x + w;
-    int32_t endY = y + h;
-
-    // Clip width and height to screen bounds
-    if (endX > VGA_SCREEN_WIDTH) endX = VGA_SCREEN_WIDTH;
-    if (endY > VGA_SCREEN_HEIGHT) endY = VGA_SCREEN_HEIGHT;
-
+    int32_t endX = (x + w > VGA_SCREEN_WIDTH) ? VGA_SCREEN_WIDTH : x + w;
+    int32_t endY = (y + h > VGA_SCREEN_HEIGHT) ? VGA_SCREEN_HEIGHT : y + h;
+    
     for (int32_t Y = startY; Y < endY; Y++) {
         for (int32_t X = startX; X < endX; X++) {
-            PutPixel(X, Y, colorIndex);
+            backBuffer[Y * VGA_SCREEN_WIDTH + X] = colorIndex;
         }
     }
 }
 
-
 void VESA_BIOS_Extensions::DrawRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t colorIndex) {
-    // Draw top and bottom horizontal lines
-    for (int32_t X = x; X < x + w; X++) {
-        PutPixel(X, y, colorIndex);          // Top line
-        PutPixel(X, y + h - 1, colorIndex);  // Bottom line
+    // Clip boundaries
+    int32_t startX = (x < 0) ? 0 : x;
+    int32_t startY = (y < 0) ? 0 : y;
+    int32_t endX = (x + w > VGA_SCREEN_WIDTH) ? VGA_SCREEN_WIDTH : x + w;
+    int32_t endY = (y + h > VGA_SCREEN_HEIGHT) ? VGA_SCREEN_HEIGHT : y + h;
+    
+    // Draw top and bottom lines
+    for (int32_t X = startX; X < endX; X++) {
+        backBuffer[startY * VGA_SCREEN_WIDTH + X] = colorIndex;
+        backBuffer[(endY - 1) * VGA_SCREEN_WIDTH + X] = colorIndex;
     }
-
-    // Draw left and right vertical lines
-    for (int32_t Y = y; Y < y + h; Y++) {
-        PutPixel(x, Y, colorIndex);          // Left line
-        PutPixel(x + w - 1, Y, colorIndex);  // Right line
+    // Draw left and right lines
+    for (int32_t Y = startY; Y < endY; Y++) {
+        backBuffer[Y * VGA_SCREEN_WIDTH + startX] = colorIndex;
+        backBuffer[Y * VGA_SCREEN_WIDTH + (endX - 1)] = colorIndex;
     }
 }
 
 void VESA_BIOS_Extensions::FillRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t radius, uint32_t colorIndex) {
-    // Draw the central rectangle (excluding the rounded corners)
     FillRectangle(x + radius, y, w - 2 * radius, h, colorIndex);
     FillRectangle(x, y + radius, w, h - 2 * radius, colorIndex);
 
-    // Draw the rounded corners using more precise quarter-circle logic
     for (int32_t dy = 0; dy <= radius; ++dy) {
         for (int32_t dx = 0; dx <= radius; ++dx) {
             if ((dx * dx + dy * dy) <= (radius * radius)) {
-                // Top-left corner
-                PutPixel(x + radius - dx, y + radius - dy, colorIndex);
-                // Top-right corner
-                PutPixel(x + w - radius + dx - 1, y + radius - dy, colorIndex);
-                // Bottom-left corner
-                PutPixel(x + radius - dx, y + h - radius + dy - 1, colorIndex);
-                // Bottom-right corner
-                PutPixel(x + w - radius + dx - 1, y + h - radius + dy - 1, colorIndex);
+                int32_t tlX = x + radius - dx;
+                int32_t tlY = y + radius - dy;
+                int32_t trX = x + w - radius + dx - 1;
+                int32_t brY = y + h - radius + dy - 1;
+                
+                if (tlX >= 0 && tlY >= 0) backBuffer[tlY * VGA_SCREEN_WIDTH + tlX] = colorIndex;
+                if (trX < VGA_SCREEN_WIDTH && tlY >= 0) backBuffer[tlY * VGA_SCREEN_WIDTH + trX] = colorIndex;
+                if (tlX >= 0 && brY < VGA_SCREEN_HEIGHT) backBuffer[brY * VGA_SCREEN_WIDTH + tlX] = colorIndex;
+                if (trX < VGA_SCREEN_WIDTH && brY < VGA_SCREEN_HEIGHT) backBuffer[brY * VGA_SCREEN_WIDTH + trX] = colorIndex;
             }
         }
     }
 }
 
 void VESA_BIOS_Extensions::DrawRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t radius, uint32_t colorIndex) {
-    // Draw horizontal lines (excluding rounded corners)
     for (int32_t i = x + radius; i < x + w - radius; ++i) {
-        PutPixel(i, y, colorIndex);           // Top edge
-        PutPixel(i, y + h - 1, colorIndex);     // Bottom edge
+        if (i >= 0 && i < VGA_SCREEN_WIDTH) {
+            if (y >= 0 && y < VGA_SCREEN_HEIGHT) backBuffer[y * VGA_SCREEN_WIDTH + i] = colorIndex;
+            if (y + h - 1 >= 0 && y + h - 1 < VGA_SCREEN_HEIGHT) backBuffer[(y + h - 1) * VGA_SCREEN_WIDTH + i] = colorIndex;
+        }
     }
     
-    // Draw vertical lines (excluding rounded corners)
     for (int32_t i = y + radius; i < y + h - radius; ++i) {
-        PutPixel(x, i, colorIndex);           // Left edge
-        PutPixel(x + w - 1, i, colorIndex);     // Right edge
+        if (i >= 0 && i < VGA_SCREEN_HEIGHT) {
+            if (x >= 0 && x < VGA_SCREEN_WIDTH) backBuffer[i * VGA_SCREEN_WIDTH + x] = colorIndex;
+            if (x + w - 1 >= 0 && x + w - 1 < VGA_SCREEN_WIDTH) backBuffer[i * VGA_SCREEN_WIDTH + (x + w - 1)] = colorIndex;
+        }
     }
     
-    // Draw the rounded corners using a narrow band to outline the quarter-circles
     for (int32_t dy = 0; dy <= static_cast<int32_t>(radius); ++dy) {
         for (int32_t dx = 0; dx <= static_cast<int32_t>(radius); ++dx) {
             int32_t d2 = dx * dx + dy * dy;
-            // Check if the pixel lies on the border of the circle
             if (d2 >= static_cast<int32_t>((radius - 1) * (radius - 1)) && d2 <= static_cast<int32_t>(radius * radius)) {
-                // Top-left corner
-                PutPixel(x + radius - dx, y + radius - dy, colorIndex);
-                // Top-right corner
-                PutPixel(x + w - radius + dx - 1, y + radius - dy, colorIndex);
-                // Bottom-left corner
-                PutPixel(x + radius - dx, y + h - radius + dy - 1, colorIndex);
-                // Bottom-right corner
-                PutPixel(x + w - radius + dx - 1, y + h - radius + dy - 1, colorIndex);
+                int32_t tlX = x + radius - dx;
+                int32_t tlY = y + radius - dy;
+                int32_t trX = x + w - radius + dx - 1;
+                int32_t brY = y + h - radius + dy - 1;
+                
+                if (tlX >= 0 && tlY >= 0) backBuffer[tlY * VGA_SCREEN_WIDTH + tlX] = colorIndex;
+                if (trX < VGA_SCREEN_WIDTH && tlY >= 0) backBuffer[tlY * VGA_SCREEN_WIDTH + trX] = colorIndex;
+                if (tlX >= 0 && brY < VGA_SCREEN_HEIGHT) backBuffer[brY * VGA_SCREEN_WIDTH + tlX] = colorIndex;
+                if (trX < VGA_SCREEN_WIDTH && brY < VGA_SCREEN_HEIGHT) backBuffer[brY * VGA_SCREEN_WIDTH + trX] = colorIndex;
             }
         }
     }
 }
+
+
+void VESA_BIOS_Extensions::DrawRoundedRectangleShadow(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t shadowSize, uint32_t shadowRadius, uint32_t shadowColor) {
+    int32_t startX = x - shadowSize;
+    int32_t startY = y - shadowSize;
+    int32_t endX = x + w + shadowSize;
+    int32_t endY = y + h + shadowSize;
+
+    uint8_t shadowAlpha = (shadowColor >> 24) & 0xFF;
+    uint8_t shadowRed = (shadowColor >> 16) & 0xFF;
+    uint8_t shadowGreen = (shadowColor >> 8) & 0xFF;
+    uint8_t shadowBlue = shadowColor & 0xFF;
+
+    for (int32_t Y = startY; Y < endY; ++Y) {
+        if (Y < 0 || Y >= VGA_SCREEN_HEIGHT) continue;
+        uint32_t* pixelPtr = &backBuffer[Y * VGA_SCREEN_WIDTH + startX];
+
+        for (int32_t X = startX; X < endX; ++X) {
+            if (X < 0 || X >= VGA_SCREEN_WIDTH) continue;
+
+            int32_t dx = 0, dy = 0;
+            if (X < x) dx = x - X;
+            else if (X >= x + w) dx = X - (x + w - 1);
+            if (Y < y) dy = y - Y;
+            else if (Y >= y + h) dy = Y - (y + h - 1);
+
+            int32_t distanceSquared = dx * dx + dy * dy;
+            if (distanceSquared <= (shadowRadius * shadowRadius)) {
+                uint8_t alpha = alphaTable[shadowAlpha][255 - (distanceSquared * 255) / (shadowRadius * shadowRadius)];
+                uint32_t dstColor = *pixelPtr;
+                uint32_t invAlpha = 255 - alpha;
+
+                uint8_t dstRed = (dstColor >> 16) & 0xFF;
+                uint8_t dstGreen = (dstColor >> 8) & 0xFF;
+                uint8_t dstBlue = dstColor & 0xFF;
+
+                uint8_t blendedRed = alphaTable[alpha][shadowRed] + alphaTable[invAlpha][dstRed];
+                uint8_t blendedGreen = alphaTable[alpha][shadowGreen] + alphaTable[invAlpha][dstGreen];
+                uint8_t blendedBlue = alphaTable[alpha][shadowBlue] + alphaTable[invAlpha][dstBlue];
+
+                *pixelPtr = (blendedRed << 16) | (blendedGreen << 8) | blendedBlue;
+            }
+            pixelPtr++;
+        }
+    }
+}
+
 
 
 void VESA_BIOS_Extensions::BlurRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t radius, uint32_t blurRadius) {
@@ -445,11 +488,27 @@ void VESA_BIOS_Extensions::DrawString(int32_t x, int32_t y, const char* str, Fon
         } else {
             DrawCharacter(cursorX, y, *str, font, colorIndex);
             cursorX += 36 + chrAdvanceX - (font->font_36x36_config[*str - 32][0] + font->font_36x36_config[*str - 32][1]);
-
         }
 
         ++str;
     }
 }
 
+void VESA_BIOS_Extensions::DrawString(int32_t x, int32_t y, const char* str, uint32_t colorIndex) {
+    int32_t cursorX = x;
+    int8_t chrAdvanceX = VBE_font->chrAdvanceX;
+    int8_t chrAdvanceY = VBE_font->chrAdvanceY;
 
+    // Iterate through the string and draw each character
+    while (*str) {
+        if (*str == '\n') { // Handle newline characters
+            y += 20;        // Move to the next line
+            cursorX = x;    // Reset to the starting x position
+        } else {
+            DrawCharacter(cursorX, y, *str, VBE_font, colorIndex);
+            cursorX += 36 + chrAdvanceX - (VBE_font->font_36x36_config[*str - 32][0] + VBE_font->font_36x36_config[*str - 32][1]);
+        }
+
+        ++str;
+    }
+}

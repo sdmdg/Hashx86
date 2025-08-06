@@ -8,31 +8,24 @@
 
 #include <core/gdt.h>
 
-/**
- * Constructor for GlobalDescriptorTable.
- * 
- * Initializes the GDT with a null segment, an unused segment, a code segment,
- * and a data segment.
- */
+GlobalDescriptorTable* GlobalDescriptorTable::activeInstance = nullptr;
+
 GlobalDescriptorTable::GlobalDescriptorTable()
     : nullSegmentSelector(0, 0, 0),                     // Null descriptor
       unusedSegmentSelector(0, 0, 0),                   // Reserved descriptor
-      codeSegmentSelector(0, 64 * 1024 * 1024, 0x9A),   // Code segment: execute/read
-      dataSegmentSelector(0, 64 * 1024 * 1024, 0x92)    // Data segment: read/write
+      codeSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0x9A),   // Code segment: execute/read
+      dataSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0x92),    // Data segment: read/write
+      userCodeSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0xFA),   // Code segment: execute/read
+      userDataSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0xF2)    // Data segment: read/write
+      tssSegmentSelector()
 {
-    LoadGDT();
-}
-
-/**
- * Loads the GDT using the `lgdt` instruction.
- */
-void GlobalDescriptorTable::LoadGDT(){
+    activeInstance = this;
     uint32_t gdt_descriptor[2];
     gdt_descriptor[1] = (uint32_t)this;                 // Base address of GDT
     gdt_descriptor[0] = sizeof(GlobalDescriptorTable) << 16; // Limit (size - 1)
 
     // Load the GDT and set the segment registers
-    asm volatile(
+    /* asm volatile(
         "lgdt %0\n"                // Load GDT
         "mov %2, %%ds\n"           // Set Data Segment Register
         "mov %2, %%es\n"           // Set Extra Segment Register
@@ -44,47 +37,44 @@ void GlobalDescriptorTable::LoadGDT(){
         "retf\n"                   // Far return to update CS
         "1:\n"                     // Target of far return
         :
-        : "m"(*(((uint8_t *)gdt_descriptor) + 2)),  // Pass GDT descriptor
+        : "m"(*(((uint8_t *)gdt_descriptor) + 2)),      // Pass GDT descriptor
           "r"(CodeSegmentSelector()), 
           "r"(DataSegmentSelector())
         : "memory"
-    );
+    ); */
+
+    asm volatile("lgdt (%0)": :"p" (((uint8_t*)gdt_descriptor) + 2));
 }
 
 
-/**
- * Destructor for GlobalDescriptorTable.
- */
 GlobalDescriptorTable::~GlobalDescriptorTable() {
 }
 
-/**
- * Retrieves the offset for the data segment.
- * 
- * @return Offset from the start of the GDT to the data segment descriptor.
- */
-uint16_t GlobalDescriptorTable::DataSegmentSelector() {
-    return (uint8_t *)&dataSegmentSelector - (uint8_t *)this;
-}
 
-/**
- * Retrieves the offset for the code segment.
- * 
- * @return Offset from the start of the GDT to the code segment descriptor.
- */
 uint16_t GlobalDescriptorTable::CodeSegmentSelector() {
     return (uint8_t *)&codeSegmentSelector - (uint8_t *)this;
 }
 
-/**
- * Constructor for SegmentDescriptor.
- * 
- * Initializes a GDT segment descriptor with the specified base, limit and type.
- * 
- * @param base Base address of the segment.
- * @param limit Size of the segment.
- * @param type Segment type and attributes.
- */
+
+uint16_t GlobalDescriptorTable::DataSegmentSelector() {
+    return (uint8_t *)&dataSegmentSelector - (uint8_t *)this;
+}
+
+
+uint16_t GlobalDescriptorTable::UserCodeSegmentSelector() {
+    return (uint8_t *)&userCodeSegmentSelector - (uint8_t *)this;
+}
+
+
+uint16_t GlobalDescriptorTable::UserDataSegmentSelector() {
+    return (uint8_t *)&userDataSegmentSelector - (uint8_t *)this;
+}
+
+uint16_t GlobalDescriptorTable::TSSSegmentSelector() {
+    return (uint8_t *)&tssSegmentSelector - (uint8_t *)this;
+}
+
+
 GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t type) {
     uint8_t *target = (uint8_t *)this;
 
@@ -114,11 +104,7 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
     target[5] = type;
 }
 
-/**
- * Retrieves the base address of the segment.
- * 
- * @return 32-bit base address of the segment.
- */
+
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
     uint8_t *target = (uint8_t *)this;
     uint32_t result = target[7];
@@ -128,11 +114,7 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
     return result;
 }
 
-/**
- * Retrieves the limit of the segment.
- * 
- * @return 32-bit limit of the segment.
- */
+
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit() {
     uint8_t *target = (uint8_t *)this;
     uint32_t result = target[6] & 0xF;
