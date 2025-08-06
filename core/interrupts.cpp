@@ -47,13 +47,13 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
-InterruptManager::InterruptManager(GlobalDescriptorTable* gdt, ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager)
+InterruptManager::InterruptManager(ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager)
 : picMasterCommand(0x20),
   picMasterData(0x21),
   picSlaveCommand(0xA0),
   picSlaveData(0xA1)
 {
-    uint16_t CodeSegment = gdt->CodeSegmentSelector();
+    uint16_t CodeSegment = KERNEL_CODE_SELECTOR;
     this->processManager = processManager;
     this->vbe = vbe;
     this->pager = pager;

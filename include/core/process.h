@@ -2,7 +2,6 @@
 #define PROCESS_H
 
 #include <types.h>
-#include <core/gdt.h>
 #include <debug.h>
 #include <core/paging.h>
 #include <core/memory.h>
@@ -29,7 +28,6 @@ friend class ProcessManager;
 private:
     uint32_t pid;
     Paging* pager;
-    GlobalDescriptorTable* gdt;
     LinkedList<Thread*> threadsList;
     uint32_t tidCounter = 0;
     
@@ -37,7 +35,7 @@ public:
     uint32_t process_page_directory[1024] __attribute__((aligned(4096)));
     PROCESS_TYPE type = KERNEL;
     
-    Process(GlobalDescriptorTable *gdt, Paging* pager, void (*entrypoint)(void*), void* arg);
+    Process(Paging* pager, void (*entrypoint)(void*), void* arg);
     uint32_t AddThread(void (*entrypoint)(void*), void* arg);
     Thread* ScheduleThread();
     Thread* getCurrentThread();

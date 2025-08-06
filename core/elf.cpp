@@ -1,7 +1,6 @@
 #include <core/elf.h>
 
-ELFLoader::ELFLoader(GlobalDescriptorTable *gdt, Paging* pager, ProcessManager* pManager){
-    this->gdt = gdt;
+ELFLoader::ELFLoader(Paging* pager, ProcessManager* pManager){
     this->pager = pager;
     this->pManager = pManager;
 };
@@ -22,7 +21,7 @@ Process* ELFLoader::loadModule(uint32_t mod_start, uint32_t mod_end, void* args)
         return nullptr; // Returning a valid default value
     }
 
-    Process* pELF = new Process(gdt, pager, (void (*)(void*))header->entry, args);
+    Process* pELF = new Process(pager, (void (*)(void*))header->entry, args);
 
     // Load ELF program headers
     ph = (struct elf_program_header*) (((char*) mod_start) + header->ph_offset);

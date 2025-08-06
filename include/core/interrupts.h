@@ -4,7 +4,7 @@
 #include <core/globals.h>
 #include <types.h>
 #include <core/ports.h>
-#include <core/gdt.h>
+#include <core/gdt2.h>
 #include <core/paging.h>
 #include <core/drivers/vbe.h>
 #include <core/process.h>
@@ -177,7 +177,7 @@ public:
      * 
      * @param gdt, processManager, vbe Pointers to GlobalDescriptorTable, ProcessManager and VESA_BIOS_Extensions
      */
-    InterruptManager(GlobalDescriptorTable* gdt, ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager);
+    InterruptManager(ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager);
 
     /**
      * @brief Destructor for the InterruptManager class.

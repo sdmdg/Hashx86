@@ -12,7 +12,8 @@ objects = asm/loader.o \
 		  stdlib.o \
 		  debug.o \
           kernel.o \
-          core/gdt.o \
+		  core/gdt2.o \
+		  core/tss.o \
           core/ports.o \
 		  core/interrupts.o \
 		  core/syscalls.o \

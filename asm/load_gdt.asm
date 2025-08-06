@@ -20,5 +20,3 @@ load_gdt:
     jmp 0x08:far_jump   ; jump to far with code data segment
 far_jump:
     ret
-
-

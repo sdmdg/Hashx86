@@ -95,12 +95,11 @@ struct ProgramArguments {
 class ELFLoader
 {
 private:
-    GlobalDescriptorTable *gdt;
     Paging* pager;
     ProcessManager* pManager;
     
 public:
-    ELFLoader(GlobalDescriptorTable *gdt, Paging* pager, ProcessManager* pManager);
+    ELFLoader(Paging* pager, ProcessManager* pManager);
     ~ELFLoader();
     Process* loadModule(uint32_t mod_start, uint32_t mod_end, void* args);
     void startModule(Process* pELF);

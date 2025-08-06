@@ -77,6 +77,11 @@ HandleInterruptRequest 0x81
 
 # Common exception handling
 exc_common_handler:
+    pushl %gs
+    pushl %fs
+    pushl %es
+    pushl %ds 
+
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -97,11 +102,22 @@ exc_common_handler:
     popl %esi
     popl %edi
     popl %ebp
+
+    popl %ds
+    popl %es
+    popl %fs
+    popl %gs
+
     add $4, %esp
     iret
 
 # Common interrupt handling
 intr_common_handler:
+    pushl %gs
+    pushl %fs
+    pushl %es
+    pushl %ds 
+
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -122,6 +138,12 @@ intr_common_handler:
     popl %esi
     popl %edi
     popl %ebp
+
+    popl %ds
+    popl %es
+    popl %fs
+    popl %gs
+
     add $4, %esp
     iret
 

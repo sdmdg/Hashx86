@@ -1,13 +1,17 @@
-/**
- * Global Descriptor Table(GDT) setup
- */
-
 #ifndef GDT_H2
 #define GDT_H2
 
-#include "types.h"
+#include <types.h>
 
 #define NO_GDT_DESCRIPTORS     8
+
+// GDT Selectors (index * 8)
+#define NULL_SELECTOR        0x00   // 0 * 8
+#define KERNEL_CODE_SELECTOR 0x08   // 1 * 8
+#define KERNEL_DATA_SELECTOR 0x10   // 2 * 8
+#define USER_CODE_SELECTOR   0x18   // 3 * 8
+#define USER_DATA_SELECTOR   0x20   // 4 * 8
+#define TSS_SELECTOR         0x28   // 5 * 8
 
 typedef struct {
     uint16_t segment_limit;  // segment limit first 0-15 bits
@@ -26,9 +30,6 @@ typedef struct {
 // asm gdt functions
 extern "C" void load_gdt(uint32_t gdt_ptr);
 
-/**
- * fill entries of GDT 
- */
 void gdt_set_entry(int index, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
 
 // initialize GDT

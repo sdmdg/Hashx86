@@ -17,6 +17,7 @@ GlobalDescriptorTable::GlobalDescriptorTable()
       dataSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0x92),    // Data segment: read/write
       userCodeSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0xFA),   // Code segment: execute/read
       userDataSegmentSelector(0, 1 * 1024 * 1024 * 1024, 0xF2)    // Data segment: read/write
+      tssSegmentSelector()
 {
     activeInstance = this;
     uint32_t gdt_descriptor[2];
@@ -67,6 +68,10 @@ uint16_t GlobalDescriptorTable::UserCodeSegmentSelector() {
 
 uint16_t GlobalDescriptorTable::UserDataSegmentSelector() {
     return (uint8_t *)&userDataSegmentSelector - (uint8_t *)this;
+}
+
+uint16_t GlobalDescriptorTable::TSSSegmentSelector() {
+    return (uint8_t *)&tssSegmentSelector - (uint8_t *)this;
 }
 
 

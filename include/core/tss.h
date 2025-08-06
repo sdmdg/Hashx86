@@ -33,8 +33,7 @@ typedef struct {
     uint16_t iomap_base;
 } __attribute__((packed)) TSS;
 
-// asm tss functions
-extern void load_tss();
+
 
 void tss_init();
 

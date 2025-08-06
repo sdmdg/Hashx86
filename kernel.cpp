@@ -206,8 +206,9 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     #ifdef DEBUG_ENABLED
         DEBUG_LOG("Initializing Hardware");
     #endif
-    GlobalDescriptorTable gdt;
-    //gdt_init();
+
+    gdt_init();
+    tss_init();
 
     // Initialize PMM and Kheap with 100MB offset
     init_memory(mbinfo);
@@ -221,10 +222,10 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     ProcessManager pManager(&paging);
     VESA_BIOS_Extensions* vbe = new VESA_BIOS_Extensions(mbinfo);
     NINA nina;
-    InterruptManager interrupts(&gdt, &pManager, vbe, &paging);
+    InterruptManager interrupts(&pManager, vbe, &paging);
     DriverManager driverManager;
     SyscallHandler sysCalls(0x80, &interrupts);
-    ELFLoader elfLoader(&gdt, &paging, &pManager);
+    ELFLoader elfLoader(&paging, &pManager);
 
     // VESA Graphics
     #ifdef VBE_ENABLED
@@ -252,7 +253,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
 
 
         DesktopArgs desktopArgs { vbe, &desktop };
-        Process* process1 = new Process(&gdt, &paging, pDesktop, &desktopArgs);
+        Process* process1 = new Process(&paging, pDesktop, &desktopArgs);
         pManager.mapKernel(process1);
         pManager.AddProcess(process1);
 

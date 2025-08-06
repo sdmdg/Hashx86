@@ -1,12 +1,12 @@
 #include <core/process.h>
+#include <core/tss.h>
 
 ProcessManager* ProcessManager::activeInstance = nullptr;
 
-Process::Process(GlobalDescriptorTable *gdt, Paging* pager, void (*entrypoint)(void*), void* arg)
+Process::Process(Paging* pager, void (*entrypoint)(void*), void* arg)
 {
     this->pager = pager;
     this->pid = ProcessManager::activeInstance ? ProcessManager::activeInstance->generatePID() : 0;
-    this->gdt = gdt;
 
     // Initialize main thread
     AddThread(entrypoint, arg);
@@ -20,7 +20,7 @@ uint32_t Process::AddThread(void (*entrypoint)(void*), void* arg)
     if (threadsList.GetSize() >= MAX_THREADS)
         return -1; // Error: No available thread slots
 
-    Thread* tmp = new Thread(this, this->gdt, entrypoint, arg);
+    Thread* tmp = new Thread(this, entrypoint, arg);
     tmp->tid = generateTID();
 
     threadsList.PushBack(tmp);
@@ -36,6 +36,7 @@ Thread* Process::ScheduleThread()
         
     Thread* currentThread = threadsList.PopFront();
     threadsList.PushBack(currentThread);
+
     //DEBUG_LOG("Scheduling TID : %d, in PID : %d", currentThread->getTID(), this->pid);
     return threadsList.GetFront();
 }
@@ -91,7 +92,7 @@ void ProcessManager::mapKernel(Process* process)
 
 void ProcessManager::makeKernel(Process* process)
 {
-    process->threadsList.GetFront()->cpustate->cs = GlobalDescriptorTable::activeInstance->CodeSegmentSelector();
+    //process->threadsList.GetFront()->cpustate->cs = KERNEL_CODE_SELECTOR;
     process->type = KERNEL;
 }
 
@@ -140,6 +141,7 @@ CPUState* ProcessManager::Schedule(CPUState* cpustate)
     
     // Schedule thread from the new process
     if(Thread* nextThread = currentProcess->ScheduleThread()) {
+        tss_set_stack((uint32_t)(&nextThread->kernelStack + sizeof(nextThread->kernelStack)));
         return nextThread->cpustate;
     }
     
