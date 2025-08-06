@@ -92,5 +92,5 @@ This project is licensed under the MIT License. See `LICENSE` for more details.
 
 ## 👤 Author
 
-Hashx86 is developed and maintained by **Malaka**.  
+Hashx86 is developed and maintained by **[Malaka](https://github.com/sdmdg)**.  
 Built with ❤️ for learning and having fun with bare-metal programming.
