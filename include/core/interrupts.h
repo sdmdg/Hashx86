@@ -4,13 +4,14 @@
 #include <core/globals.h>
 #include <types.h>
 #include <core/ports.h>
-#include <core/gdt2.h>
+#include <core/gdt.h>
 #include <core/paging.h>
 #include <core/drivers/vbe.h>
 #include <core/process.h>
 #include <debug.h>
 #include <gui/icons.h>
 #include <core/timing.h>
+#include <utils/string.h>
 
 /**
  * @brief Forward declaration of the InterruptManager class.

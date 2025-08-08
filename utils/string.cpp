@@ -54,27 +54,27 @@ char lower(char c) {
 void itoa(char *buf, int base, int d) {
     char *p = buf;
     char *p1, *p2;
-    unsigned long ud = d;
-    int divisor = 10;
+    unsigned int ud = (unsigned int)d;
+    int divisor = base;
+    int is_negative = 0;
 
-    /* If %d is specified and D is minus, put ‘-’ in the head. */
-    if (base == 'd' && d < 0) {
-        *p++ = '-';
-        buf++;
+    if (base == 10 && d < 0) {
+        is_negative = 1;
         ud = -d;
-    } else if (base == 'x')
-        divisor = 16;
+    }
 
-    /* Divide UD by DIVISOR until UD == 0. */
+    // Generate digits in reverse order
     do {
         int remainder = ud % divisor;
-        *p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
+        *p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
     } while (ud /= divisor);
 
-    /* Terminate BUF. */
+    if (is_negative)
+        *p++ = '-';
+
     *p = 0;
 
-    /* Reverse BUF. */
+    // Reverse the string
     p1 = buf;
     p2 = p - 1;
     while (p1 < p2) {
@@ -85,3 +85,4 @@ void itoa(char *buf, int base, int d) {
         p2--;
     }
 }
+

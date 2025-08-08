@@ -11,17 +11,15 @@ Thread::Thread(Process* parent, void (*entrypoint)(void*), void* arg)
     // Set up stack
     uint32_t* stackTop = (uint32_t*)(stack + sizeof(stack));
     *(--stackTop) = (uint32_t)arg;
+
     cpustate->eax = cpustate->ebx = cpustate->ecx = cpustate->edx = 0;
     cpustate->esi = cpustate->edi = cpustate->ebp = 0;
 
     cpustate->eip = (uint32_t)entrypoint;
-    cpustate->cs = KERNEL_CODE_SELECTOR;
+    cpustate->cs = 0x08;
     cpustate->eflags = 0x202;
     cpustate->esp = (uint32_t)stackTop;
     cpustate->ebp = (uint32_t)stackTop;
 }
 
-Thread::~Thread() 
-{
-
-}
+Thread::~Thread() {}

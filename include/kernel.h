@@ -5,7 +5,7 @@
 #include <debug.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <core/gdt2.h>
+#include <core/gdt.h>
 #include <core/tss.h>
 #include <core/interrupts.h>
 #include <core/syscalls.h>
