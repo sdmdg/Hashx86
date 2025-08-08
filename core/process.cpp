@@ -141,7 +141,7 @@ CPUState* ProcessManager::Schedule(CPUState* cpustate)
     
     // Schedule thread from the new process
     if(Thread* nextThread = currentProcess->ScheduleThread()) {
-        tss_set_stack((uint32_t)(&nextThread->kernelStack + sizeof(nextThread->kernelStack)));
+        //tss_set_stack((uint32_t)(&nextThread->kernelStack + sizeof(nextThread->kernelStack)));
         return nextThread->cpustate;
     }
     

@@ -1,7 +1,4 @@
-#include "core/tss.h"
-#include "core/gdt2.h"
-#include "utils/string.h"
-#include "console.h"
+#include <core/tss.h>
 
 TSS g_tss;
 

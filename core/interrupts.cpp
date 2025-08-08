@@ -222,31 +222,83 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     DEBUG_LOG("EIP: 0x%x, CS: 0x%x, EFLAGS: 0x%x", state->eip, state->cs, state->eflags);
 
 
-    // BLUE SCREEN
-        vbe->FillRectangle(0,0,1152, 864, 0x0055C6);
+    // PANIC
+        vbe->FillRectangle(0,0,1152, 864, 0x0);
         vbe->DrawBitmap(100,200,(const uint32_t*)icon_blue_screen_face_200x200,200,200);
         vbe->VBE_font->setSize(XLARGE);
         vbe->DrawString(120,400,"Your PC ran into a problem and needs to restart.\n\nWe'll restart it for you.",0xFFFFFFFF);
         vbe->VBE_font->setSize(MEDIUM);
         vbe->DrawString(120,600,"Stop code : 0x",0xFFFFFFFF);
-        vbe->DrawString(220, 600, (const char*)itoa(interruptNumber, Buffer, 32), 0xFFFFFFFF);
+        itoa(Buffer, 16, interruptNumber);
+        vbe->DrawString(220, 600, (const char*)Buffer, 0xFFFFFFFF);
 
-/*         switch (interruptNumber)
-            {
-            case 0x00:
-                vbe->DrawString(120+text2.getStringLength("Stop code : "),600,"Division Error",&text2,0xFFFFFFFF);break;
+        const char* massage;
+        switch (interruptNumber)
+        {
+            case 0x00: massage = "Division By Zero"; break;
+            case 0x01: massage = "Debug Exception"; break;
+            case 0x02: massage = "Non-Maskable Interrupt"; break;
+            case 0x03: massage = "Breakpoint Exception"; break;
+            case 0x04: massage = "Overflow Exception"; break;
+            case 0x05: massage = "BOUND Range Exceeded"; break;
+            case 0x06: massage = "Invalid Opcode"; break;
+            case 0x07: massage = "Device Not Available"; break;
+            case 0x08: massage = "Double Fault"; break;
+            case 0x09: massage = "Coprocessor Segment Overrun"; break;
+            case 0x0A: massage = "Invalid TSS"; break;
+            case 0x0B: massage = "Segment Not Present"; break;
+            case 0x0C: massage = "Stack Segment Fault"; break;
+            case 0x0D: massage = "General Protection Fault"; break;
+            case 0x0E: massage = "Page Fault"; break;
+            case 0x0F: massage = "Reserved (0x0F)"; break;
+            case 0x10: massage = "x87 FPU Error"; break;
+            case 0x11: massage = "Alignment Check"; break;
+            case 0x12: massage = "Machine Check"; break;
+            case 0x13: massage = "SIMD Floating Point Exception"; break;
+            case 0x14: massage = "Virtualization Exception"; break;
+            case 0x15: massage = "Control Protection Exception"; break;
+            case 0x16: massage = "Reserved (0x16)"; break;
+            case 0x17: massage = "Reserved (0x17)"; break;
+            case 0x18: massage = "Reserved (0x18)"; break;
+            case 0x19: massage = "Reserved (0x19)"; break;
+            case 0x1A: massage = "Reserved (0x1A)"; break;
+            case 0x1B: massage = "Reserved (0x1B)"; break;
+            case 0x1C: massage = "Reserved (0x1C)"; break;
+            case 0x1D: massage = "Reserved (0x1D)"; break;
+            case 0x1E: massage = "Security Exception"; break;
+            case 0x1F: massage = "Reserved (0x1F)"; break;
             default:
                 break;
-        }  */
+        }
+        vbe->DrawString(120, 620, massage, 0xFFFFFFFF);
 
         vbe->Flush();
-        wait(2000000);
-    // END OF BLUE SCREEN
+        wait(2000);
+    // END OF PANIC
 
+    Port8Bit keyboard_command_port(0x64);
+    Port8Bit keyboard_data_port(0x60);
+
+
+    DEBUG_LOG("Attempting system reboot...\n");
+
+    // Disable interrupts to prevent interference during the reset sequence
+    asm volatile("cli");
+
+    // Wait for the keyboard controller to be ready (input buffer empty)
+    // Bit 1 (0x2) of status register (port 0x64) indicates input buffer status.
+    // Loop while input buffer is full.
+    while ((keyboard_command_port.Read() & 0x02) != 0);
+
+    // Send the "CPU reset" command (0xFE) to the keyboard controller
+    keyboard_command_port.Write(0xFE);
+
+    // If the reset doesn't happen immediately, halt the CPU
+    // This loop ensures the system doesn't continue if the reset fails for some reason.
     while (1) {
-        asm volatile ("hlt");
+        asm volatile("hlt");
     }
-    
+
     /* // Use a triple fault to restart the system (Not the best way, but for now this is good :) )
     asm volatile (
         "cli;"

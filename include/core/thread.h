@@ -2,7 +2,7 @@
 #define THREAD_H
 
 #include <types.h>
-#include <core/gdt2.h>
+#include <core/gdt.h>
 #include <debug.h>
 #include <core/memory.h>
 
@@ -10,7 +10,7 @@ struct CPUState
 {
     uint32_t eax, ebx, ecx, edx;
     uint32_t esi, edi, ebp;
-    uint32_t ds, es, fs, gs;
+    //uint32_t ds, es, fs, gs;
     uint32_t error, eip, cs, eflags, esp, ss;
 } __attribute__((packed));
 

@@ -8,7 +8,7 @@
 
 #include <kernel.h>
 
-#define VBE_ENABLED false;
+#define VBE_ENABLED true;
 #define DEBUG_ENABLED true;
 
 KERNEL_MEMORY_MAP g_kmap;
@@ -93,11 +93,11 @@ void init_memory(MultibootInfo* mbinfo) {
     #endif
 
 
-    // Initialize PMM (From 100MB to end)
+    // Initialize PMM
     uint32_t offset = 25600 * PMM_BLOCK_SIZE;
-    pmm_init(0 + offset, g_kmap.available.end_addr - offset);
+    pmm_init(g_kmap.available.start_addr, g_kmap.available.end_addr);
     // Mark available memory regions as free
-    pmm_init_region(0 + offset, g_kmap.available.end_addr - offset);
+    pmm_init_region(g_kmap.available.start_addr, g_kmap.available.end_addr);
     DEBUG_LOG("Max blocks: %d\n\n", pmm_get_max_blocks());
     
     // Allocate heap (100MB)
@@ -116,7 +116,7 @@ void pDesktop(void* arg) {
     DesktopArgs* args = (DesktopArgs*)arg;
 
     #ifdef DEBUG_ENABLED
-    DEBUG_LOG("GUI task started");
+        DEBUG_LOG("GUI task started");
         if (!args) {
             DEBUG_LOG("Error: args is null");
         return;
@@ -146,28 +146,6 @@ void pDesktop(void* arg) {
 
 
 
-    Window* win2 = new Window(desktop, 150,300,400,500);
-    win2->setWindowTitle("Welcome !");
-
-    button1 = new Button(win2, 10, 120, 110, 25, "Click Me");
-    win2->AddChild(button1);
-
-    crashButton = new Button(win2, 200, 120, 110, 25, "Crash Me");
-    win2->AddChild(crashButton);
-
-
-
-    Window* win3 = new Window(desktop, 150,300,400,500);
-    win3->setWindowTitle("Welcome !");
-
-    button1 = new Button(win3, 10, 120, 110, 25, "Click Me");
-    win3->AddChild(button1);
-
-    crashButton = new Button(win3, 200, 120, 110, 25, "Crash Me");
-    win3->AddChild(crashButton);
-
-
-
     Window* win4 = new Window(desktop, 150,300,400,500);
     win4->setWindowTitle("Welcome !");
 
@@ -180,11 +158,9 @@ void pDesktop(void* arg) {
 
 
     desktop->AddChild(win1);
-    desktop->AddChild(win2);
-    desktop->AddChild(win3);
     desktop->AddChild(win4); */
 
-
+    //uint8_t a = 0/0;
 
     while (1) {
         desktop->Draw(vbe);
@@ -208,9 +184,9 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     #endif
 
     gdt_init();
-    tss_init();
+    //tss_init();
 
-    // Initialize PMM and Kheap with 100MB offset
+    // Initialize PMM and Kheap
     init_memory(mbinfo);
 
     #ifdef DEBUG_ENABLED
@@ -349,70 +325,3 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     desktop.AddChild(&win1); */
 
 } 
-
-
-
-/* 
-
-void ConsoleKeyboardEventHandler::OnKeyDown(const char* key){
-    printf(WHITE, "%s", key);
-}
-void ConsoleKeyboardEventHandler::OnKeyUp(const char* key){
-}
-void ConsoleKeyboardEventHandler::OnSpecialKeyDown(uint8_t key){
-    switch (key) {
-        default:
-            printf(RED, "Unhandled extended keyDown: 0x%x\n", key);
-            break;
-    }
-}
-void ConsoleKeyboardEventHandler::OnSpecialKeyUp(uint8_t key){
-    switch (key) {
-        default:
-            printf(RED, "Unhandled extended keyUp: 0x%x\n", key);
-            break;
-    }
-}
-
-void ConsoleMouseEventHandler::OnMouseMove(int dx, int dy) {
-    static uint16_t* VideoMemory = (uint16_t*)0xb8000;
-
-    int x,y;
-    x += dx;
-    y -= dy; // Invert Y-axis to match screen coordinates
-
-    // Clamp cursor position within screen bounds
-    x = (x < 0) ? 0 : (x >= 80 ? 79 : x);
-    y = (y < 0) ? 0 : (y >= 25 ? 24 : y);
-
-
-    VideoMemory[80*y+x] = (VideoMemory[80*y+x] & 0x0F00) << 4
-                        | (VideoMemory[80*y+x] & 0xF000) >> 4
-                        | (VideoMemory[80*y+x] & 0x00FF);
-
-    VideoMemory[80*Y+X] = (VideoMemory[80*Y+X] & 0x0F00) << 4
-                        | (VideoMemory[80*Y+X] & 0xF000) >> 4
-                        | (VideoMemory[80*Y+X] & 0x00FF);
-    // Update the cursor position
-    X = x;
-    Y = y;
-}
-
-void ConsoleMouseEventHandler::OnLeftMouseDown(int dx, int dy) {
-    printf(WHITE, "Left mouse button pressed at (%d, %d)\n", X, Y);
-}
-
-void ConsoleMouseEventHandler::OnLeftMouseUp(int dx, int dy) {
-    printf(WHITE, "Left mouse button released at (%d, %d)\n", X, Y);
-}
-
-void ConsoleMouseEventHandler::OnRightMouseDown(int dx, int dy) {
-    printf(WHITE, "Right mouse button pressed at (%d, %d)\n", X, Y);
-}
-
-void ConsoleMouseEventHandler::OnRightMouseUp(int dx, int dy) {
-    printf(WHITE, "Right mouse button released at (%d, %d)\n", X, Y);
-}
-
-
- */

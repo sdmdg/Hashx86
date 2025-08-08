@@ -1,7 +1,10 @@
 #ifndef TSS_H
 #define TSS_H
 
-#include "types.h"
+#include <types.h>
+#include <core/gdt.h>
+#include <utils/string.h>
+#include <console.h>
 
 typedef struct {
     uint32_t previous;
