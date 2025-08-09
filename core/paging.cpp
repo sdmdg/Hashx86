@@ -39,12 +39,12 @@ void Paging::Activate() {
 // Deactivate paging
 void Paging::Deactivate() {
     asm volatile (
-        "cli \n"                  // Disable interrupts
-        "mov %%cr0, %%eax \n"
-        "and $0x7FFFFFFF, %%eax \n" // Clear PG bit (bit 31)
-        "mov %%eax, %%cr0 \n"
-        "jmp 1f \n"                // Flush TLB
-        "1: mov %%cr3, %%eax \n"
+        "cli \n"                   // Disable interrupts
+        "mov %%cr0, %%eax \n"      // Load CR0 into EAX
+        "and $0x7FFFFFFF, %%eax \n"// Clear PG bit (bit 31) to disable paging
+        "mov %%eax, %%cr0 \n"      // Write back to CR0
+        "jmp 1f \n"                // Pipeline flush trick
+        "1: mov %%cr3, %%eax \n"   // Reload CR3 to flush TLB
         "mov %%eax, %%cr3 \n"
         "sti \n"                   // Re-enable interrupts
         :

@@ -214,7 +214,10 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     CPUState* state = (CPUState*)esp;
     Deactivate();
     this->pager->switch_page_directory(this->pager->KernelPageDirectory);
-    
+    this->pager->Deactivate();
+    uint32_t faulting_addr;
+    asm volatile("mov %%cr2, %0" : "=r"(faulting_addr));
+    DEBUG_LOG("Page fault at address: 0x%x", faulting_addr);
 
     
     // Print exception details
@@ -272,16 +275,43 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
         }
         vbe->DrawString(120, 620, massage, 0xFFFFFFFF);
 
+
+        // Show register dump
+        int x = 450;
+        int y = 540;
+        vbe->DrawString(x, y, "Registers:", 0xFFFFFFFF);
+        y += 20;
+
+        auto print_reg = [&](const char* name, uint32_t value) {
+            char buf[32];
+            vbe->DrawString(x, y, name, 0xFFFFFFFF);
+            vbe->DrawString(x+60, y, "0x", 0xFFFFFFFF);
+            itoa(buf, 16, value);
+            vbe->DrawString(x+77, y, buf, 0xFFFFFFFF);
+            y += 20;
+        };
+
+        print_reg("EAX", state->eax);
+        print_reg("EBX", state->ebx);
+        print_reg("ECX", state->ecx);
+        print_reg("EDX", state->edx);
+        print_reg("ESI", state->esi);
+        print_reg("EDI", state->edi);
+        print_reg("EBP", state->ebp);
+        print_reg("ESP", state->esp);
+        print_reg("EIP", state->eip);
+        print_reg("CS",  state->cs);
+        print_reg("SS",  state->ss);
+        print_reg("EFLAGS", state->eflags);
+
         vbe->Flush();
-        wait(2000);
+        wait(10000);
     // END OF PANIC
 
-    Port8Bit keyboard_command_port(0x64);
-    Port8Bit keyboard_data_port(0x60);
-
-
     DEBUG_LOG("Attempting system reboot...\n");
-
+    
+    Port8Bit keyboard_command_port(0x64);
+    
     // Disable interrupts to prevent interference during the reset sequence
     asm volatile("cli");
 
@@ -293,19 +323,10 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     // Send the "CPU reset" command (0xFE) to the keyboard controller
     keyboard_command_port.Write(0xFE);
 
-    // If the reset doesn't happen immediately, halt the CPU
-    // This loop ensures the system doesn't continue if the reset fails for some reason.
+    // Halt the CPU
     while (1) {
         asm volatile("hlt");
     }
-
-    /* // Use a triple fault to restart the system (Not the best way, but for now this is good :) )
-    asm volatile (
-        "cli;"
-        "lidt (%0);"  // Load an invalid IDT
-        "int3;"       // Trigger an interrupt
-        ::"r"(0)
-    ); */
 
     return esp;
 }
