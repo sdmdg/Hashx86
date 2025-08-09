@@ -1,4 +1,10 @@
+
 # Hashx86 Operating System
+
+<p align="center">
+  <img width="500" height="500" alt="Image" src="https://github.com/user-attachments/assets/e7a30385-11d8-454c-9654-6f251f28f610" />
+</p>
+
 
 **Status**: 🚧 This project is currently under development.
 
@@ -32,7 +38,7 @@ This project focuses on low-level system development, implementing core operatin
 - 📺 **GUI Framework at 1152×864 (32-bit VESA)**  
   Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
 
-  https://github.com/user-attachments/assets/b4d59fac-6c18-4394-ab95-c3f524193a17
+  [https://github.com/user-attachments/assets/b4d59fac-6c18-4394-ab95-c3f524193a17](https://github.com/user-attachments/assets/ff96ca5a-c5ab-4181-aa6d-81f8be0c2080)
 
 - 🧪 **Early GUI (VGA Mode 320×200)**  
   Initial implementation of the graphical interface using legacy VGA mode.
