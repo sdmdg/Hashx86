@@ -84,6 +84,11 @@ run:
 	make iso
 	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
 
+update:
+	make
+	make iso
+	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
+
 runvb: kernel.iso
 	(killall VirtualBox && sleep 1) || true
 	VirtualBox --startvm 'My Operating System' &
@@ -96,7 +101,7 @@ iso: kernel.bin
 	cp kernel.bin iso/boot/kernel.bin
 	cp fonts/8.png iso/boot/font/8.png
 	cp user_prog/test/prog.bin iso/boot/prog.bin
-#	cp user_prog/test/prog1.bin iso/boot/prog1.bin
+	cp user_prog/MeMView/prog.bin iso/boot/MeMView.bin
 	echo 'set timeout=0'                      > iso/boot/grub/grub.cfg
 	echo 'set default=0'                     >> iso/boot/grub/grub.cfg
 #	echo 'set gfxmode=1152x864x32'         >> iso/boot/grub/grub.cfg
@@ -107,7 +112,7 @@ iso: kernel.bin
 	echo '  multiboot /boot/kernel.bin'      >> iso/boot/grub/grub.cfg
 	echo '  module /boot/font/8.png'      >> iso/boot/grub/grub.cfg
 	echo '  module /boot/prog.bin'      >> iso/boot/grub/grub.cfg
-#	echo '  module /boot/prog1.bin'      >> iso/boot/grub/grub.cfg
+	echo '  module /boot/MeMView.bin'      >> iso/boot/grub/grub.cfg
 	echo '  boot'      >> iso/boot/grub/grub.cfg
 	echo '}'                                 >> iso/boot/grub/grub.cfg
 	grub-mkrescue --output=kernel.iso --modules="video gfxterm video_bochs video_cirrus" iso
