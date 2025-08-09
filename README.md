@@ -12,14 +12,17 @@ Simple yet effective, Hashx86 focuses on core features without unnecessary compl
 
 This project focuses on low-level system development, implementing core operating system functionalities such as:
 
-- Direct video memory manipulation (Supports VGA-Text and VGA-Graphics modes)
-- High-resolution graphics rendering via **VESA**
-- Hardware interaction via custom drivers
-- ELF binary loading and execution
-- System call interface
+- Interrupt Service Routines (ISRs)
+- Physical Memory Management (PMM)
+- Dynamic Kernel Heap (KHeap)
+- Direct video memory manipulation (supports both VGA Text and VGA Graphics modes)
+- High-resolution graphics rendering via VESA
+- Hardware interaction through custom drivers
 - Paging
+- ELF binary loading and execution
+- System call interface for custom binaries
 - Multitasking with process and thread management
-- Basic event handling through custom ISRs (Interrupt Service Routines)
+- Basic event handling
 - Widget-based GUI framework
 
 ---
@@ -57,13 +60,20 @@ Learn to build your own digital world from the ground up!
 
 Hashx86 is currently under active development. Upcoming improvements include:
 
-- GUI performance enhancements using draw caching
-- Expanded system call set
+- GUI performance optimization using draw caching
+- Desktop taskbar implementation with smooth animations
+- Support for dynamic resolution switching
+- Expanded system call library
 - Thread-safe process management
-- Filesystem support
-- TSS
+- Networking support
+- HDD driver implementation
+- FAT32 filesystem support
+- Task State Segment (TSS) integration
+- DMA / PCI driver framework
+- Audio driver support
+- USB driver support
 
-Stay tuned for future updates!
+**Stay tuned for future updates!**
 
 ---
 
@@ -78,8 +88,7 @@ Stay tuned for future updates!
 ```bash
 git clone https://github.com/sdmdg/Hashx86.git
 cd hashx86
-make iso        # Build ISO image
-make run        # Run in QEMU
+make run        # Build ISO image and run in QEMU
 ```
 
 ---
