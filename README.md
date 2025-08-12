@@ -109,3 +109,15 @@ This project is licensed under the MIT License. See `LICENSE` for more details.
 
 Hashx86 is developed and maintained by **[Malaka](https://github.com/sdmdg)**.  
 Built with ❤️ for learning and having fun with bare-metal programming.
+
+---
+
+## ❤️ Special Thanks
+
+This project wouldn’t have been possible without the help, guidance and inspiration from:
+
+- **[Viktor Engelmann](https://www.youtube.com/watch?v=1rnA6wpF0o4&list=PLHh55M_Kq4OApWScZyPl5HhgsTJS9MZ6M)** – *Write your own Operating System* YouTube series  
+- **[OSDev.org](https://wiki.osdev.org/Main_Page)** – Incredible community and resources for OS development  
+- **[lowlevel.eu](https://lowlevel.eu)** – Excellent tutorials on low-level programming  
+
+---
