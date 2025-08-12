@@ -38,7 +38,7 @@ This project focuses on low-level system development, implementing core operatin
 - 📺 **GUI Framework at 1152×864 (32-bit VESA)**  
   Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
 
-  [https://github.com/user-attachments/assets/b4d59fac-6c18-4394-ab95-c3f524193a17](https://github.com/user-attachments/assets/ff96ca5a-c5ab-4181-aa6d-81f8be0c2080)
+  https://github.com/user-attachments/assets/b311645f-1579-457b-8377-fcf03f9cf0b6
 
 - 🧪 **Early GUI (VGA Mode 320×200)**  
   Initial implementation of the graphical interface using legacy VGA mode.
