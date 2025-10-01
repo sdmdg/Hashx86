@@ -3,9 +3,10 @@
 
 #include <gui/widget.h>
 #include <core/drivers/mouse.h>
+#include <core/drivers/keyboard.h>
 #include <gui/images/wallpaper.h>
 
-class Desktop : public CompositeWidget, public MouseEventHandler
+class Desktop : public CompositeWidget, public MouseEventHandler,  public KeyboardEventHandler
 {
 protected:
     uint32_t MouseX;
@@ -23,7 +24,12 @@ public:
     
     void OnMouseDown(uint8_t button);
     void OnMouseUp(uint8_t button);
-    void OnMouseMove(int32_t dx, int32_t dy) ;
+    void OnMouseMove(int32_t dx, int32_t dy);
+
+    void OnKeyDown(const char* key);
+    void OnSpecialKeyDown(uint8_t key);
+    void OnKeyUp(const char* key);
+    void OnSpecialKeyUp(uint8_t key);
 };
 
 struct DesktopArgs {

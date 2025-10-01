@@ -11,8 +11,7 @@
 Label::Label(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, const char* text)
     : Widget(parent, x, y, w, h)
 {
-    this->y += 10;
-    this->font = new SegoeUI();
+    this->font = FontManager::activeInstance->getNewFont();
     
     //char* formattedText[512]; // Adjust size as needed
     //font->FormatString(text, *formattedText, w);
@@ -58,6 +57,7 @@ void Label::setType(FontType type)
 
 void Label::RedrawToCache()
 {
+    //DEBUG_LOG("Widget %d: Updating", this->ID);
     NINA::activeInstance->DrawString(cache, w, h, 2, 2, text, font, LABEL_TEXT_COLOR_NORMAL);
     isDirty = false;
 }

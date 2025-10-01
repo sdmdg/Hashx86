@@ -14,7 +14,7 @@ Window::Window(CompositeWidget* parent,
 {
     Dragging = false;
     this->windowTitle = "Untitled";
-    this->font = new SegoeUI();
+    this->font = FontManager::activeInstance->getNewFont();
 
     closeButton = new ACRButton(this, w - 22, 4, "x");
     closeButton->OnClick(this, [](void* instance) {
@@ -77,12 +77,12 @@ void Window::Draw(GraphicsContext* gc)
 void Window::RedrawToCache()
 {
     // Draw self to cache
-    //DEBUG_LOG("Window %d: Updating", this->ID);
+    //DEBUG_LOG("Widget %d: Updating", this->ID);
     NINA::activeInstance->FillRoundedRectangle(cache, w, h, 0, 0, w, h, 6, WINDOW_BACKGROUND_COLOR);
     
     // Draw title bar
     NINA::activeInstance->DrawBitmap(cache, w, h, 4, 2, (const uint32_t*)icon_main_20x20, 20, 20);
-    NINA::activeInstance->DrawString(cache, w, h, 28, 8, windowTitle, font, WINDOW_TITLE_COLOR);
+    NINA::activeInstance->DrawString(cache, w, h, 28, 3, windowTitle, font, WINDOW_TITLE_COLOR);
 
     // Draw children into this widget's cache
     for (auto& child : childrenList) {

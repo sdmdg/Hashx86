@@ -9,13 +9,8 @@
 #include <gui/elements/window_action_button.h>
 
 ACButton::ACButton(Widget* parent, int32_t x, int32_t y, const char* label)
-    : Button(parent, x, y,
-             2 * 4 + (new SegoeUI())->getStringLength(label),
-             2 * 4 + (new SegoeUI())->chrHeight,
-             label)
+    : Button(parent, x, y, w, h, label)
 {
-    this->paddingX = 4;
-    this->paddingY = 4;
 }
 
 ACButton::~ACButton()

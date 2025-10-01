@@ -11,7 +11,7 @@
 Desktop* Desktop::activeInstance = nullptr;
 
 Desktop::Desktop(int32_t w, int32_t h)
-    : CompositeWidget(0, 0, 0, w, h), MouseEventHandler()
+    : CompositeWidget(0, 0, 0, w, h), MouseEventHandler(), KeyboardEventHandler()
 {
     MouseX = w / 2;
     MouseY = h / 2;
@@ -79,3 +79,24 @@ void Desktop::OnMouseMove(int32_t dx, int32_t dy)
 
     CompositeWidget::OnMouseMove(MouseX - dx, MouseY - dy, MouseX, MouseY);
 }
+
+
+void Desktop::OnKeyDown(const char* key)
+{
+    CompositeWidget::OnKeyDown(key);
+};
+void Desktop::OnKeyUp(const char* key)
+{
+    CompositeWidget::OnKeyUp(key);
+};
+
+
+void Desktop::OnSpecialKeyDown(uint8_t key)
+{
+    
+    DEBUG_LOG("Key Pressed 0x%x", key);
+};
+void Desktop::OnSpecialKeyUp(uint8_t key)
+{
+    DEBUG_LOG("Key Pressed 0x%x", key);
+};

@@ -24,8 +24,6 @@ public:
 protected:
     char* label;
     bool isPressed;
-    uint8_t paddingX;
-    uint8_t paddingY;
 };
 
 #endif // BUTTON_H

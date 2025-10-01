@@ -94,20 +94,38 @@ void init_memory(MultibootInfo* mbinfo) {
 
 
     // Initialize PMM
-    uint32_t offset = 25600 * PMM_BLOCK_SIZE;
-    pmm_init(g_kmap.available.start_addr, g_kmap.available.end_addr);
+    uint32_t heap_start_addr = g_kmap.available.start_addr;
+
+    // Reserve space for kernel
+    heap_start_addr = g_kmap.kernel.data_end_addr;
+
+    struct multiboot_module* modules = (struct multiboot_module*)mbinfo->mods_addr;
+
+    // If have modules
+    for (int mod_idx = 0; mod_idx < mbinfo->mods_count; mod_idx++) {
+        uint32_t mod_start = modules[mod_idx].mod_start;
+        uint32_t mod_end = modules[mod_idx].mod_end;
+        
+        if (mod_end > heap_start_addr) {
+            heap_start_addr = mod_end; // skip past modules
+        }
+    }
+
+    // Now initialize PMM from safe start
+    pmm_init(heap_start_addr, g_kmap.available.end_addr);
+
     // Mark available memory regions as free
-    pmm_init_region(g_kmap.available.start_addr, g_kmap.available.end_addr);
+    pmm_init_region(heap_start_addr, g_kmap.available.end_addr);
     DEBUG_LOG("Max blocks: %d\n\n", pmm_get_max_blocks());
     
     // Allocate heap (100MB)
-    void* heap_start = pmm_alloc_blocks(25600);
+    void* heap_start = pmm_alloc_blocks(50600);
     if (heap_start == NULL) {
         DEBUG_LOG("Failed to allocate kernel heap!");
     }
 
-    void* heap_end = (void*)((uint32_t)heap_start + (25600 * PMM_BLOCK_SIZE));
-    DEBUG_LOG("Kernel Heap: 0x%x - 0x%x\n", heap_start, heap_end);
+    size_t heap_size = 50600 * PMM_BLOCK_SIZE;
+    void* heap_end = (void*)((uint32_t)heap_start + heap_size);
     kheap_init(heap_start, heap_end);
     //MemoryManager memoryManager((uint32_t)heap_start, (void*)((uint32_t)heap_end-(uint32_t)heap_start));
 }
@@ -133,9 +151,15 @@ void pDesktop(void* arg) {
 
     VESA_BIOS_Extensions* vbe = args->vbe;
     Desktop* desktop = args->desktop;
-    
 
 /*     Window* win1 = new Window(desktop, 150,300,400,500);
+    InputBox* input = new InputBox(win1, 10, 120, 110, 25, 20);
+    win1->setWindowTitle("Welcome !");
+    win1->AddChild(input);
+    desktop->AddChild(win1); */
+    
+
+/*  Window* win1 = new Window(desktop, 150,300,400,500);
     win1->setWindowTitle("Welcome !");
 
     Button* button1 = new Button(win1, 10, 120, 110, 25, "Click Me");
@@ -163,8 +187,11 @@ void pDesktop(void* arg) {
     //uint8_t a = 0/0;
 
     while (1) {
+        //uint32_t start = timerTicks;
         desktop->Draw(vbe);
         vbe->Flush();
+        //uint32_t end = timerTicks;
+        //DEBUG_LOG("Taken : %d ms", (end-start));
     }
 }
 
@@ -202,27 +229,19 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     DriverManager driverManager;
     SyscallHandler sysCalls(0x80, &interrupts);
     ELFLoader elfLoader(&paging, &pManager);
+    FontManager fManager;
 
     // VESA Graphics
     #ifdef VBE_ENABLED
         vbe->DrawBitmap(476, 250, (const uint32_t*)icon_main_200x200, 200, 200);
-        SegoeUI* BOOT = new SegoeUI();
-        BOOT->setSize(XLARGE);
-        vbe->DrawString(((1152 - BOOT->getStringLength("Hash x86")) / 2),550,"Hash x86", BOOT, 0xFFFFFFFF);
-        vbe->Flush();
-
-        wait(500);
-
         Desktop desktop(1152, 864);
         HguiHandler guiCalls(0x81, &interrupts);
         
         MouseDriver mouse(&interrupts, &desktop);
         driverManager.AddDriver(&mouse);
         
-
-
-/*         KeyboardDriver keyboard(&interrupts, &desktop);
-        driverManager.AddDriver(&keyboard); */
+        KeyboardDriver keyboard(&interrupts, &desktop);
+        driverManager.AddDriver(&keyboard);
 /* 
         PeripheralComponentInterconnectController PCIcontroller;
         PCIcontroller.SelectDrivers(&driverManager, &interrupts); */
@@ -233,11 +252,12 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         pManager.mapKernel(process1);
         pManager.AddProcess(process1);
 
-
         ProgramArguments ProcessArgs { "ARG1", "ARG2" , "ARG3" , "ARG4", "ARG5"};
         if (mbinfo->mods_count > 0) {
             DEBUG_LOG("Found %d Modules", mbinfo->mods_count);
             struct multiboot_module* modules = (struct multiboot_module*)mbinfo->mods_addr;
+
+            fManager.LoadFile(modules[0].mod_start, modules[0].mod_end); // load font file
 
             for (uint32_t mod_idx = 1; mod_idx < mbinfo->mods_count; mod_idx++) { // Bypass 1st mod
                 uint32_t mod_start = modules[mod_idx].mod_start;
@@ -252,6 +272,14 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         }
 
     #endif
+
+    
+    Font* BOOT = fManager.getNewFont();
+    BOOT->setSize(XLARGE);
+    vbe->DrawString((1152 - BOOT->getStringLength("Hash x86"))/2 ,550,"Hash x86", BOOT, 0xFFFFFFFF);
+    vbe->Flush();
+
+    wait(500);
 
 
     DEBUG_LOG("Welcome to #x86!\n");

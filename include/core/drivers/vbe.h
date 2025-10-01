@@ -5,7 +5,6 @@
 #include <core/ports.h>
 #include <core/driver.h>
 #include <gui/fonts/font.h>
-#include <gui/fonts/segoeui.h>
 #include <gui/icons.h>
 #include <core/multiboot.h>
 #include <core/memory.h>
@@ -43,7 +42,7 @@ protected:
     void PrecomputeAlphaTable();
 
 public:
-    SegoeUI* VBE_font = new SegoeUI();
+    Font* VBE_font;
     
     /**
      * @brief Constructs a VESA BIOS Extensions instance using Multiboot information.

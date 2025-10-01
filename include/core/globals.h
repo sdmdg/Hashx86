@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 extern char Buffer[32];
-extern uint32_t timerTicks;
+extern uint64_t timerTicks;
 
 #endif // GLOBALS_H

@@ -11,12 +11,7 @@
 Button::Button(Widget* parent, int32_t x, int32_t y, uint32_t w, uint32_t h, const char* label)
     : Widget(parent, x, y, w, h), isPressed(false)
     {
-
-    this->font = new SegoeUI();
-    this->paddingX = 6;
-    this->paddingY = 5;
-/*     this->w = 2 * paddingX + this->font->getStringLength(label);
-    this->h = 2 * paddingY + this->font->chrHeight; */
+    this->font = FontManager::activeInstance->getNewFont();
     this->label = new char[strlen(label) + 1];
     strcpy(this->label, label);
 
@@ -46,8 +41,8 @@ void Button::SetLabel(const char* label)
 
 void Button::SetWidth(int32_t w)
 {
-    if (w < 2 * paddingX + this->font->getStringLength(label)){
-        this->w = 2 * paddingX + this->font->getStringLength(label);
+    if (w < this->font->getStringLength(label)){
+        this->w = this->font->getStringLength(label) + 4;
     } else {
         this->w = w;
     }
@@ -56,8 +51,8 @@ void Button::SetWidth(int32_t w)
 
 void Button::SetHeight(int32_t h)
 {
-    if (h < 2 * paddingY + this->font->chrHeight){
-        this->h = 2 * paddingY + this->font->chrHeight;
+    if (h < this->font->getLineHeight() ){
+        this->h = this->font->getLineHeight() + 4 ;
     } else {
         this->h = h;
     }
@@ -68,7 +63,7 @@ void Button::RedrawToCache()
     //DEBUG_LOG("Button %d: Updating", this->ID);
     NINA::activeInstance->FillRoundedRectangle(cache, w, h, 0, 0, w, h, 3, isPressed ? BUTTON_BACKGROUND_COLOR_PRESSED : BUTTON_BACKGROUND_COLOR_NORMAL);
     NINA::activeInstance->DrawRoundedRectangle(cache, w, h, 0, 0, w, h, 3, isPressed ? BUTTON_BORDER_COLOR_PRESSED : BUTTON_BORDER_COLOR_NORMAL);
-    NINA::activeInstance->DrawString(cache, w, h, paddingX, paddingY, label, font, isPressed ? BUTTON_TEXT_COLOR_PRESSED : BUTTON_TEXT_COLOR_NORMAL);
+    NINA::activeInstance->DrawString(cache, w, h, (w - this->font->getStringLength(label))/2 , 4, label, font, isPressed ? BUTTON_TEXT_COLOR_PRESSED : BUTTON_TEXT_COLOR_NORMAL);
     
     isDirty = false;
 }

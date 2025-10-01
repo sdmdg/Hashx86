@@ -29,11 +29,11 @@ objects = asm/loader.o \
 		  core/pci.o \
 		  gui/renderer/nina.o \
 		  gui/fonts/font.o \
-		  gui/fonts/segoeui.o \
 		  gui/widget.o \
 		  gui/desktop.o \
 		  gui/window.o \
 		  gui/button.o \
+		  gui/inputbox.o \
 		  gui/elements/window_action_button.o \
 		  gui/elements/window_action_button_round.o \
 		  gui/label.o
@@ -84,6 +84,11 @@ run:
 	make iso
 	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
 
+build:
+	make
+	make iso
+	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
+
 update:
 	make
 	make iso
@@ -97,24 +102,24 @@ iso: kernel.bin
 	mkdir iso
 	mkdir iso/boot
 	mkdir iso/boot/grub
-	mkdir iso/boot/font
+	mkdir iso/boot/fonts
 	cp kernel.bin iso/boot/kernel.bin
-	cp fonts/8.png iso/boot/font/8.png
+	cp bin/fonts/segoeui.bin iso/boot/fonts/segoeui.bin
 	cp user_prog/test/prog.bin iso/boot/prog.bin
 	cp user_prog/MeMView/prog.bin iso/boot/MeMView.bin
-	echo 'set timeout=0'                      > iso/boot/grub/grub.cfg
-	echo 'set default=0'                     >> iso/boot/grub/grub.cfg
-#	echo 'set gfxmode=1152x864x32'         >> iso/boot/grub/grub.cfg
-#	echo 'set gfxpayload=keep'         >> iso/boot/grub/grub.cfg
-	echo 'terminal_output gfxterm'         >> iso/boot/grub/grub.cfg
+	echo 'set timeout=0'                      				>> iso/boot/grub/grub.cfg
+	echo 'set default=0'                     				>> iso/boot/grub/grub.cfg
+#	echo 'set gfxmode=1152x864x32'         					>> iso/boot/grub/grub.cfg
+#	echo 'set gfxpayload=keep'         						>> iso/boot/grub/grub.cfg
+	echo 'terminal_output gfxterm'         					>> iso/boot/grub/grub.cfg
 	echo ''               >> iso/boot/grub/grub.cfg
-	echo 'menuentry "My Operating System" {' >> iso/boot/grub/grub.cfg
-	echo '  multiboot /boot/kernel.bin'      >> iso/boot/grub/grub.cfg
-	echo '  module /boot/font/8.png'      >> iso/boot/grub/grub.cfg
-	echo '  module /boot/prog.bin'      >> iso/boot/grub/grub.cfg
-	echo '  module /boot/MeMView.bin'      >> iso/boot/grub/grub.cfg
-	echo '  boot'      >> iso/boot/grub/grub.cfg
-	echo '}'                                 >> iso/boot/grub/grub.cfg
+	echo 'menuentry "My Operating System" {' 				>> iso/boot/grub/grub.cfg
+	echo '  multiboot /boot/kernel.bin'      				>> iso/boot/grub/grub.cfg
+	echo '  module /boot/fonts/segoeui.bin'      			>> iso/boot/grub/grub.cfg
+	echo '  module /boot/prog.bin'      					>> iso/boot/grub/grub.cfg
+	echo '  module /boot/MeMView.bin'      					>> iso/boot/grub/grub.cfg
+	echo '  boot'      										>> iso/boot/grub/grub.cfg
+	echo '}'                                 				>> iso/boot/grub/grub.cfg
 	grub-mkrescue --output=kernel.iso --modules="video gfxterm video_bochs video_cirrus" iso
 	rm -rf iso
 

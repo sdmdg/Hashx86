@@ -427,88 +427,94 @@ void VESA_BIOS_Extensions::DrawVerticalLine(int32_t x, int32_t y, int32_t length
 }
 
 void VESA_BIOS_Extensions::DrawCharacter(int32_t x, int32_t y, char c, Font* font, uint32_t colorIndex) {
-    if (c < 32 || c > 126) {
-        c = '?';  // Replace unsupported characters
-    }
+    int idx = (uint8_t)c - 32;  
+    int16_t* g = &font->font_glyphs[idx * 8]; // each glyph = 8 values
 
-    // Constants for font bitmap layout
-    const int charWidth = 36;
-    const int charHeight = 36;
-    const int charsPerRow = 19;
+    int charID     = g[0];
+    int gridX      = g[1];
+    int gridY      = g[2];
+    int charWidth  = g[3];
+    int charHeight = g[4];
+    int xoffset    = g[5];
+    int yoffset    = g[6];
+    int xadvance   = g[7];
 
-    // Calculate character position in the font grid
-    uint32_t charIndex = c - 32;
-    uint32_t gridX = (charIndex % charsPerRow) * charWidth;
-    uint32_t gridY = (charIndex / charsPerRow) * charHeight;
+    // Draw directly to framebuffer, respecting offsets
+    for (int row = 0; row < charHeight; ++row) {
+        for (int col = 0; col < charWidth; ++col) {
+            // Get pixel from atlas (1D row-major)
+            uint32_t fontPixel = font->font_atlas[(gridY + row) * font->atlas_width + (gridX + col)];
+            uint8_t fontAlpha = (fontPixel >> 24) & 0xFF;
+            if (fontAlpha == 0) continue; // skip fully transparent
 
-    uint32_t croppedBitmap[charWidth * charHeight];  // Array to store pixel data
-
-    for (uint32_t row = 0; row < charHeight; ++row) {
-        for (uint32_t col = 0; col < charWidth; ++col) {
-            // Extract the alpha value
-            uint32_t fontPixel = font->font_36x36[gridY + row][gridX + col];
-            uint8_t fontAlpha = (fontPixel >> 24) & 0xFF; // Extract alpha byte from font bitmap
-
-            // Extract ARGB values from colorIndex
+            // Extract input color
             uint8_t inputAlpha = (colorIndex >> 24) & 0xFF;
-            uint8_t inputRed = (colorIndex >> 16) & 0xFF;
+            uint8_t inputRed   = (colorIndex >> 16) & 0xFF;
             uint8_t inputGreen = (colorIndex >> 8) & 0xFF;
-            uint8_t inputBlue = colorIndex & 0xFF;
+            uint8_t inputBlue  = colorIndex & 0xFF;
 
-            // Blend alpha values for fade effect
-            uint8_t blendedAlpha;
-            if (fontAlpha != 0) {
-                blendedAlpha = (fontAlpha * inputAlpha) / 285;
-            } else {
-                blendedAlpha = 0; // Fully transparent
+            // Blend alpha
+            uint8_t blendedAlpha = (fontAlpha * inputAlpha) / 255;
+            uint32_t blendedColor =
+                (blendedAlpha << 24) |
+                (inputRed << 16) |
+                (inputGreen << 8) |
+                inputBlue;
+
+            PutPixel(x + xoffset + col, y + yoffset + row, blendedColor);
+        }
+    }
+}
+
+void VESA_BIOS_Extensions::DrawString(int32_t startX, int32_t startY, const char* str, Font* font, uint32_t colorIndex)
+{
+    int penX = startX;
+    int penY = startY;
+
+    for (int i = 0; str[i] != '\0'; ++i) {
+        char c = str[i];
+
+        // Handle newline
+        if (c == '\n') {
+            penX = startX;
+            penY += font->getLineHeight();
+            continue;
+        }
+
+
+        char next = str[i + 1];
+
+        // Clamp unsupported characters
+        if (c < 32 || c > 126) {
+            c = '?';
+        }
+
+        int16_t* g = &font->font_glyphs[((uint8_t)c - 32) * 8];
+        int xadvance = g[7];
+
+        // Kerning lookup
+        int kernAdjust = 0;
+        if (next >= 32) {
+            for (int k = 0; k < font->font_kerning_count; k++) {
+                int16_t* kdata = &font->font_kernings[k * 3];
+                if (kdata[0] == (uint8_t)c && kdata[1] == (uint8_t)next) {
+                    kernAdjust = kdata[2];
+                    break;
+                }
             }
-            
-            // Combine blended alpha with input RGB values
-            uint32_t blendedColor = (blendedAlpha << 24) | (inputRed << 16) | (inputGreen << 8) | inputBlue;
-
-            // Store the blended color in the croppedBitmap
-            croppedBitmap[row * charWidth + col] = blendedColor;
-        }
-    }
-
-    // Draw the cropped bitmap on the screen
-    DrawBitmap(x - font->font_36x36_config[charIndex][0], y + font->chrAdvanceY, croppedBitmap, charWidth, charHeight);
-}
-
-void VESA_BIOS_Extensions::DrawString(int32_t x, int32_t y, const char* str, Font* font, uint32_t colorIndex) {
-    int32_t cursorX = x;
-    int8_t chrAdvanceX = font->chrAdvanceX;
-    int8_t chrAdvanceY = font->chrAdvanceY;
-
-    // Iterate through the string and draw each character
-    while (*str) {
-        if (*str == '\n') { // Handle newline characters
-            y += 20;        // Move to the next line
-            cursorX = x;    // Reset to the starting x position
-        } else {
-            DrawCharacter(cursorX, y, *str, font, colorIndex);
-            cursorX += 36 + chrAdvanceX - (font->font_36x36_config[*str - 32][0] + font->font_36x36_config[*str - 32][1]);
         }
 
-        ++str;
+        // Draw this character at current pen position
+        DrawCharacter(penX, penY, c, font, colorIndex);
+
+        // Advance pen
+        penX += xadvance + kernAdjust;
     }
 }
 
-void VESA_BIOS_Extensions::DrawString(int32_t x, int32_t y, const char* str, uint32_t colorIndex) {
-    int32_t cursorX = x;
-    int8_t chrAdvanceX = VBE_font->chrAdvanceX;
-    int8_t chrAdvanceY = VBE_font->chrAdvanceY;
-
-    // Iterate through the string and draw each character
-    while (*str) {
-        if (*str == '\n') { // Handle newline characters
-            y += 20;        // Move to the next line
-            cursorX = x;    // Reset to the starting x position
-        } else {
-            DrawCharacter(cursorX, y, *str, VBE_font, colorIndex);
-            cursorX += 36 + chrAdvanceX - (VBE_font->font_36x36_config[*str - 32][0] + VBE_font->font_36x36_config[*str - 32][1]);
-        }
-
-        ++str;
-    }
+void VESA_BIOS_Extensions::DrawString(
+    int32_t x, int32_t y, const char* str, uint32_t colorIndex
+) {
+    // Just call the overload with VBE_font
+    DrawString(x, y, str, VBE_font, colorIndex);
 }
