@@ -325,59 +325,89 @@ void NINA::DrawVerticalLine(uint32_t* buffer, int32_t bufferWidth, int32_t buffe
 
 void NINA::DrawCharacter(uint32_t* buffer, int32_t bufferWidth, int32_t bufferHeight, int32_t x, int32_t y, char c, Font* font, uint32_t colorIndex)
 {
-    if (c < 32 || c > 126) {
-        c = '?';  // Replace unsupported characters
-    }
+    int idx = (uint8_t)c - 32;  
+    int16_t* g = &font->font_glyphs[idx * 8]; // each glyph = 8 values
 
-    const int charWidth = 36;
-    const int charHeight = 36;
-    const int charsPerRow = 19;
+    int charID     = g[0];
+    int gridX      = g[1];
+    int gridY      = g[2];
+    int charWidth  = g[3];
+    int charHeight = g[4];
+    int xoffset    = g[5];
+    int yoffset    = g[6];
+    int xadvance   = g[7];
 
-    uint32_t charIndex = c - 32;
-    uint32_t gridX = (charIndex % charsPerRow) * charWidth;
-    uint32_t gridY = (charIndex / charsPerRow) * charHeight;
-
+    // Allocate cropped bitmap
     uint32_t croppedBitmap[charWidth * charHeight];
 
-    for (uint32_t row = 0; row < charHeight; ++row) {
-        for (uint32_t col = 0; col < charWidth; ++col) {
-            uint32_t fontPixel = font->font_36x36[gridY + row][gridX + col];
+    for (int row = 0; row < charHeight; ++row) {
+        for (int col = 0; col < charWidth; ++col) {
+            uint32_t fontPixel = font->font_atlas[(gridY + row) * font->atlas_width + (gridX + col)];
             uint8_t fontAlpha = (fontPixel >> 24) & 0xFF;
 
             uint8_t inputAlpha = (colorIndex >> 24) & 0xFF;
-            uint8_t inputRed = (colorIndex >> 16) & 0xFF;
+            uint8_t inputRed   = (colorIndex >> 16) & 0xFF;
             uint8_t inputGreen = (colorIndex >> 8) & 0xFF;
-            uint8_t inputBlue = colorIndex & 0xFF;
+            uint8_t inputBlue  = colorIndex & 0xFF;
 
-            uint8_t blendedAlpha = (fontAlpha != 0) ? (fontAlpha * inputAlpha) / 285 : 0;
-            uint32_t blendedColor = (blendedAlpha << 24) | (inputRed << 16) | (inputGreen << 8) | inputBlue;
+            uint8_t blendedAlpha = (fontAlpha * inputAlpha) / 255;
+            uint32_t blendedColor =
+                (blendedAlpha << 24) |
+                (inputRed << 16) |
+                (inputGreen << 8) |
+                inputBlue;
 
             croppedBitmap[row * charWidth + col] = blendedColor;
         }
     }
 
-    int32_t drawX = x - font->font_36x36_config[charIndex][0];
-    int32_t drawY = y + font->chrAdvanceY;
-    DrawBitmap(buffer, bufferWidth, bufferHeight, drawX, drawY, croppedBitmap, charWidth, charHeight);
+    // Apply offsets from glyph table
+    DrawBitmap(buffer, bufferWidth, bufferHeight, x + xoffset, y + yoffset, croppedBitmap, charWidth, charHeight);
 }
 
 
 void NINA::DrawString(uint32_t* buffer, int32_t bufferWidth, int32_t bufferHeight, int32_t x, int32_t y, const char* str, Font* font, uint32_t colorIndex)
 {
-    int32_t cursorX = x;
-    int8_t chrAdvanceX = font->chrAdvanceX;
-    int8_t chrAdvanceY = font->chrAdvanceY;
+    int penX = x;
+    int penY = y;
 
-    while (*str) {
-    if (*str == '\n') {
-        y += 36 + chrAdvanceY;  // Properly skip one line
-        cursorX = x;
-    } else {
-        DrawCharacter(buffer, bufferWidth, bufferHeight, cursorX, y, *str, font, colorIndex);
-        int charIndex = *str - 32;
-        cursorX += 36 + chrAdvanceX - (font->font_36x36_config[charIndex][0] + font->font_36x36_config[charIndex][1]);
-    }
-    ++str;
+    for (int i = 0; str[i] != '\0'; ++i) {
+        char c = str[i];
+
+        // Handle newline
+        if (c == '\n') {
+            penX = x;
+            penY += font->getLineHeight();
+            continue;
+        }
+
+        char next = str[i + 1];
+
+        // Clamp unsupported characters
+        if (c < 32 || c > 126) {
+            c = '?';
+        }
+
+        int16_t* g = &font->font_glyphs[((uint8_t)c - 32) * 8];
+        int xadvance = g[7];
+
+        // Kerning lookup
+        int kernAdjust = 0;
+        if (next >= 32) {
+            for (int k = 0; k < font->font_kerning_count; k++) {
+                int16_t* kdata = &font->font_kernings[k * 3];
+                if (kdata[0] == (uint8_t)c && kdata[1] == (uint8_t)next) {
+                    kernAdjust = kdata[2];
+                    break;
+                }
+            }
+        }
+
+        // Draw this character at current pen position
+        DrawCharacter(buffer, bufferWidth, bufferHeight, penX, penY, c, font, colorIndex);
+
+        // Advance pen
+        penX += xadvance + kernAdjust;
     }
 }
 

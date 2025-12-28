@@ -19,6 +19,9 @@ objects = asm/loader.o \
 		  gui/Hgui.o \
 		  core/memory.o \
 		  core/driver.o \
+		  core/drivers/GraphicsDriver.o \
+		  core/drivers/ModuleLoader.o \
+		  core/drivers/SymbolTable.o \
 		  core/drivers/keyboard.o \
 		  core/drivers/mouse.o \
 		  core/drivers/vbe.o \
@@ -27,13 +30,17 @@ objects = asm/loader.o \
 		  core/thread.o \
 		  core/elf.o \
 		  core/pci.o \
+		  core/filesystem/msdospart.o \
+		  core/filesystem/FAT32.o \
+		  core/filesystem/File.o \
 		  gui/renderer/nina.o \
 		  gui/fonts/font.o \
-		  gui/fonts/segoeui.o \
+		  gui/bmp.o \
 		  gui/widget.o \
 		  gui/desktop.o \
 		  gui/window.o \
 		  gui/button.o \
+		  gui/inputbox.o \
 		  gui/elements/window_action_button.o \
 		  gui/elements/window_action_button_round.o \
 		  gui/label.o
@@ -83,11 +90,46 @@ run:
 	make
 	make iso
 	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
+# -bios /usr/share/ovmf/OVMF.fd
 
-update:
+build:
 	make
 	make iso
 	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
+
+hdd:
+# 	Cleanup from previous mounts
+	-sudo umount /mnt/vdi_p1
+	-sudo qemu-nbd --disconnect /dev/nbd0
+# 	1. Load the NBD module
+	sudo modprobe nbd max_part=16
+# 	2. Connect VHD to /dev/nbd0
+	sudo qemu-nbd --connect=/dev/nbd0 HDD.vdi
+# 	3. Mount Partition 1 (p1)
+	sudo mkdir -p /mnt/vdi_p1
+	sudo mount /dev/nbd0p1 /mnt/vdi_p1
+# 	4. Copy Files
+	-sudo mkdir -p /mnt/vdi_p1/bin
+	-sudo mkdir -p /mnt/vdi_p1/fonts
+	-sudo mkdir -p /mnt/vdi_p1/bitmaps
+	-sudo mkdir -p /mnt/vdi_p1/drivers
+
+	sudo cp bin/bitmaps/boot.bmp /mnt/vdi_p1/bitmaps/boot.bmp
+	sudo cp bin/bitmaps/icon.bmp /mnt/vdi_p1/bitmaps/icon.bmp
+	sudo cp bin/bitmaps/cursor.bmp /mnt/vdi_p1/bitmaps/cursor.bmp
+	sudo cp bin/bitmaps/desktop.bmp /mnt/vdi_p1/bitmaps/desktop.bmp
+	sudo cp bin/bitmaps/panic.bmp /mnt/vdi_p1/bitmaps/panic.bmp
+
+#	sudo rm -f /mnt/vdi_p1/drivers/bga.o
+	sudo cp drivers/bga.sys /mnt/vdi_p1/drivers/bga.sys
+
+	sudo cp bin/fonts/segoeui.bin /mnt/vdi_p1/fonts/segoeui.bin
+
+	sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/bin/MeMView.bin
+	sudo cp user_prog/test/prog.bin /mnt/vdi_p1/bin/test.bin
+# 	5. Cleanup
+	sudo umount /mnt/vdi_p1
+	sudo qemu-nbd --disconnect /dev/nbd0
 
 runvb: kernel.iso
 	(killall VirtualBox && sleep 1) || true
@@ -97,27 +139,23 @@ iso: kernel.bin
 	mkdir iso
 	mkdir iso/boot
 	mkdir iso/boot/grub
-	mkdir iso/boot/font
+	mkdir iso/boot/fonts
 	cp kernel.bin iso/boot/kernel.bin
-	cp fonts/8.png iso/boot/font/8.png
-	cp user_prog/test/prog.bin iso/boot/prog.bin
-	cp user_prog/MeMView/prog.bin iso/boot/MeMView.bin
-	echo 'set timeout=0'                      > iso/boot/grub/grub.cfg
-	echo 'set default=0'                     >> iso/boot/grub/grub.cfg
-#	echo 'set gfxmode=1152x864x32'         >> iso/boot/grub/grub.cfg
-#	echo 'set gfxpayload=keep'         >> iso/boot/grub/grub.cfg
-	echo 'terminal_output gfxterm'         >> iso/boot/grub/grub.cfg
+#	cp bin/fonts/segoeui.bin iso/boot/fonts/segoeui.bin
+	echo 'set timeout=0'                      				>> iso/boot/grub/grub.cfg
+	echo 'set default=0'                     				>> iso/boot/grub/grub.cfg
+#	echo 'set gfxmode=1152x864x32'         					>> iso/boot/grub/grub.cfg
+#	echo 'set gfxpayload=keep'         						>> iso/boot/grub/grub.cfg
+	echo 'terminal_output gfxterm'         					>> iso/boot/grub/grub.cfg
 	echo ''               >> iso/boot/grub/grub.cfg
-	echo 'menuentry "My Operating System" {' >> iso/boot/grub/grub.cfg
-	echo '  multiboot /boot/kernel.bin'      >> iso/boot/grub/grub.cfg
-	echo '  module /boot/font/8.png'      >> iso/boot/grub/grub.cfg
-	echo '  module /boot/prog.bin'      >> iso/boot/grub/grub.cfg
-	echo '  module /boot/MeMView.bin'      >> iso/boot/grub/grub.cfg
-	echo '  boot'      >> iso/boot/grub/grub.cfg
-	echo '}'                                 >> iso/boot/grub/grub.cfg
+	echo 'menuentry "My Operating System" {' 				>> iso/boot/grub/grub.cfg
+	echo '  multiboot /boot/kernel.bin'      				>> iso/boot/grub/grub.cfg
+#	echo '  module /boot/fonts/segoeui.bin'      			>> iso/boot/grub/grub.cfg
+	echo '  boot'      										>> iso/boot/grub/grub.cfg
+	echo '}'                                 				>> iso/boot/grub/grub.cfg
 	grub-mkrescue --output=kernel.iso --modules="video gfxterm video_bochs video_cirrus" iso
 	rm -rf iso
 
 prog:
-	make iso
+	make hdd
 	make runq

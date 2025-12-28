@@ -40,7 +40,7 @@ MessageBox::~MessageBox() {
     delete noButton;
 }
 
-void MessageBox::Draw(GraphicsContext* gc) {
+void MessageBox::Draw(GraphicsDriver* gc) {
     Window::Draw(gc);
     int X = 0, Y = 0;
     ModelToScreen(X, Y);

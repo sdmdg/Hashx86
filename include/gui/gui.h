@@ -9,6 +9,6 @@
 #include <gui/label.h>
 #include <gui/button.h>
 #include <gui/messagebox.h>
-
+#include <gui/inputbox.h>
 
 #endif // GUI_H

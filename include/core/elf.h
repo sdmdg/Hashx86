@@ -2,17 +2,21 @@
 #define ELF_H
 
 #include <stdint.h>
+#include <types.h> // Ensure basic types are available
 #include <core/memory.h>
 #include <core/process.h>
+#include <core/filesystem/File.h>
 
 #define ELF_MAGIC 0x464C457F
 
 // ELF Header
 struct elf_header {
     uint32_t    magic;
+    uint8_t     ident[12];      // Rest of e_ident (class, data, version, etc)
+    
+    uint16_t    type;           // 1=Relocatable, 2=Executable, 3=Shared, 4=Core
+    uint16_t    machine;        // 3=x86
     uint32_t    version;
-    uint64_t    reserved;
-    uint64_t    version2;
     uint32_t    entry;
     uint32_t    ph_offset;
     uint32_t    sh_offset;
@@ -20,9 +24,9 @@ struct elf_header {
     uint16_t    header_size;
     uint16_t    ph_entry_size;
     uint16_t    ph_entry_count;
-    uint16_t    sh_entry_size;
+    uint16_t    sh_size;        // Section header entry size
     uint16_t    sh_entry_count;
-    uint16_t    sh_str_table_index;
+    uint16_t    sh_str_index;   // Section header string table index
 } __attribute__((packed));
 
 // Program Header (Segment)
@@ -34,21 +38,31 @@ struct elf_program_header {
     uint32_t    file_size;
     uint32_t    mem_size;
     uint32_t    flags;
-    uint32_t    alignment;
+    uint32_t    align;
 } __attribute__((packed));
 
 // Section Header (Used for relocations)
 struct elf_section_header {
-    uint32_t    name;
-    uint32_t    type;
-    uint32_t    flags;
-    uint32_t    addr;
-    uint32_t    offset;
-    uint32_t    size;
-    uint32_t    link;
-    uint32_t    info;
-    uint32_t    addr_align;
-    uint32_t    entry_size;
+    uint32_t    name;       // Offset in shstrtab
+    uint32_t    type;       // SHT_...
+    uint32_t    flags;      // SHF_...
+    uint32_t    addr;       // Virtual address in memory
+    uint32_t    offset;     // Offset in file
+    uint32_t    size;       // Size of section
+    uint32_t    link;       // Link to other section
+    uint32_t    info;       // Misc info
+    uint32_t    align;      // Address alignment
+    uint32_t    ent_size;   // Entry size if section holds table
+} __attribute__((packed));
+
+// Symbol Table Entry (New - Required for ModuleLoader)
+struct elf32_symbol {
+    uint32_t    name;       // Index into string table
+    uint32_t    value;      // Value or address
+    uint32_t    size;       // Size of the object
+    uint8_t     info;       // Type and Binding
+    uint8_t     other;      // Visibility
+    uint16_t    shndx;      // Section index
 } __attribute__((packed));
 
 // Relocation Types
@@ -66,7 +80,7 @@ struct elf_section_header {
 #define SHT_DYNSYM   11
 
 // Relocation Entry (SHT_REL)
-struct elf_rel_entry {
+struct elf32_rel {
     uint32_t    offset;
     uint32_t    info;
 } __attribute__((packed));
@@ -82,7 +96,6 @@ struct elf_rela_entry {
 #define ELF32_R_SYM(info)   ((info) >> 8)
 #define ELF32_R_TYPE(info)  ((uint8_t)(info))
 
-
 struct ProgramArguments {
     const char* str1;
     const char* str2;
@@ -90,7 +103,6 @@ struct ProgramArguments {
     const char* str4;
     const char* str5;
 };
-
 
 class ELFLoader
 {
@@ -101,10 +113,10 @@ private:
 public:
     ELFLoader(Paging* pager, ProcessManager* pManager);
     ~ELFLoader();
-    Process* loadModule(uint32_t mod_start, uint32_t mod_end, void* args);
-    void startModule(Process* pELF);
+    Process* loadELF(uint32_t mod_start, uint32_t mod_end, void* args);
+    Process* loadELF(File* elf, void* args);
+    void runELF(Process* pELF);
     void ElevatetoKernel(Process* pELF);
 };
-
 
 #endif

@@ -21,7 +21,7 @@ public:
 
     void OnClose();
     
-    void Draw(GraphicsContext* gc);
+    void Draw(GraphicsDriver* gc);
     void RedrawToCache();
     void OnMouseDown(int32_t x, int32_t y, uint8_t button);
     void OnMouseUp(int32_t x, int32_t y, uint8_t button);

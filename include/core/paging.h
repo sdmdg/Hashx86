@@ -38,6 +38,8 @@ public:
     // Allocates a page in a process-specific page table
     void allocate_page(uint32_t* page_directory, void* virtual_addr);
 
+    void map_page(uint32_t* page_directory, void* phys_addr, void* virt_addr);
+
     // Frees a page from a process-specific page table
     void free_page(uint32_t* page_directory, void* virtual_addr);
 };

@@ -9,16 +9,16 @@
 #include <gui/widget.h>
 
 Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h)
-: KeyboardEventHandler()
 {
     this->parent = parent;
     this->x = x;
     this->y = y;
     this->w = w;
     this->h = h;
-    this->colorIndex = colorIndex;
+    this->colorIndex = 0; // default
     this->Focussable = true;
-    cache = new uint32_t[w * h];
+    this->isFocussed = false;
+    cache = new uint32_t[w * h]();
 }
 
 Widget::~Widget()
@@ -34,12 +34,19 @@ void Widget::MarkDirty()
 
 void Widget::RedrawToCache()
 {
+    // Placeholder for widget-specific rendering
 }
 
 void Widget::GetFocus(Widget* widget)
 {
-    if(parent != 0)
+    if (parent)
         parent->GetFocus(widget);
+}
+
+void Widget::setFocus(bool result)
+{
+    this->isFocussed = result;
+    this->MarkDirty();
 }
 
 void Widget::SetFocussable(bool focussable)
@@ -51,7 +58,7 @@ void Widget::SetPID(uint32_t PID)
 {
     this->PID = PID;
     childrenList.ForEach([&](Widget* c) {
-        c->PID = PID;
+        c->SetPID(PID);
     });
 }
 
@@ -62,150 +69,109 @@ void Widget::SetID(uint32_t ID)
 
 Widget* Widget::FindWidgetByID(uint32_t searchID)
 {
-    if (this->ID == searchID)
-        return this;
+    if (this->ID == searchID) return this;
 
     Widget* result = nullptr;
-
     childrenList.ForEach([&](Widget* c) {
-        if (result) return; // Already found
-
-        if (c->ID == searchID)
-            result = c;
-        else {
-            Widget* nested = c->FindWidgetByID(searchID);
-            if (nested)
-                result = nested;
-        }
+        if (!result) result = c->FindWidgetByID(searchID);
     });
-
     return result;
 }
 
 Widget* Widget::FindWidgetByPID(uint32_t PID)
 {
-    if (this->PID == PID)
-        return this;
+    if (this->PID == PID) return this;
 
     Widget* result = nullptr;
-
     childrenList.ForEach([&](Widget* c) {
-        if (result) return; // Already found
-
-        if (c->PID == PID)
-            result = c;
-        else {
-            Widget* nested = c->FindWidgetByID(PID);
-            if (nested)
-                result = nested;
-        }
+        if (!result) result = c->FindWidgetByPID(PID);
     });
-
     return result;
 }
 
 bool Widget::AddChild(Widget* child)
 {
-    if (childrenList.GetSize() >= 100)
-        return false;
-
-    // Add to front
+    if (childrenList.GetSize() >= 100) return false;
     childrenList.Add(child);
     return true;
 }
 
-
-
 bool Widget::RemoveChild(Widget* child)
 {
-    return childrenList.Remove([&](Widget* c) {
-        return c == child;
-    });
+    return childrenList.Remove([&](Widget* c) { return c == child; });
 }
 
-void Widget::ModelToScreen(int32_t &x, int32_t& y)
+void Widget::ModelToScreen(int32_t& x, int32_t& y)
 {
-    if(parent != 0)
-        parent->ModelToScreen(x,y);
+    if (parent) parent->ModelToScreen(x, y);
     x += this->x;
     y += this->y;
-}
-            
-void Widget::Draw(GraphicsContext* gc)
-{
-    if(isDirty){
-        if (isVisible)
-        {
-            // Only redraw if dirty
-            RedrawToCache(); 
-            isDirty = false;
-        } else {
-            // Clear the cache
-            memset(cache, 0, sizeof(uint32_t) * w * h);
-        }
-    } 
-}
-
-
-void Widget::OnMouseDown(int32_t x, int32_t y, uint8_t button)
-{
-    if(Focussable)
-        GetFocus(this);
 }
 
 bool Widget::ContainsCoordinate(int32_t x, int32_t y)
 {
-    return this->x <= x && x < this->x + this->w
-        && this->y <= y && y < this->y + this->h;
+    return this->x <= x && x < this->x + this->w &&
+           this->y <= y && y < this->y + this->h;
 }
 
-void Widget::OnMouseUp(int32_t x, int32_t y, uint8_t button)
+void Widget::Draw(GraphicsDriver* gc)
 {
+    if (isDirty) {
+        if (isVisible) {
+            RedrawToCache();
+        } else {
+            memset(cache, 0, sizeof(uint32_t) * w * h);
+        }
+        isDirty = false;
+    }
 }
 
-void Widget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy)
+void Widget::OnMouseDown(int32_t, int32_t, uint8_t)
 {
+    if (Focussable) GetFocus(this);
 }
 
+void Widget::OnMouseUp(int32_t, int32_t, uint8_t) {}
+void Widget::OnMouseMove(int32_t, int32_t, int32_t, int32_t) {}
+
+void Widget::OnKeyDown(const char*) {}
+void Widget::OnSpecialKeyDown(uint8_t) {}
+void Widget::OnKeyUp(const char*) {}
+void Widget::OnSpecialKeyUp(uint8_t) {}
 
 
+// ---------------- CompositeWidget ----------------
 
+CompositeWidget::CompositeWidget(CompositeWidget* parent, int32_t x, int32_t y, int32_t w, int32_t h)
+    : Widget(parent, x, y, w, h), focussedChild(nullptr) {}
 
-CompositeWidget::CompositeWidget(CompositeWidget* parent,
-                   int32_t x, int32_t y, int32_t w, int32_t h)
-: Widget(parent, x,y,w,h)
-{
-    focussedChild = 0;
-}
+CompositeWidget::~CompositeWidget() {}
 
-CompositeWidget::~CompositeWidget()
-{
-}
-            
 void CompositeWidget::GetFocus(Widget* widget)
 {
-    this->focussedChild = widget;
-    if (parent != nullptr)
-        parent->GetFocus(this);
+    if (focussedChild && focussedChild != widget) {
+        focussedChild->setFocus(false);
+    }
+    focussedChild = widget;
+    if (widget) widget->setFocus(true);
+
+    if (parent) parent->GetFocus(this);
 }
 
-void CompositeWidget::Draw(GraphicsContext* gc)
+void CompositeWidget::Draw(GraphicsDriver* gc)
 {
     Widget::Draw(gc);
     childrenList.ReverseForEach([&](Widget* child) {
         child->Draw(gc);
     });
-    
 }
 
 void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button)
 {
-    const int32_t localX = x - this->x;
-    const int32_t localY = y - this->y;
+    int32_t localX = x - this->x;
+    int32_t localY = y - this->y;
 
-    // One loop: Find + trigger + move to front
     Widget* clicked = nullptr;
-
     childrenList.ForEach([&](Widget* child) {
         if (!clicked && child->ContainsCoordinate(localX, localY)) {
             child->OnMouseDown(localX, localY, button);
@@ -214,41 +180,56 @@ void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button)
     });
 
     if (clicked) {
-        // Modify only *after* iteration
         childrenList.Remove([&](Widget* c) { return c == clicked; });
-        childrenList.Add(clicked); // Bring to front
+        childrenList.Add(clicked);
+        GetFocus(clicked);
+    } else {
+        if (focussedChild) focussedChild->setFocus(false);
+        focussedChild = nullptr;
     }
 }
 
-
 void CompositeWidget::OnMouseUp(int32_t x, int32_t y, uint8_t button)
 {
-    for (auto it = childrenList.begin(); it != childrenList.end(); ++it) {
-        Widget* child = *it;
+    childrenList.ForEach([&](Widget* child) {
         if (child->ContainsCoordinate(x - this->x, y - this->y)) {
             child->OnMouseUp(x - this->x, y - this->y, button);
-            break;
         }
-    }
+    });
 }
 
 void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy)
 {
-    bool handledOld = false;
-    bool handledNew = false;
-
-    for (auto it = childrenList.begin(); it != childrenList.end(); ++it) {
-        Widget* child = *it;
+    childrenList.ForEach([&](Widget* child) {
         bool inOld = child->ContainsCoordinate(oldx - this->x, oldy - this->y);
         bool inNew = child->ContainsCoordinate(newx - this->x, newy - this->y);
-
         if (inOld || inNew) {
-            child->OnMouseMove(oldx - this->x, oldy - this->y, newx - this->x, newy - this->y);
+            child->OnMouseMove(oldx - this->x, oldy - this->y,
+                               newx - this->x, newy - this->y);
         }
+    });
+}
 
-        if (inOld) handledOld = true;
-        if (inNew) handledNew = true;
+void CompositeWidget::OnKeyDown(const char* key)
+{
+    if (focussedChild) focussedChild->OnKeyDown(key);
+    else Widget::OnKeyDown(key);
+}
 
-        if (handledOld && handledNew) break;
-    }
+void CompositeWidget::OnKeyUp(const char* key)
+{
+    if (focussedChild) focussedChild->OnKeyUp(key);
+    else Widget::OnKeyUp(key);
+}
+
+void CompositeWidget::OnSpecialKeyDown(uint8_t key)
+{
+    if (focussedChild) focussedChild->OnSpecialKeyDown(key);
+    else Widget::OnSpecialKeyDown(key);
+}
+
+void CompositeWidget::OnSpecialKeyUp(uint8_t key)
+{
+    if (focussedChild) focussedChild->OnSpecialKeyUp(key);
+    else Widget::OnSpecialKeyUp(key);
 }

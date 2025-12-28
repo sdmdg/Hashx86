@@ -88,6 +88,6 @@ _stop:
 
 ; Define the BSS section where uninitialized data
 section .bss
-resb 32*1024*1024;            ; Allocate 8 MB of space for the kernel's stack
+resb 1024 * 16                ; 16 KB Stack
 
 kernel_stack:                 ; Label for the start of the kernel stack

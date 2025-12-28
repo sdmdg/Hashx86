@@ -3,7 +3,6 @@
 
 #include <types.h>
 #include <gui/fonts/font.h>
-#include <gui/fonts/segoeui.h>
 #include <gui/icons.h>
 #include <core/memory.h>
 

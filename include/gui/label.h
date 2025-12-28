@@ -16,7 +16,7 @@ public:
     void setSize(FontSize size);
     void setType(FontType type);
     void RedrawToCache() override;
-    void Draw(GraphicsContext* gc) override;
+    void Draw(GraphicsDriver* gc) override;
 };
 
 #endif

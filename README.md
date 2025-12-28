@@ -30,10 +30,20 @@ This project focuses on low-level system development, implementing core operatin
 - Multitasking with process and thread management
 - Basic event handling
 - Widget-based GUI framework
-
+- GUI performance optimization using draw caching
+- Support for dynamic resolution switching via dynamic drivers
+- HDD driver implementation
+- FAT32 filesystem support
 ---
 
 ## 🖼 Demonstrations
+
+- 📺 **NEW : Dynamic BGA Graphics (High Resolution)**
+  The kernel detects BGA hardware via PCI, loads the driver from the FAT32 disk and instantly switches to high resolution.
+
+<p align="center">
+  <img alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
+</p>
 
 - 📺 **GUI Framework at 1152×864 (32-bit VESA)**  
   Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
@@ -66,14 +76,10 @@ Learn to build your own digital world from the ground up!
 
 Hashx86 is currently under active development. Upcoming improvements include:
 
-- GUI performance optimization using draw caching
 - Desktop taskbar implementation with smooth animations
-- Support for dynamic resolution switching
 - Expanded system call library
 - Thread-safe process management
 - Networking support
-- HDD driver implementation
-- FAT32 filesystem support
 - Task State Segment (TSS) integration
 - DMA / PCI driver framework
 - Audio driver support
@@ -88,13 +94,44 @@ Hashx86 is currently under active development. Upcoming improvements include:
 > Prerequisites:
 > - GCC cross-compiler for i686
 > - GRUB and `xorriso` (for ISO generation)
-> - QEMU or Bochs (for testing)
+> - `qemu-system-i386` and `qemu-img`
 > - `make`
 
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/sdmdg/Hashx86.git
 cd hashx86
-make run        # Build ISO image and run in QEMU
+```
+
+### 2. Setup the Hard Disk
+You need a `HDD.vdi` file to store drivers and files. Choose one of the methods below:
+
+**Option A: Quick Start (Recommended)**
+Download the pre-formatted `HDD.vdi` from the **Releases** page and place it in the project folder.
+
+**Option B: Manual Setup**
+If you prefer to create a fresh disk:
+1. Create a 1GB VirtualBox Disk Image (VDI):
+```bash
+qemu-img create -f vdi HDD.vdi 1G
+```
+
+2. Run the OS for the first time. The kernel will detect the empty disk and automatically format it to **FAT32**.
+```bash
+make run
+```
+*Wait for the OS to boot and confirm formatting is complete, then close the QEMU window.*
+
+3. Install Drivers & Assets
+Now that the disk is formatted, mount it and copy the required system files (Drivers, Fonts, Bitmaps).
+```bash
+make hdd
+```
+
+### 3. Final Boot
+Run the OS again. It will now boot with full graphics and file support!
+```bash
+make runq
 ```
 
 ---
@@ -119,5 +156,10 @@ This project wouldn’t have been possible without the help, guidance and inspir
 - **[Viktor Engelmann](https://www.youtube.com/watch?v=1rnA6wpF0o4&list=PLHh55M_Kq4OApWScZyPl5HhgsTJS9MZ6M)** – *Write your own Operating System* YouTube series  
 - **[OSDev.org](https://wiki.osdev.org/Main_Page)** – Incredible community and resources for OS development  
 - **[lowlevel.eu](https://lowlevel.eu)** – Excellent tutorials on low-level programming  
+
+
+## 🎨 Credits
+
+* **Desktop Wallpaper:** "Iceland, Beach, Ice image" by **Elisabetta_Miele** on [Pixabay](https://pixabay.com/photos/iceland-beach-ice-frost-sunset-9056229/)
 
 ---

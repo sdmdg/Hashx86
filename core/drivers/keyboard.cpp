@@ -80,6 +80,7 @@ void KeyboardDriver::Activate() {
 
     // Activate the keyboard
     dataPort.Write(0xF4);
+    this->is_Active = true;
 }
 
 /**

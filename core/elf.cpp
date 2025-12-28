@@ -8,7 +8,7 @@ ELFLoader::~ELFLoader(){
     
 };
 
-Process* ELFLoader::loadModule(uint32_t mod_start, uint32_t mod_end, void* args){
+Process* ELFLoader::loadELF(uint32_t mod_start, uint32_t mod_end, void* args){
     uint32_t mod_length = mod_end - mod_start;
 
     DEBUG_LOG("Module start: 0x%x, end: 0x%x, length: %d bytes", mod_start, mod_end, mod_length);
@@ -76,7 +76,122 @@ Process* ELFLoader::loadModule(uint32_t mod_start, uint32_t mod_end, void* args)
     return pELF;
 };
 
-void ELFLoader::startModule(Process* pELF){
+Process* ELFLoader::loadELF(File* elf, void* args) {
+    if (!elf) return nullptr;
+
+    // Read ELF Header
+    struct elf_header header;
+    elf->Seek(0);
+    if (elf->Read((uint8_t*)&header, sizeof(elf_header)) != sizeof(elf_header)) {
+        DEBUG_LOG("Error: ELF file too short");
+        return nullptr;
+    }
+
+    if (header.magic != ELF_MAGIC) {
+        DEBUG_LOG("Error: Invalid ELF Magic!");
+        return nullptr;
+    }
+
+    // Create Process (Allocates Page Directory)
+    Process* pELF = new Process(pager, (void (*)(void*))header.entry, args);
+
+    // Read Program Header Table
+    uint32_t ph_size = sizeof(elf_program_header) * header.ph_entry_count;
+    elf_program_header* ph_table = new elf_program_header[header.ph_entry_count];
+    
+    elf->Seek(header.ph_offset);
+    if (elf->Read((uint8_t*)ph_table, ph_size) != ph_size) {
+        DEBUG_LOG("Error: Could not read Program Headers");
+        delete[] ph_table;
+        // Note: Should theoretically delete pELF here too
+        return nullptr;
+    }
+
+    uint32_t max_virt_end = 0;
+
+    // Iterate Segments
+    for (int i = 0; i < header.ph_entry_count; i++) {
+        elf_program_header* ph = &ph_table[i];
+        
+        if (ph->type != 1) continue; // PT_LOAD segments only
+
+        // Allocate Virtual Memory Pages
+        uint32_t start = (uint32_t)ph->virt_addr;
+        uint32_t end = start + ph->mem_size;
+        
+        // Align to Page Boundaries for allocation
+        uint32_t page_start = start & ~(PAGE_SIZE - 1);
+        uint32_t page_end = (end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+
+        for (uint32_t addr = page_start; addr < page_end; addr += PAGE_SIZE) {
+             this->pager->allocate_page(pELF->process_page_directory, (void*)addr);
+        }
+
+        // LOAD FILE DATA directly into Memory (Page by Page)
+        // We cannot just read the whole chunk because physical pages might be non-contiguous.
+        
+        uint32_t bytes_to_read = ph->file_size;
+        uint32_t virtual_addr = (uint32_t)ph->virt_addr;
+        
+        // Seek File to Segment Start
+        elf->Seek(ph->offset);
+
+        while (bytes_to_read > 0) {
+             // Get the Physical Address where this Virtual Address maps to
+             void* phys_ptr = pager->get_physical_address(pELF->process_page_directory, (void*)virtual_addr);
+             
+             // Calculate safe chunk size for this page
+             uint32_t offset_in_page = virtual_addr % PAGE_SIZE;
+             uint32_t space_in_page = PAGE_SIZE - offset_in_page;
+             uint32_t chunk = (bytes_to_read < space_in_page) ? bytes_to_read : space_in_page;
+
+             // Read directly from disk to RAM
+             elf->Read((uint8_t*)((uint32_t)phys_ptr), chunk);
+
+             virtual_addr += chunk;
+             bytes_to_read -= chunk;
+        }
+
+        // ZERO OUT BSS (Remaining Memory Size)
+        uint32_t bytes_to_zero = ph->mem_size - ph->file_size;
+        
+        while (bytes_to_zero > 0) {
+             void* phys_ptr = pager->get_physical_address(pELF->process_page_directory, (void*)virtual_addr);
+             uint32_t offset_in_page = virtual_addr % PAGE_SIZE;
+             uint32_t space_in_page = PAGE_SIZE - offset_in_page;
+             uint32_t chunk = (bytes_to_zero < space_in_page) ? bytes_to_zero : space_in_page;
+
+             memset((void*)((uint32_t)phys_ptr), 0, chunk);
+
+             virtual_addr += chunk;
+             bytes_to_zero -= chunk;
+        }
+
+        if (end > max_virt_end) max_virt_end = end;
+    }
+
+    delete[] ph_table;
+
+    // Allocate Heap (Standard logic)
+    max_virt_end = (max_virt_end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    
+    const int HEAP_PAGE_COUNT = 32;
+    uint32_t heap_start = max_virt_end;
+    uint32_t heap_end = heap_start + HEAP_PAGE_COUNT * PAGE_SIZE;
+
+    for (uint32_t addr = heap_start; addr < heap_end; addr += PAGE_SIZE) {
+        pager->allocate_page(pELF->process_page_directory, (void*)addr);
+    }
+
+    pELF->heapData.heap_start = heap_start;
+    pELF->heapData.heap_end = heap_end;
+
+    DEBUG_LOG("ELF Loaded. Entry: 0x%x Heap: 0x%x - 0x%x", header.entry, heap_start, heap_end);
+
+    return pELF;
+};
+
+void ELFLoader::runELF(Process* pELF){
     this->pManager->AddProcess(pELF);
 };
 

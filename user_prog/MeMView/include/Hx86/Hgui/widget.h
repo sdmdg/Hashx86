@@ -17,17 +17,20 @@ struct WidgetData {
 };
 
 typedef enum {
-    SMALL = 8,
-    MEDIUM = 12,
-    LARGE = 16,
-    XLARGE = 24,
-} FontSize;
+    REGULAR = 0x0,
+    BOLD    = 0x1,
+    ITALIC  = 0x2,
+    BOLD_ITALIC  = 0x3,
+} FontType;
 
 typedef enum {
-    REGULAR = 0x0,
-    BOLT = 0x1,
-    ITALIC = 0x2,
-} FontType;
+    TINY    = 0,
+    SMALL   = 1,
+    MEDIUM  = 2,
+    LARGE   = 3,
+    XLARGE  = 4,
+} FontSize;
+
 
 
 
