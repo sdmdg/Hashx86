@@ -45,7 +45,7 @@ static const PCIDevice pciDevices[] = {
     {0x1A03, 0x1150, "ASPEED Technology", "Graphics Family"},
 };
 
-
+// Device Descriptor (Location on Bus)
 class PeripheralComponentInterconnectDeviceDescriptor
 {
 public:
@@ -75,8 +75,6 @@ enum BaseAddressRegisterType
     InputOutput = 1
 };
 
-
-
 class BaseAddressRegister
 {
 public:
@@ -99,10 +97,13 @@ public:
     void Write(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset, uint32_t value);
     bool DeviceHasFunctions(uint16_t bus, uint16_t device);
 
-
-    void SelectDrivers(DriverManager* driverManager, InterruptManager* interrupts);
-    PeripheralComponentInterconnectDeviceDescriptor GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function);
+    //void SelectDrivers(DriverManager* driverManager, InterruptManager* interrupts); // Commented out dependencies for now
+    
+    PeripheralComponentInterconnectDeviceDescriptor* GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function);
     BaseAddressRegister GetBaseAddressRegister(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
-    Driver* GetDriver(PeripheralComponentInterconnectDeviceDescriptor dev, InterruptManager* interrupts);
+    
+    // Scans specifically for one hardware ID
+    PeripheralComponentInterconnectDeviceDescriptor* FindHardwareDevice(uint16_t vendorID, uint16_t deviceID);
 };
+
 #endif

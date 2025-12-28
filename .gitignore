@@ -1,2 +1,5 @@
 *.o
 /.vscode
+*.sys
+kernel.iso
+kernel.bin

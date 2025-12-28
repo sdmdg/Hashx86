@@ -68,7 +68,7 @@ void Button::RedrawToCache()
     isDirty = false;
 }
 
-void Button::Draw(GraphicsContext* gc)
+void Button::Draw(GraphicsDriver* gc)
 {
     if (isVisible){
         Widget::Draw(gc);

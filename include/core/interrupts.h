@@ -6,10 +6,11 @@
 #include <core/ports.h>
 #include <core/gdt.h>
 #include <core/paging.h>
-#include <core/drivers/vbe.h>
+#include <core/drivers/GraphicsDriver.h>
 #include <core/process.h>
 #include <debug.h>
-#include <gui/icons.h>
+#include <gui/config/config.h>
+#include <gui/bmp.h>
 #include <core/timing.h>
 #include <utils/string.h>
 
@@ -74,8 +75,9 @@ public:
 protected:
     InterruptHandler* handlers[256];                 ///< Array of interrupt handlers for each interrupt.
     ProcessManager* processManager;
-    VESA_BIOS_Extensions* vbe;
+    GraphicsDriver* vbe;
     Paging* pager;
+    Bitmap* panicImg;
 
     /**
      * @struct GateDescriptor
@@ -176,9 +178,9 @@ public:
      * 
      * Sets up the IDT and initializes the PIC.
      * 
-     * @param gdt, processManager, vbe Pointers to GlobalDescriptorTable, ProcessManager and VESA_BIOS_Extensions
+     * @param gdt, processManager, vbe Pointers to GlobalDescriptorTable, ProcessManager and GraphicsDriver
      */
-    InterruptManager(ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager);
+    InterruptManager(ProcessManager* processManager, GraphicsDriver* vbe, Paging* pager);
 
     /**
      * @brief Destructor for the InterruptManager class.

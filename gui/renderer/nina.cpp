@@ -376,7 +376,7 @@ void NINA::DrawString(uint32_t* buffer, int32_t bufferWidth, int32_t bufferHeigh
 
         // Handle newline
         if (c == '\n') {
-            penX = 0;
+            penX = x;
             penY += font->getLineHeight();
             continue;
         }

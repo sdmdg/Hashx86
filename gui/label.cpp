@@ -63,7 +63,7 @@ void Label::RedrawToCache()
 }
 
 
-void Label::Draw(GraphicsContext* gc)
+void Label::Draw(GraphicsDriver* gc)
 {
     Widget::Draw(gc);
 }

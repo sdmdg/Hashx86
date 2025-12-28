@@ -114,7 +114,7 @@ bool Widget::ContainsCoordinate(int32_t x, int32_t y)
            this->y <= y && y < this->y + this->h;
 }
 
-void Widget::Draw(GraphicsContext* gc)
+void Widget::Draw(GraphicsDriver* gc)
 {
     if (isDirty) {
         if (isVisible) {
@@ -158,7 +158,7 @@ void CompositeWidget::GetFocus(Widget* widget)
     if (parent) parent->GetFocus(this);
 }
 
-void CompositeWidget::Draw(GraphicsContext* gc)
+void CompositeWidget::Draw(GraphicsDriver* gc)
 {
     Widget::Draw(gc);
     childrenList.ReverseForEach([&](Widget* child) {

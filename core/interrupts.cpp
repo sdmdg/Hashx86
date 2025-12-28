@@ -47,7 +47,7 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
-InterruptManager::InterruptManager(ProcessManager* processManager, VESA_BIOS_Extensions* vbe, Paging* pager)
+InterruptManager::InterruptManager(ProcessManager* processManager, GraphicsDriver* vbe, Paging* pager)
 : picMasterCommand(0x20),
   picMasterData(0x21),
   picSlaveCommand(0xA0),
@@ -215,7 +215,7 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     Deactivate();
     this->pager->switch_page_directory(this->pager->KernelPageDirectory);
     this->pager->Deactivate();
-    vbe->VBE_font = FontManager::activeInstance->getNewFont();
+    Font* VBE_font = FontManager::activeInstance->getNewFont();
     uint32_t faulting_addr;
     asm volatile("mov %%cr2, %0" : "=r"(faulting_addr));
     DEBUG_LOG("Page fault at address: 0x%x", faulting_addr);
@@ -227,14 +227,21 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
 
 
     // PANIC
-        vbe->FillRectangle(0,0,1152, 864, 0x0);
-        vbe->DrawBitmap(100,200,(const uint32_t*)icon_blue_screen_face_200x200,200,200);
-        vbe->VBE_font->setSize(XLARGE);
-        vbe->DrawString(120,400,"Your PC ran into a problem and needs to restart.\nWe'll restart it for you.",0xFFFFFFFF);
-        vbe->VBE_font->setSize(MEDIUM);
-        vbe->DrawString(120,600,"Stop code : 0x",0xFFFFFFFF);
+        vbe->FillRectangle(0,0,GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);
+        char* panicImageName = (char *)"BITMAPS/PANIC.BMP";
+        Bitmap* panicImg = new Bitmap(panicImageName);
+        if (panicImg->IsValid()) {
+            vbe->DrawBitmap(100, 200, panicImg->GetBuffer(), panicImg->GetWidth(), panicImg->GetHeight());
+        }
+        delete panicImg;
+
+
+        VBE_font->setSize(XLARGE);
+        vbe->DrawString(120,400,"Your PC ran into a problem and needs to restart.\nWe'll restart it for you.", VBE_font, 0xFFFFFFFF);
+        VBE_font->setSize(MEDIUM);
+        vbe->DrawString(120,600,"Stop code : 0x", VBE_font, 0xFFFFFFFF);
         itoa(Buffer, 16, interruptNumber);
-        vbe->DrawString(120 + vbe->VBE_font->getStringLength("Stop code : 0x"), 600, (const char*)Buffer, 0xFFFFFFFF);
+        vbe->DrawString(120 + VBE_font->getStringLength("Stop code : 0x"), 600, (const char*)Buffer, VBE_font, 0xFFFFFFFF);
 
         const char* massage;
         switch (interruptNumber)
@@ -274,21 +281,21 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
             default:
                 break;
         }
-        vbe->DrawString(120, 620, massage, 0xFFFFFFFF);
+        vbe->DrawString(120, 620, massage, VBE_font, 0xFFFFFFFF);
 
 
         // Show register dump
         int x = 450;
         int y = 540;
-        vbe->DrawString(x, y, "Registers:", 0xFFFFFFFF);
+        vbe->DrawString(x, y, "Registers:", VBE_font, 0xFFFFFFFF);
         y += 20;
 
         auto print_reg = [&](const char* name, uint32_t value) {
             char buf[32];
-            vbe->DrawString(x, y, name, 0xFFFFFFFF);
-            vbe->DrawString(x+60, y, "0x", 0xFFFFFFFF);
+            vbe->DrawString(x, y, name, VBE_font, 0xFFFFFFFF);
+            vbe->DrawString(x+60, y, "0x", VBE_font, 0xFFFFFFFF);
             itoa(buf, 16, value);
-            vbe->DrawString(x+77, y, buf, 0xFFFFFFFF);
+            vbe->DrawString(x+77, y, buf, VBE_font, 0xFFFFFFFF);
             y += 20;
         };
 

@@ -8,60 +8,49 @@
 
 #include <core/driver.h>
 
-// Implementation of the Driver class
-
-/**
- * @brief Constructs a Driver object.
- * 
- * This constructor initializes the driver. Additional initialization logic
- * can be added in derived classes.
- */
-Driver::Driver() {}
-
-/**
- * @brief Destroys the Driver object.
- * 
- * Ensures proper cleanup when a Driver object is destroyed.
- */
-Driver::~Driver() {}
-
-/**
- * @brief Activates the driver.
- * 
- * This is a virtual method to be implemented by derived classes. 
- * It is called to start or enable the driver.
- */
-void Driver::Activate() {}
-
-/**
- * @brief Resets the driver.
- * 
- * Returns a default status code of `0`. Derived classes can override
- * this method to implement reset functionality.
- * @return int Status code indicating the result of the reset operation.
- */
-int Driver::Reset() {
-    return 0;
-}
-
-/**
- * @brief Deactivates the driver.
- * 
- * This method is virtual and can be implemented by derived classes to
- * handle specific deactivation logic for the driver.
- */
-void Driver::Deactivate() {}
-
-
 /**
  * @brief Constructs a DriverManager object.
  * 
  * Initializes the driver manager and sets the number of registered drivers to 0.
  * Also prints a message indicating that the manager is loading.
+ * Export symbols to load dynamic drivers.
  */
 DriverManager::DriverManager() {
     PRINT("DriverManager", "Loading...\n");
     numDrivers = 0;
+
+    
+    // Export Kernel Symbols
+    void (*printf_ptr)(const char*, ...) = printf;
+    SymbolTable::Register("printf", (uint32_t)printf_ptr);
+    SymbolTable::Register("_Z6printfPKcz", (uint32_t)printf_ptr);
+
+    // Export Memory Functions
+    EXPORT_SYMBOL(kmalloc);
+    EXPORT_SYMBOL(kfree);
+    
+    // Export C++ Operators (Fixes _Znwj, _ZdlPvj)
+    void* (*new_ptr)(size_t) = operator new;
+    void (*delete_ptr)(void*) = operator delete;
+    void (*delete_sized_ptr)(void*, size_t) = operator delete;
+    SymbolTable::Register("_Znwj", (uint32_t)new_ptr);
+    SymbolTable::Register("_ZdlPv", (uint32_t)delete_ptr);
+    SymbolTable::Register("_ZdlPvj", (uint32_t)delete_sized_ptr);
+
+    // Export PIC
+    EXPORT_SYMBOL_ASM("_ZN41PeripheralComponentInterconnectControllerC1Ev"); // Constructor
+    EXPORT_SYMBOL_ASM("_ZN41PeripheralComponentInterconnectControllerD1Ev"); // Destructor
+    EXPORT_SYMBOL_ASM("_ZN41PeripheralComponentInterconnectController18FindHardwareDeviceEtt");
+    EXPORT_SYMBOL_ASM("_ZN41PeripheralComponentInterconnectController4ReadEtttj"); // Read
+    EXPORT_SYMBOL_ASM("_ZN41PeripheralComponentInterconnectController5WriteEtttjj");
+    EXPORT_SYMBOL_ASM("_ZN41PeripheralComponentInterconnectController22GetBaseAddressRegisterEtttt");
+
+    // Export GraphicsDriver Methods
+    EXPORT_SYMBOL_ASM("_ZN14GraphicsDriverC2EjjjPj"); // Constructor
+    EXPORT_SYMBOL_ASM("_ZN14GraphicsDriverD2Ev");     // Destructor
+    EXPORT_SYMBOL_ASM("_ZN14GraphicsDriver5FlushEv");
+    EXPORT_SYMBOL_ASM("_ZN14GraphicsDriver8PutPixelEiij"); // The specific overload (int, int, uint32)
+
 }
 
 /**
@@ -84,9 +73,10 @@ void DriverManager::AddDriver(Driver* drv) {
  */
 void DriverManager::ActivateAll() {
     for (int i = 0; i < numDrivers; i++) {
-        PRINT("DriverManager", "Starting Driver: %s", drivers[i]->driverName); // Log driver name.
-        drivers[i]->Activate(); // Activate the driver.
-        printf("[ OK ]\n"); // Indicate success for the driver.
+        if (!drivers[i]->is_Active) {
+            PRINT("DriverManager", "Starting Driver: %s", drivers[i]->driverName); // Log driver name.
+            drivers[i]->Activate(); // Activate the driver.
+            printf("[ OK ]\n"); // Indicate success for the driver.
+        }
     }
-    printf("[ All OK ]\n\n"); // Indicate that all drivers were successfully activated.
 }

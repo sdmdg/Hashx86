@@ -8,7 +8,7 @@
 
 #include <kernel.h>
 
-#define VBE_ENABLED true;
+#define screen_ENABLED true;
 #define DEBUG_ENABLED true;
 
 KERNEL_MEMORY_MAP g_kmap;
@@ -76,59 +76,142 @@ void display_kernel_memory_map(KERNEL_MEMORY_MAP *kmap) {
 }
 
 void init_memory(MultibootInfo* mbinfo) {
-
     memset(&g_kmap, 0, sizeof(KERNEL_MEMORY_MAP));
-    if (get_kernel_memory_map(&g_kmap, mbinfo) < 0) {
-        #ifdef DEBUG_ENABLED
-            DEBUG_LOG("Error: Failed to get kernel memory map");
-        #endif
-        return;
+    get_kernel_memory_map(&g_kmap, mbinfo);
+    
+    // Initialize PMM at end of Kernel (Respect BSS/Stack)
+    // Use bss_end_addr to ensure we are past the stack
+    uint32_t heap_start_addr = g_kmap.kernel.bss_end_addr;
+    
+    // Safety Fallback: Use k_end_addr if bss calc seems wrong
+    if (g_kmap.kernel.k_end_addr > heap_start_addr) {
+        heap_start_addr = g_kmap.kernel.k_end_addr;
     }
 
-    #ifdef DEBUG_ENABLED
-        //display_kernel_memory_map(&g_kmap);
-        DEBUG_LOG("Total Memory: %d KB, %d Bytes", g_kmap.system.total_memory, g_kmap.available.size);
-        DEBUG_LOG("Start addr: 0x%x, End addr: 0x%x", g_kmap.available.start_addr, g_kmap.available.end_addr);
-        DEBUG_LOG("Kernal start addr: 0x%x, Kernal end addr: 0x%x", g_kmap.kernel.k_start_addr, g_kmap.kernel.data_end_addr);
-    #endif
+    if (heap_start_addr < 0x200000) { 
+        heap_start_addr = 0x200000; 
+    }
 
-
-    // Initialize PMM
-    uint32_t heap_start_addr = g_kmap.available.start_addr;
-
-    // Reserve space for kernel
-    heap_start_addr = g_kmap.kernel.data_end_addr;
+    // Add 16KB padding to be safe.
+    heap_start_addr += 0x4000; 
 
     struct multiboot_module* modules = (struct multiboot_module*)mbinfo->mods_addr;
 
-    // If have modules
-    for (int mod_idx = 0; mod_idx < mbinfo->mods_count; mod_idx++) {
-        uint32_t mod_start = modules[mod_idx].mod_start;
-        uint32_t mod_end = modules[mod_idx].mod_end;
-        
-        if (mod_end > heap_start_addr) {
-            heap_start_addr = mod_end; // skip past modules
+    if (mbinfo->mods_count > 0) {
+        for (int mod_idx = 0; mod_idx < mbinfo->mods_count; mod_idx++) {
+            uint32_t mod_end = modules[mod_idx].mod_end;
+            if (mod_end > heap_start_addr) {
+                heap_start_addr = mod_end; 
+            }
         }
     }
 
-    // Now initialize PMM from safe start
-    pmm_init(heap_start_addr, g_kmap.available.end_addr);
-
-    // Mark available memory regions as free
-    pmm_init_region(heap_start_addr, g_kmap.available.end_addr);
-    DEBUG_LOG("Max blocks: %d\n\n", pmm_get_max_blocks());
-    
-    // Allocate heap (100MB)
-    void* heap_start = pmm_alloc_blocks(50600);
-    if (heap_start == NULL) {
-        DEBUG_LOG("Failed to allocate kernel heap!");
+    // Align to Page Boundary
+    if ((heap_start_addr & 0xFFF) != 0) {
+        heap_start_addr = (heap_start_addr & 0xFFFFF000) + 0x1000;
     }
 
-    size_t heap_size = 50600 * PMM_BLOCK_SIZE;
+    // initialize PMM
+    pmm_init(heap_start_addr, g_kmap.available.end_addr);
+    pmm_init_region(heap_start_addr, g_kmap.available.end_addr);
+    
+    // --- HEAP ALLOCATION ---
+    uint32_t blocks_needed = 8192 * 6;
+    void* heap_start = pmm_alloc_blocks(blocks_needed);
+    
+    if (heap_start == NULL) {
+        // Fallback to 12MB if 64MB fails (e.g. on smaller VMs)
+        blocks_needed = 3072;
+        heap_start = pmm_alloc_blocks(blocks_needed);
+        if (heap_start == NULL) {
+            printf("CRITICAL: Failed to allocate kernel heap!\n");
+            while(1) asm volatile("hlt");
+        }
+    }
+
+    // Force Heap Alignment (Crucial for Paging)
+    uint32_t heap_val = (uint32_t)heap_start;
+    if ((heap_val & 0xFFF) != 0) {
+        heap_val = (heap_val + 0xFFF) & ~0xFFF;
+        blocks_needed--; 
+    }
+    heap_start = (void*)heap_val;
+
+    size_t heap_size = blocks_needed * PMM_BLOCK_SIZE;
     void* heap_end = (void*)((uint32_t)heap_start + heap_size);
+    
+    DEBUG_LOG("Kernel Heap: 0x%x - 0x%x (%d MB)", heap_start, heap_end, heap_size/1024/1024);
+    
     kheap_init(heap_start, heap_end);
-    //MemoryManager memoryManager((uint32_t)heap_start, (void*)((uint32_t)heap_end-(uint32_t)heap_start));
 }
+
+void init_pci(FAT32* boot_partition, DriverManager* driverManager,  GraphicsDriver*& screen) {
+    printf("\n[Kernel] Initializing Drivers...\n");
+    // ---------------------------------------------------------
+    // Dynamic Graphics Loading (with PCI)
+    // ---------------------------------------------------------
+
+    // Scan for known BGA/SVGA Vendors
+    // 0x1234:0x1111 = Bochs / QEMU
+    // 0x80EE:0xBEEF = VirtualBox Graphics Adapter
+    // 0x15AD:0x0405 = VMware SVGA II (often used by VBox)
+
+    // Check if BGA Hardware Exists via PCI
+    PeripheralComponentInterconnectController* pciCheck = new PeripheralComponentInterconnectController();
+    PeripheralComponentInterconnectDeviceDescriptor* dev = nullptr;
+    if (dev == nullptr) dev = pciCheck->FindHardwareDevice(0x1234, 0x1111);
+    if (dev->vendor_id == 0) dev = pciCheck->FindHardwareDevice(0x80EE, 0xBEEF);
+    if (dev->vendor_id == 0) dev = pciCheck->FindHardwareDevice(0x15AD, 0x0405);
+
+    // Only Proceed if Device Found
+    if (dev->vendor_id != 0) {
+        char* BGAfilename = "DRIVERS/BGA.SYS";
+
+        printf("[Kernel] BGA Hardware Detected (ID: %x:%x). Loading Driver... [%s]\n", dev->vendor_id, dev->device_id, BGAfilename);
+        File* bgaFile = boot_partition->Open(BGAfilename);
+
+        if (bgaFile) {
+            void* entryPoint = ModuleLoader::LoadMatchingDriver(bgaFile, dev->vendor_id, dev->device_id);
+            
+            if (entryPoint) {
+                GetDriverInstancePtr createDriver = (GetDriverInstancePtr)entryPoint;
+                void* raw = createDriver();
+                
+                if (raw) {
+                    Driver* drv = (Driver*)raw;
+                    
+                    // Activate initializes the card and sets internal videoMemory
+                    drv->Activate(); 
+                    driverManager->AddDriver(drv);
+
+                    GraphicsDriver* oldDR = screen;
+
+                    // This pointer math is required because of the multiple inheritance shift
+                    screen = (GraphicsDriver*)((uint32_t)raw + sizeof(Driver));
+
+                    int32_t x ,y;
+                    screen->GetScreenCenter(oldDR->GetWidth(), oldDR->GetHeight(), x, y);
+                    screen->DrawBitmap(x, y, oldDR->GetBackBuffer(), oldDR->GetWidth(), oldDR->GetHeight());
+                    screen->Flush();
+                    delete oldDR;
+                    printf("BGA Module Loaded Successfully.\n");
+                }
+            } else {
+                printf("[Kernel] Failed to link BGA module.\n");
+            }
+            bgaFile->Close();
+            delete bgaFile;
+        } else {
+            printf("[Kernel] Hardware found, but %s missing!\n", BGAfilename);
+        }
+    } else {
+        printf("[Kernel] No BGA Hardware found. Skipping driver load.\n");
+    }
+
+    delete pciCheck;
+    delete dev;
+};
+
 
 void pDesktop(void* arg) {
     DesktopArgs* args = (DesktopArgs*)arg;
@@ -139,7 +222,7 @@ void pDesktop(void* arg) {
             DEBUG_LOG("Error: args is null");
         return;
         }
-        if (!args->vbe) {
+        if (!args->screen) {
             DEBUG_LOG("Error: args->vga is null");
             return;
         }
@@ -149,7 +232,7 @@ void pDesktop(void* arg) {
         }
     #endif
 
-    VESA_BIOS_Extensions* vbe = args->vbe;
+    GraphicsDriver* screen = args->screen;
     Desktop* desktop = args->desktop;
 
 /*     Window* win1 = new Window(desktop, 150,300,400,500);
@@ -188,8 +271,8 @@ void pDesktop(void* arg) {
 
     while (1) {
         //uint32_t start = timerTicks;
-        desktop->Draw(vbe);
-        vbe->Flush();
+        desktop->Draw(screen);
+        screen->Flush();
         //uint32_t end = timerTicks;
         //DEBUG_LOG("Taken : %d ms", (end-start));
     }
@@ -219,83 +302,161 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     #ifdef DEBUG_ENABLED
         DEBUG_LOG("Initializing paging...\n");
     #endif
-    Paging paging;
-    paging.Activate();
+    Paging* paging = new Paging();
+    paging->Activate();
 
-    ProcessManager pManager(&paging);
-    VESA_BIOS_Extensions* vbe = new VESA_BIOS_Extensions(mbinfo);
-    NINA nina;
-    InterruptManager interrupts(&pManager, vbe, &paging);
-    DriverManager driverManager;
-    SyscallHandler sysCalls(0x80, &interrupts);
-    ELFLoader elfLoader(&paging, &pManager);
-    FontManager fManager;
+    // Initialize ATA
+    AdvancedTechnologyAttachment* ata = nullptr;
+    AdvancedTechnologyAttachment* SATAList[] = { 
+        new AdvancedTechnologyAttachment(true, 0x1F0),  // Primary Master
+        new AdvancedTechnologyAttachment(false, 0x1F0), // Primary Slave
+        new AdvancedTechnologyAttachment(true, 0x170),  // Secondary Master
+        new AdvancedTechnologyAttachment(false, 0x170), // Secondary Slave
+        0
+    };
 
-    // VESA Graphics
-    #ifdef VBE_ENABLED
-        vbe->DrawBitmap(476, 250, (const uint32_t*)icon_main_200x200, 200, 200);
-        Desktop desktop(1152, 864);
-        HguiHandler guiCalls(0x81, &interrupts);
+    for (int i = 0; SATAList[i] != 0; i++) 
+    { 
+        printf("Checking Drive %d...\n", i);
+        uint32_t ata_size = SATAList[i]->Identify();
+
+        if (ata_size == 0) continue; // No Drive detected
+
+        ata = SATAList[i];
         
-        MouseDriver mouse(&interrupts, &desktop);
-        driverManager.AddDriver(&mouse);
-        
-        KeyboardDriver keyboard(&interrupts, &desktop);
-        driverManager.AddDriver(&keyboard);
-/* 
-        PeripheralComponentInterconnectController PCIcontroller;
-        PCIcontroller.SelectDrivers(&driverManager, &interrupts); */
+        // Use the FIRST drive found.
+        break; 
+    }
+
+    if (ata == nullptr) {
+        printf("Error: No ATA drive detected!\nPlease connect an ATA drive and restart the system.\n");
+        while (1) asm volatile ("hlt");
+    }
+
+    // Initialize MBR and Partitions
+    MSDOSPartitionTable* MSDOS = new MSDOSPartitionTable(ata);
+    MSDOS->ReadPartitions();
+    // Get Boot Partition
+    FAT32* boot_partition = MSDOS->partitions[0];
+    if (!boot_partition) {
+        printf("Error: No valid boot partition found!\nPlease reinstall the OS using 'make hdd'.\n");
+        while (1) { asm volatile ("hlt"); }
+    }
+    boot_partition->ListRoot();
+
+    GraphicsDriver* screen = new VESA_BIOS_Extensions(
+                mbinfo->framebuffer_width, mbinfo->framebuffer_height, 
+                32, (uint32_t *)mbinfo->framebuffer_addr
+            );
+
+    // Load Boot Image
+    char* bootImageName = (char *)"BITMAPS/BOOT.BMP";
+    Bitmap* bootImg = new Bitmap(bootImageName);
+    if (bootImg->IsValid()) {
+        int32_t x,y;
+        screen->GetScreenCenter(bootImg->GetWidth(), bootImg->GetHeight(), x, y);
+        screen->DrawBitmap(x, (int32_t)((screen->GetHeight() * 1) / 3), bootImg->GetBuffer(), bootImg->GetWidth(), bootImg->GetHeight());
+        screen->Flush();
+    }
+    
+    delete bootImg;
+
+    // Load Font File
+    FontManager* fManager = new FontManager();
+    char * fontFileName = (char *)"FONTS/SEGOEUI.BIN";
+    File* fontFile = boot_partition->Open(fontFileName);
+    if (fontFile->size == 0) {
+        printf("Font error, file not found or empty: %s\nPlease reinstall the OS using 'make hdd'.\n", fontFile);
+        while (1) { asm volatile ("hlt"); }
+    }
+    fManager->LoadFile(fontFile);
+    fontFile->Close();
+    delete fontFile;
+
+    Font* BOOT = fManager->getNewFont();
+    if (BOOT != nullptr){
+        BOOT->setSize(XLARGE);
+        int32_t x,y;
+        screen->GetScreenCenter(BOOT->getStringLength("Hash x86"), 0, x, y);
+        screen->DrawString(x, (int32_t)((screen->GetHeight() * 1) / 3 + 300),"Hash x86", BOOT, 0xFFFFFFFF);
+        screen->Flush();
+    }
 
 
-        DesktopArgs desktopArgs { vbe, &desktop };
-        Process* process1 = new Process(&paging, pDesktop, &desktopArgs);
-        pManager.mapKernel(process1);
-        pManager.AddProcess(process1);
+    DriverManager* driverManager = new DriverManager();
+    init_pci(boot_partition, driverManager, screen);
 
-        ProgramArguments ProcessArgs { "ARG1", "ARG2" , "ARG3" , "ARG4", "ARG5"};
-        if (mbinfo->mods_count > 0) {
-            DEBUG_LOG("Found %d Modules", mbinfo->mods_count);
-            struct multiboot_module* modules = (struct multiboot_module*)mbinfo->mods_addr;
 
-            fManager.LoadFile(modules[0].mod_start, modules[0].mod_end); // load font file
+    ProcessManager* pManager = new ProcessManager(paging);
+    InterruptManager interrupts(pManager, screen, paging);
+    SyscallHandler* sysCalls = new SyscallHandler(0x80, &interrupts);
 
-            for (uint32_t mod_idx = 1; mod_idx < mbinfo->mods_count; mod_idx++) { // Bypass 1st mod
-                uint32_t mod_start = modules[mod_idx].mod_start;
-                uint32_t mod_end = modules[mod_idx].mod_end;
+    // Load Desktop
+    Desktop* desktop = new Desktop(GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT);
+    HguiHandler* guiCalls = new HguiHandler(0x81, &interrupts);
+    
+    MouseDriver* mouse = new MouseDriver(&interrupts, desktop);
+    driverManager->AddDriver(mouse);
+    KeyboardDriver* keyboard = new KeyboardDriver(&interrupts, desktop);
+    driverManager->AddDriver(keyboard);
 
-                Process* prog =  elfLoader.loadModule(mod_start, mod_end, &ProcessArgs);
-                elfLoader.startModule(prog);
-            }
-
-        } else {
-            DEBUG_LOG("No modules found");
-        }
-
-    #endif
+    DesktopArgs* desktopArgs = new DesktopArgs{ screen, desktop };
+    Process* process1 = new Process(paging, pDesktop, desktopArgs);
+    pManager->mapKernel(process1);
+    pManager->AddProcess(process1);
 
     
-    Font* BOOT = fManager.getNewFont();
-    BOOT->setSize(XLARGE);
-    vbe->DrawString((1152 - BOOT->getStringLength("Hash x86"))/2 ,550,"Hash x86", BOOT, 0xFFFFFFFF);
-    vbe->Flush();
+    if (mbinfo->mods_count > 0) {
+        DEBUG_LOG("Found %d Modules", mbinfo->mods_count);
+        struct multiboot_module* modules = (struct multiboot_module*)mbinfo->mods_addr;
+        //fManager.LoadFile(modules[0].mod_start, modules[0].mod_end); // load font file
+    } else {
+        DEBUG_LOG("No modules found");
+    }
 
-    wait(500);
+    // Load and start sample programs
+    ELFLoader* elfLoader = new ELFLoader(paging, pManager);
+    ProgramArguments* ProcessArgs = new ProgramArguments{ "ARG1", "ARG2", "ARG3", "ARG4", "ARG5" };
+    
+    const char* binList[] = { 
+        "BIN/MEMVIEW.BIN", 
+        "BIN/TEST.BIN", 
+        0
+    };
+
+    for (int i = 0; binList[i] != 0; i++) 
+    {   
+        // Open the file
+        File* file = boot_partition->Open((char*)binList[i]);
+        
+        if (file == 0) {
+            printf("File not found: %s\nPlease reinstall OS.\n", binList[i]);
+            delete file;
+            continue;
+        }
+
+        // Load the ELF from the file
+        Process* prog = elfLoader->loadELF(file, (void*)ProcessArgs);
+
+        if (prog) {
+            elfLoader->runELF(prog);
+        } else {
+            printf("Failed to load ELF: %s\n", binList[i]);
+        }
+
+        file->Close();
+        delete file; 
+    }
 
 
     DEBUG_LOG("Welcome to #x86!\n");
-    driverManager.ActivateAll();
-
+    driverManager->ActivateAll();
 
     interrupts.Activate();
 
-    while (1);
+
+    while (1) { asm volatile ("hlt"); }
     
-
-
-
-
-
-
 
 
     // VGA Graphics

@@ -19,13 +19,17 @@
 #include <core/pmm.h>
 #include <core/memory.h>
 #include <core/paging.h>
+#include <gui/bmp.h>
 #include <gui/renderer/nina.h>
 #include <core/drivers/vga.h>
+#include <core/filesystem/msdospart.h>
 #include <gui/gui.h>
 #include <core/multiboot.h>
 #include <core/drivers/vbe.h>
 #include <core/process.h>
 #include <core/timing.h>
+#include <core/drivers/GraphicsDriver.h>
+
 
 
 // symbols from linker.ld for section addresses

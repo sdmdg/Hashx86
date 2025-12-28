@@ -19,7 +19,7 @@ public:
 
     MessageBox(CompositeWidget* parent, const char* title, const char* message, Type type, int* resultPtr);
     ~MessageBox();
-    void Draw(GraphicsContext* gc) override;
+    void Draw(GraphicsDriver* gc) override;
 };
 
 #endif // MESSAGEBOX_H

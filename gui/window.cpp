@@ -45,7 +45,7 @@ void Window::OnClose()
     ProcessManager::activeInstance->getProcessByPID(this->PID)->eventQueue.Add(new_event);
 }
 
-void Window::Draw(GraphicsContext* gc)
+void Window::Draw(GraphicsDriver* gc)
 {
     int X = 0;
     int Y = 0;

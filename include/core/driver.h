@@ -1,7 +1,9 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+#include <types.h>
 #include <debug.h>
+#include <core/drivers/ModuleLoader.h>
 
 
 /**
@@ -12,47 +14,34 @@
  * of the driver.
  */
 class Driver {
+    friend class DriverManager;
 public:
-    const char* driverName; ///< Name of the driver (up to 25 characters).
+    const char* driverName;
+    
+    inline Driver() { 
+        driverName = "Unknown"; 
+    }
 
-    /**
-     * @brief Constructs a Driver object.
-     */
-    Driver();
+    inline virtual ~Driver() {
+    }
 
-    /**
-     * @brief Destroys the Driver object.
-     */
-    ~Driver();
+    inline virtual void Activate() {
+    }
 
-    /**
-     * @brief Activates the driver.
-     * 
-     * This method can be overridden to implement specific driver activation logic.
-     */
-    virtual void Activate();
+    inline virtual int Reset() { 
+        return 0; 
+    }
 
-    /**
-     * @brief Resets the driver.
-     * 
-     * This method can be overridden to reset the driver to its initial state.
-     * @return An integer status code.
-     */
-    virtual int Reset();
-
-    /**
-     * @brief Deactivates the driver.
-     * 
-     * This method can be overridden to implement specific driver deactivation logic.
-     */
-    virtual void Deactivate();
+    inline virtual void Deactivate() {
+    }
+    
+    inline void SetName(const char* name) { 
+        driverName = name; 
+    }
+protected: 
+    bool is_Active = false;
 };
 
-/**
- * @brief Manages a collection of drivers.
- * 
- * This class allows for adding drivers, keeping track of them and activating all drivers.
- */
 class DriverManager {
 private:
     Driver* drivers[255]; ///< Array to store up to 255 drivers.
@@ -76,4 +65,13 @@ public:
     void ActivateAll();
 };
 
-#endif // DRIVER_H
+
+// --- DYNAMIC LINKING EXTENSION ---
+typedef Driver* (*GetDriverInstancePtr)();
+
+#define DYNAMIC_DRIVER(ClassName) \
+    extern "C" Driver* CreateDriverInstance() { \
+        return new ClassName(); \
+    }
+
+#endif

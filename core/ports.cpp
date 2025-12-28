@@ -9,19 +9,6 @@
 #include <core/ports.h>
 
 
-uint8_t inb(uint16_t portNumber)
-{
-    uint8_t result;
-    asm volatile ("inb %1, %0" : "=a"(result) : "Nd"(portNumber));
-    return result;
-}
-
-void outb(uint16_t portNumber, uint8_t value)
-{
-    asm volatile ("outb %0, %1" : : "a"(value), "Nd"(portNumber));
-}
-
-
 Port::Port(uint16_t portNumber)
 {
     this->portNumber = portNumber;

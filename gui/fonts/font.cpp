@@ -178,6 +178,18 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
     font_list->Add(new_font_file);
 }
 
+void FontManager::LoadFile(File* file) {
+    if (file->size == 0) {
+        printf("Font error, file not found or empty: %s", file);
+    }
+
+    uint8_t* buffer = new uint8_t[file->size + 1];
+    file->Read(buffer, file->size);
+    buffer[file->size] = 0;
+    file->Close();
+    LoadFile((uint32_t)buffer, (uint32_t)(buffer + file->size));
+}
+
 Font* FontManager::getNewFont(FontSize size, FontType type) {
     // For now, just pick the first loaded font
     // Later, scan list for best matching (size, type)

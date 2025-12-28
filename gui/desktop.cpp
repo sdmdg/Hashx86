@@ -17,16 +17,25 @@ Desktop::Desktop(int32_t w, int32_t h)
     MouseY = h / 2;
     activeInstance = this;
     DEBUG_LOG("DESKTOP id 0x%x", this->ID);
+
+    char * wallpaperName = (char *)"BITMAPS/DESKTOP.BMP";
+    Bitmap* wallpaperImg = new Bitmap(wallpaperName);
+    if (wallpaperImg->IsValid()) {
+        this->Wallpaper = wallpaperImg;
+    } else {
+        this->Wallpaper = new Bitmap(w, h, 0xFF0000FF);
+        delete wallpaperImg;
+    }
 }
 
 Desktop::~Desktop()
 {
 }
 
-void Desktop::Draw(GraphicsContext* gc)
+void Desktop::Draw(GraphicsDriver* gc)
 {
     // Draw the desktop background
-    gc->DrawBitmap(0, 0, (const uint32_t*)image_wallpaper_1152x864, 1152, 864);
+    gc->DrawBitmap(0, 0, (const uint32_t*)this->Wallpaper->GetBuffer(), this->Wallpaper->GetWidth(), this->Wallpaper->GetHeight());
 
     // Draw all windows and widgets
     CompositeWidget::Draw(gc);

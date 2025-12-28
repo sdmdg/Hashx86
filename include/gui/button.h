@@ -14,7 +14,7 @@ public:
     void SetHeight(int32_t h);
     
     void RedrawToCache() override;
-    void Draw(GraphicsContext* gc);
+    void Draw(GraphicsDriver* gc);
     
     // Mouse event handlers
     void OnMouseDown(int32_t x, int32_t y, uint8_t button) override;

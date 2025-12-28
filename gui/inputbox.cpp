@@ -78,7 +78,7 @@ void InputBox::RedrawToCache()
     isDirty = false;
 }
 
-void InputBox::Draw(GraphicsContext* gc)
+void InputBox::Draw(GraphicsDriver* gc)
 {
     Widget::Draw(gc);
 }

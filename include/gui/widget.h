@@ -3,7 +3,6 @@
 
 #include <types.h>
 #include <utils/string.h>
-#include <gui/graphicscontext.h>
 #include <gui/fonts/font.h>
 #include <gui/icons.h>
 #include <core/drivers/keyboard.h>
@@ -56,7 +55,7 @@ public:
     virtual void ModelToScreen(int32_t& x, int32_t& y);
     virtual bool ContainsCoordinate(int32_t x, int32_t y);
 
-    virtual void Draw(GraphicsContext* gc);
+    virtual void Draw(GraphicsDriver* gc);
     virtual void OnMouseDown(int32_t x, int32_t y, uint8_t button);
     virtual void OnMouseUp(int32_t x, int32_t y, uint8_t button);
     virtual void OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy);
@@ -79,7 +78,7 @@ public:
 
     virtual void GetFocus(Widget* widget);
 
-    virtual void Draw(GraphicsContext* gc);
+    virtual void Draw(GraphicsDriver* gc);
     virtual void OnMouseDown(int32_t x, int32_t y, uint8_t button);
     virtual void OnMouseUp(int32_t x, int32_t y, uint8_t button);
     virtual void OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy);

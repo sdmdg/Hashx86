@@ -67,6 +67,7 @@ void MouseDriver::Activate() {
     commandPort.Write(0xD4); // Signal the mouse device
     dataPort.Write(0xF4);    // Enable packet streaming
     dataPort.Read();         // Acknowledge response
+    this->is_Active = true;
 }
 
 /**

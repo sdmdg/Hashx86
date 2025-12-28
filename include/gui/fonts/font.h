@@ -5,6 +5,7 @@
 #include <debug.h>
 #include <core/memory.h>
 #include <utils/linkedList.h>
+#include <core/filesystem/File.h>
 
 typedef enum {
     REGULAR = 0x0,
@@ -97,6 +98,7 @@ public:
     static FontManager* activeInstance;
 
     void LoadFile(uint32_t mod_start, uint32_t mod_end);
+    void LoadFile(File* file);
     Font* getNewFont(FontSize size = SMALL, FontType type = REGULAR);
 
 private:

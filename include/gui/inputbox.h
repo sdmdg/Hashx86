@@ -23,7 +23,7 @@ public:
     void setType(FontType type);
 
     void RedrawToCache() override;
-    void Draw(GraphicsContext* gc) override;
+    void Draw(GraphicsDriver* gc) override;
 
     void OnKeyDown(const char* key) override;
     void OnKeyUp(const char* key) override;
