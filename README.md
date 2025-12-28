@@ -42,7 +42,7 @@ This project focuses on low-level system development, implementing core operatin
   The kernel detects BGA hardware via PCI, loads the driver from the FAT32 disk and instantly switches to high resolution.
 
 <p align="center">
-  <img width="500" height="500" alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
+  <img alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
 </p>
 
 - 📺 **GUI Framework at 1152×864 (32-bit VESA)**  
