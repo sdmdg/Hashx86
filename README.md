@@ -41,7 +41,9 @@ This project focuses on low-level system development, implementing core operatin
 - 📺 **NEW : Dynamic BGA Graphics (High Resolution)**
   The kernel detects BGA hardware via PCI, loads the driver from the FAT32 disk and instantly switches to high resolution.
 
-  https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea
+<p align="center">
+  <img width="500" height="500" alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
+</p>
 
 - 📺 **GUI Framework at 1152×864 (32-bit VESA)**  
   Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
