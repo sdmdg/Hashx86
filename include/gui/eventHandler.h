@@ -1,6 +1,7 @@
 #ifndef EVENT_HANDLER_H
 #define EVENT_HANDLER_H
 
+#include <core/process_types.h>
 #include <utils/linkedList.h>
 
 typedef enum {
@@ -16,4 +17,10 @@ struct Event {
     uint32_t param2;
 };
 
-#endif // EVENT_HANDLER_H
+struct EventHandler {
+    uint32_t pid;
+    ThreadControlBlock* thread;
+    LinkedList<Event*> eventQueue;
+};
+
+#endif  // EVENT_HANDLER_H

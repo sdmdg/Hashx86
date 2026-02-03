@@ -1,4 +1,12 @@
 /**
+ * @file        gdt.cpp
+ * @brief       Global Descriptor Table (GDT) Implementation
+ *
+ * @date        01/02/2026
+ * @version     1.0.0
+ */
+
+/**
  * Global Descriptor Table(GDT) setup
  */
 #include <core/gdt.h>
@@ -7,7 +15,7 @@ GDT g_gdt[NO_GDT_DESCRIPTORS];
 GDT_PTR g_gdt_ptr;
 
 /**
- * fill entries of GDT 
+ * fill entries of GDT
  */
 void gdt_set_entry(int index, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
     GDT *entry = &g_gdt[index];

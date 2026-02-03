@@ -1,10 +1,10 @@
 #ifndef MESSAGEBOX_H
 #define MESSAGEBOX_H
 
-#include <gui/window.h>
 #include <gui/elements/window_action_button.h>
+#include <gui/window.h>
 
-enum Type { INFO/* , YES_NO */ };
+enum Type { INFO /* , YES_NO */ };
 
 class MessageBox : public Window {
 private:
@@ -15,11 +15,10 @@ private:
     int* resultPtr;
 
 public:
-    
-
-    MessageBox(CompositeWidget* parent, const char* title, const char* message, Type type, int* resultPtr);
+    MessageBox(CompositeWidget* parent, const char* title, const char* message, Type type,
+               int* resultPtr);
     ~MessageBox();
     void Draw(GraphicsDriver* gc) override;
 };
 
-#endif // MESSAGEBOX_H
+#endif  // MESSAGEBOX_H

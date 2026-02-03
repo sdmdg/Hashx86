@@ -1,12 +1,11 @@
 #ifndef FAT32_H
 #define FAT32_H
 
-#include <types.h>
 #include <core/drivers/ata.h>
-#include <core/memory.h>
-#include <utils/string.h>
 #include <core/filesystem/File.h>
-
+#include <core/memory.h>
+#include <types.h>
+#include <utils/string.h>
 
 // Standard FAT32 Structures
 struct BiosParameterBlock32 {
@@ -68,34 +67,36 @@ public:
     void CreateFile(char* path);
     void MakeDirectory(char* path);
     void DeleteFile(char* path);
-    void DeleteDirectory(char* path); 
+    void DeleteDirectory(char* path);
     void ReadFile(char* path, uint8_t* buffer, uint32_t length);
     void WriteFile(char* path, uint8_t* buffer, uint32_t length);
     uint32_t GetFileSize(char* path);
-    
+
     void Format();
-    static void FormatRaw(AdvancedTechnologyAttachment* hd, uint32_t startSector, uint32_t sizeSectors);
+    static void FormatRaw(AdvancedTechnologyAttachment* hd, uint32_t startSector,
+                          uint32_t sizeSectors);
 
 private:
     AdvancedTechnologyAttachment* hd;
     BiosParameterBlock32 bpb;
-    
+
     uint32_t partitionOffset;
-    uint32_t fatStart;      
-    uint32_t dataStart;     
-    uint32_t rootStart;     
+    uint32_t fatStart;
+    uint32_t dataStart;
+    uint32_t rootStart;
     bool valid;
 
     // --- Helpers ---
     uint32_t ClusterToSector(uint32_t cluster);
     uint32_t GetFATEntry(uint32_t cluster);
     void SetFATEntry(uint32_t cluster, uint32_t value);
-    uint32_t AllocateCluster(); 
-    void FreeChain(uint32_t startCluster); 
+    uint32_t AllocateCluster();
+    void FreeChain(uint32_t startCluster);
 
     // --- Directory Helpers ---
-    bool FindEntryInCluster(uint32_t cluster, char* name, uint32_t &sectorOut, uint32_t &offsetOut, DirectoryEntryFat32& entryOut);
-    bool FindFreeEntryInCluster(uint32_t dirCluster, uint32_t &sectorOut, uint32_t &offsetOut);
+    bool FindEntryInCluster(uint32_t cluster, char* name, uint32_t& sectorOut, uint32_t& offsetOut,
+                            DirectoryEntryFat32& entryOut);
+    bool FindFreeEntryInCluster(uint32_t dirCluster, uint32_t& sectorOut, uint32_t& offsetOut);
     bool IsDirectoryEmpty(uint32_t dirCluster);
 
     // --- Path Logic ---
@@ -106,4 +107,4 @@ private:
     void StringToFatName(char* input, char* outName, char* outExt);
 };
 
-#endif // FAT32_H
+#endif  // FAT32_H

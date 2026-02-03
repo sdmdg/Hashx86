@@ -1,12 +1,11 @@
 #ifndef FILE_SYSTEM_MSDOS
 #define FILE_SYSTEM_MSDOS
 
-#include <types.h>
 #include <core/drivers/ata.h>
 #include <core/filesystem/FAT32.h>
+#include <types.h>
 
-struct PartitionTableEntry
-{
+struct PartitionTableEntry {
     uint8_t bootable;
 
     uint8_t start_head;
@@ -23,8 +22,7 @@ struct PartitionTableEntry
     uint32_t length;
 } __attribute__((packed));
 
-struct MasterBootRecord
-{
+struct MasterBootRecord {
     uint8_t bootloader[440];
     uint32_t signature;
     uint16_t unused;
@@ -32,8 +30,7 @@ struct MasterBootRecord
     uint16_t magicnumber;
 } __attribute__((packed));
 
-class MSDOSPartitionTable
-{
+class MSDOSPartitionTable {
 public:
     MSDOSPartitionTable(AdvancedTechnologyAttachment* ata);
     ~MSDOSPartitionTable();
@@ -41,11 +38,11 @@ public:
     void ReadPartitions();
     static FAT32* partitions[4];
     static MSDOSPartitionTable* activeInstance;
+
 private:
     uint32_t ata_size;
     AdvancedTechnologyAttachment* ata;
     uint32_t partitionsCounter = 0;
 };
 
-
-#endif // FILE_SYSTEM_MSDOS_H
+#endif  // FILE_SYSTEM_MSDOS_H

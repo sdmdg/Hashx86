@@ -1,7 +1,7 @@
 ;
 ;  @file        loader.asm
 ;  @brief       Main loader of #x86
-;  
+;
 ;  @date        24/04/2025
 ;  @version     1.0.0-beta
 ;
@@ -74,7 +74,7 @@ global loader            ; Make the loader function globally accessible
 loader:
     mov esp, kernel_stack     ; Set the stack pointer to the beginning of the kernel stack
     call callConstructors     ; Call the constructor functions
-    
+
     push eax                  ; Save the value of EAX register (for passing data)
     push ebx                  ; Save the value of EBX register (for passing data)
 

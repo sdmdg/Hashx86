@@ -55,7 +55,7 @@ SECTIONS
         *(.fini_array*)
         *(.comment)
     }
-    
+
     end = .; _end = .; __end = .;
     __kernel_section_end = .;
 }

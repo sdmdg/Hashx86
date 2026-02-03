@@ -1,51 +1,53 @@
-GPP_PARAMS = -m32 -g -ffreestanding -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common
+GPP_PARAMS = -m32 -g -ffreestanding -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common -fno-omit-frame-pointer
 ASM_PARAMS = --32 -g
 ASM_NASM_PARAMS = -f elf32
-objects = asm/loader.o \
-          asm/common_handler.o \
+objects = asm/common_handler.o \
           asm/load_gdt.o \
-		  asm/load_tss.o \
-		  utils/string.o \
-		  core/globals.o \
-		  core/pmm.o \
-		  core/paging.o \
-		  stdlib.o \
-		  debug.o \
-          kernel.o \
-		  core/gdt.o \
+          asm/load_tss.o \
+          asm/loader.o \
+          audio/wav.o \
+          core/driver.o \
+          core/drivers/ata.o \
+          core/drivers/AudioMixer.o \
+          core/drivers/GraphicsDriver.o \
+          core/drivers/keyboard.o \
+          core/drivers/ModuleLoader.o \
+          core/drivers/mouse.o \
+          core/drivers/SymbolTable.o \
+          core/drivers/vbe.o \
+          core/elf.o \
+          core/filesystem/FAT32.o \
+          core/filesystem/File.o \
+          core/filesystem/msdospart.o \
+          core/gdt.o \
+          core/globals.o \
+          core/interrupts.o \
+          core/KernelSymbolResolver.o \
+          core/memory.o \
+          core/paging.o \
+          core/pci.o \
+          core/pmm.o \
           core/ports.o \
-		  core/interrupts.o \
-		  core/syscalls.o \
-		  gui/Hgui.o \
-		  core/memory.o \
-		  core/driver.o \
-		  core/drivers/GraphicsDriver.o \
-		  core/drivers/ModuleLoader.o \
-		  core/drivers/SymbolTable.o \
-		  core/drivers/keyboard.o \
-		  core/drivers/mouse.o \
-		  core/drivers/vbe.o \
-		  core/drivers/ata.o \
-		  core/process.o \
-		  core/thread.o \
-		  core/elf.o \
-		  core/pci.o \
-		  core/filesystem/msdospart.o \
-		  core/filesystem/FAT32.o \
-		  core/filesystem/File.o \
-		  gui/renderer/nina.o \
-		  gui/fonts/font.o \
-		  gui/bmp.o \
-		  gui/widget.o \
-		  gui/desktop.o \
-		  gui/window.o \
-		  gui/button.o \
-		  gui/inputbox.o \
-		  gui/elements/window_action_button.o \
-		  gui/elements/window_action_button_round.o \
-		  gui/label.o
-#		  gui/messagebox.o 
-LD_PARAMS = -melf_i386
+          core/scheduler.o \
+          core/syscalls.o \
+          debug.o \
+          gui/bmp.o \
+          gui/button.o \
+          gui/desktop.o \
+          gui/elements/window_action_button.o \
+          gui/elements/window_action_button_round.o \
+          gui/fonts/font.o \
+          gui/Hgui.o \
+          gui/label.o \
+          gui/renderer/nina.o \
+          gui/widget.o \
+          gui/window.o \
+          kernel.o \
+          stdlib.o \
+          stdlib/math.o \
+          utils/string.o
+
+LD_PARAMS = -melf_i386 -Map kernel.map
 
 # Compiling C++ files inside the main directory
 %.o: %.cpp
@@ -60,6 +62,10 @@ core/%.o: %.c
 
 # Compiling C++ files inside the gui directory
 gui/%.o: gui/%.cpp
+	g++ $(GPP_PARAMS) -o $@ -c $<
+
+# Compiling C++ files inside the stdlib directory
+stdlib/%.o: stdlib/%.cpp
 	g++ $(GPP_PARAMS) -o $@ -c $<
 
 # Compiling assembly files
@@ -82,20 +88,23 @@ install: kernel.bin
 clean:
 	rm -f $(objects) kernel.bin
 
+build:
+	make clean
+	make
+	make iso
+	make hdd
+	make runq
+
 runq:
-	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
+	qemu-system-i386 -cdrom kernel.iso -boot d -vga std -serial stdio -m 1G -hda HDD.vdi -d int,cpu_reset -D ./log.txt \
+    -audiodev wav,id=snd0,path=debug_audio.wav \
+    -device es1370,audiodev=snd0
 
 run:
 	make clean
 	make
 	make iso
-	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
-# -bios /usr/share/ovmf/OVMF.fd
-
-build:
-	make
-	make iso
-	qemu-system-i386 -cdrom kernel.iso -boot d  -vga std -serial stdio -m 2G -hda HDD.vdi -d int,cpu_reset -D ./log.txt
+	make runq
 
 hdd:
 # 	Cleanup from previous mounts
@@ -108,25 +117,37 @@ hdd:
 # 	3. Mount Partition 1 (p1)
 	sudo mkdir -p /mnt/vdi_p1
 	sudo mount /dev/nbd0p1 /mnt/vdi_p1
+
 # 	4. Copy Files
 	-sudo mkdir -p /mnt/vdi_p1/bin
 	-sudo mkdir -p /mnt/vdi_p1/fonts
 	-sudo mkdir -p /mnt/vdi_p1/bitmaps
 	-sudo mkdir -p /mnt/vdi_p1/drivers
+	-sudo mkdir -p /mnt/vdi_p1/audio
 
-	sudo cp bin/bitmaps/boot.bmp /mnt/vdi_p1/bitmaps/boot.bmp
-	sudo cp bin/bitmaps/icon.bmp /mnt/vdi_p1/bitmaps/icon.bmp
-	sudo cp bin/bitmaps/cursor.bmp /mnt/vdi_p1/bitmaps/cursor.bmp
-	sudo cp bin/bitmaps/desktop.bmp /mnt/vdi_p1/bitmaps/desktop.bmp
-	sudo cp bin/bitmaps/panic.bmp /mnt/vdi_p1/bitmaps/panic.bmp
+	-sudo cp kernel.map /mnt/vdi_p1/kernel.map
 
-#	sudo rm -f /mnt/vdi_p1/drivers/bga.o
-	sudo cp drivers/bga.sys /mnt/vdi_p1/drivers/bga.sys
+#	-sudo cp bin/obj.obj /mnt/vdi_p1/obj.obj
+#	-sudo cp bin/obj1.obj /mnt/vdi_p1/obj1.obj
+#	-sudo cp bin/map.bmp /mnt/vdi_p1/map.bmp
+#	-sudo cp bin/sky.bmp /mnt/vdi_p1/sky.bmp
+	-sudo cp bin/audio/boot.wav /mnt/vdi_p1/audio/boot.wav
+	-sudo cp bin/bitmaps/boot.bmp /mnt/vdi_p1/bitmaps/boot.bmp
+	-sudo cp bin/bitmaps/icon.bmp /mnt/vdi_p1/bitmaps/icon.bmp
+	-sudo cp bin/bitmaps/cursor.bmp /mnt/vdi_p1/bitmaps/cursor.bmp
+	-sudo cp bin/bitmaps/desktop.bmp /mnt/vdi_p1/bitmaps/desktop.bmp
+	-sudo cp bin/bitmaps/panic.bmp /mnt/vdi_p1/bitmaps/panic.bmp
 
-	sudo cp bin/fonts/segoeui.bin /mnt/vdi_p1/fonts/segoeui.bin
+#	-sudo cp bin/sound.wav /mnt/vdi_p1/sound.wav
+#	-sudo rm -f /mnt/vdi_p1/drivers/ac97.sys
 
-	sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/bin/MeMView.bin
-	sudo cp user_prog/test/prog.bin /mnt/vdi_p1/bin/test.bin
+	-sudo cp drivers/bga.sys /mnt/vdi_p1/drivers/bga.sys
+	-sudo cp drivers/ac97.sys /mnt/vdi_p1/drivers/ac97.sys
+
+	-sudo cp bin/fonts/segoeui.bin /mnt/vdi_p1/fonts/segoeui.bin
+
+	-sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/bin/MeMView.bin
+	-sudo cp user_prog/test/prog.bin /mnt/vdi_p1/bin/test.bin
 # 	5. Cleanup
 	sudo umount /mnt/vdi_p1
 	sudo qemu-nbd --disconnect /dev/nbd0
@@ -159,3 +180,38 @@ iso: kernel.bin
 prog:
 	make hdd
 	make runq
+
+
+# -----------------------------------
+# CODE QUALITY TOOLS
+# Check style (Report Only)
+check-style:
+	@echo "--- Checking Code Formatting ---"
+	@find . -name "*.cpp" -o -name "*.c" -o -name "*.h" | xargs clang-format --dry-run -Werror
+	@echo "Style check passed."
+
+# Check Logic (Report Only)
+check-bugs:
+	@echo "--- Static Analysis ---"
+	@cppcheck --enable=warning,performance,portability \
+		--suppress=missingIncludeSystem \
+		--inline-suppr \
+		--quiet \
+		.
+
+# Check Headers (Report Only)
+check-headers:
+	@./check_headers.sh
+
+# Check EOF (Report Only)
+check-eof:
+	@./check_eof.sh
+
+# Master Check
+check: check-style check-bugs check-eof check-headers
+
+# Auto-Fix-Style
+fix-style:
+	@echo "--- Applying Auto-Formatting ---"
+	@find . -name "*.cpp" -o -name "*.c" -o -name "*.h" | xargs clang-format -i -style=file
+	@echo "Code formatted."

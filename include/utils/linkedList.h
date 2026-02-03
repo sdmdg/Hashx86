@@ -1,7 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include <core/memory.h>
-
+#include <stdint.h>
 
 template <typename T>
 class LinkedList {
@@ -178,6 +177,7 @@ public:
     class Iterator {
     private:
         Node* current;
+
     public:
         Iterator(Node* start) : current(start) {}
 
@@ -205,7 +205,7 @@ public:
 
     template <typename Func>
     void ReverseForEach(Func func) const {
-        T* stack[128]; // fixed-size stack
+        T* stack[128];  // fixed-size stack
         uint32_t count = 0;
 
         Node* current = head;

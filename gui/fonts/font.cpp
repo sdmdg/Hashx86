@@ -1,37 +1,33 @@
 /**
  * @file        font.cpp
  * @brief       Font (part of #x86 GUI Framework)
- * 
+ *
  * @date        12/02/2025
  * @version     1.0.0-beta
  */
 
 #include <gui/fonts/font.h>
 
-#define FONT_MAGIC 0x464E5432 // "FNT2"
+#define FONT_MAGIC 0x464E5432  // "FNT2"
 
 FontManager* FontManager::activeInstance = nullptr;
 
-FontFile::FontFile()
-{
-};
+FontFile::FontFile(){};
 
-FontFile::~FontFile()
-{
-};
-
+FontFile::~FontFile(){};
 
 Font::Font(FontFile* file, FontSize fontSize, FontType fontType) {
     this->sourceFile = file;
     this->fontSize = fontSize;
     this->fontType = fontType;
 
-    this->atlas_width  = this->sourceFile->font_data_list[this->fontSize][fontType]->atlas_width;
+    this->atlas_width = this->sourceFile->font_data_list[this->fontSize][fontType]->atlas_width;
     this->atlas_height = this->sourceFile->font_data_list[this->fontSize][fontType]->atlas_height;
-    this->font_atlas   = this->sourceFile->font_data_list[this->fontSize][fontType]->atlas;
-    this->font_glyphs  = this->sourceFile->font_data_list[this->fontSize][fontType]->glyphs;
+    this->font_atlas = this->sourceFile->font_data_list[this->fontSize][fontType]->atlas;
+    this->font_glyphs = this->sourceFile->font_data_list[this->fontSize][fontType]->glyphs;
     this->font_kernings = this->sourceFile->font_data_list[this->fontSize][fontType]->kernings;
-    this->font_kerning_count = this->sourceFile->font_data_list[this->fontSize][fontType]->kerning_count;
+    this->font_kerning_count =
+        this->sourceFile->font_data_list[this->fontSize][fontType]->kerning_count;
 
     this->update();
 }
@@ -58,12 +54,12 @@ uint32_t Font::getStringLength(const char* str) {
         // Apply kerning (if previous char exists)
         if (prevChar) {
             for (int k = 0; k < this->font_kerning_count; k++) {
-                int16_t first  = this->font_kernings[k * 3 + 0];
+                int16_t first = this->font_kernings[k * 3 + 0];
                 int16_t second = this->font_kernings[k * 3 + 1];
                 int16_t amount = this->font_kernings[k * 3 + 2];
                 if (first == prevChar && second == c) {
                     length += amount;
-                    break; // assume only one kerning entry per pair
+                    break;  // assume only one kerning entry per pair
                 }
             }
         }
@@ -74,7 +70,6 @@ uint32_t Font::getStringLength(const char* str) {
 
     return length;
 }
-
 
 void Font::setSize(FontSize size) {
     this->fontSize = size;
@@ -87,24 +82,28 @@ void Font::setType(FontType type) {
 }
 
 void Font::update() {
-    this->atlas_width  = this->sourceFile->font_data_list[this->fontSize][this->fontType]->atlas_width;
-    this->atlas_height = this->sourceFile->font_data_list[this->fontSize][this->fontType]->atlas_height;
-    this->font_atlas   = this->sourceFile->font_data_list[this->fontSize][this->fontType]->atlas;
-    this->font_glyphs  = this->sourceFile->font_data_list[this->fontSize][this->fontType]->glyphs;
-    this->font_kernings = this->sourceFile->font_data_list[this->fontSize][this->fontType]->kernings;
-    this->font_kerning_count = this->sourceFile->font_data_list[this->fontSize][this->fontType]->kerning_count;
+    this->atlas_width =
+        this->sourceFile->font_data_list[this->fontSize][this->fontType]->atlas_width;
+    this->atlas_height =
+        this->sourceFile->font_data_list[this->fontSize][this->fontType]->atlas_height;
+    this->font_atlas = this->sourceFile->font_data_list[this->fontSize][this->fontType]->atlas;
+    this->font_glyphs = this->sourceFile->font_data_list[this->fontSize][this->fontType]->glyphs;
+    this->font_kernings =
+        this->sourceFile->font_data_list[this->fontSize][this->fontType]->kernings;
+    this->font_kerning_count =
+        this->sourceFile->font_data_list[this->fontSize][this->fontType]->kerning_count;
 }
 
 uint16_t Font::getLineHeight() {
     int maxH = 0;
-    for (int i = 0; i < this->sourceFile->font_data_list[this->fontSize][this->fontType]->glyph_count; i++) {
+    for (int i = 0;
+         i < this->sourceFile->font_data_list[this->fontSize][this->fontType]->glyph_count; i++) {
         int16_t* g = &this->font_glyphs[i * 8];
-        int h = g[4] + g[6]; // height + yoffset
+        int h = g[4] + g[6];  // height + yoffset
         if (h > maxH) maxH = h;
     }
     return maxH;
 }
-
 
 // -----------------------------
 // Font Manager
@@ -120,35 +119,42 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
     uint8_t* ptr = reinterpret_cast<uint8_t*>(mod_start);
 
     // ---- Main header ----
-    uint32_t magic   = *(uint32_t*)ptr; ptr += 4;
-    uint16_t version = *(uint16_t*)ptr; ptr += 2;
-    uint16_t font_count = *(uint16_t*)ptr; ptr += 2;
+    uint32_t magic = *(uint32_t*)ptr;
+    ptr += 4;
+    uint16_t version = *(uint16_t*)ptr;
+    ptr += 2;
+    uint16_t font_count = *(uint16_t*)ptr;
+    ptr += 2;
 
     if (magic != FONT_MAGIC) {
         DEBUG_LOG("Error: Invalid font magic");
         return;
     }
 
-
     FontFile* new_font_file = new FontFile();
-
 
     for (int i = 0; i < font_count; i++) {
         // ---- Per-font header ----
-        uint16_t size          = *(uint16_t*)ptr; ptr += 2;
-        uint8_t  style         = *(uint8_t*)ptr;  ptr += 1;
-        uint16_t atlas_width   = *(uint16_t*)ptr; ptr += 2;
-        uint16_t atlas_height  = *(uint16_t*)ptr; ptr += 2;
-        uint16_t glyph_count   = *(uint16_t*)ptr; ptr += 2;
-        uint16_t kerning_count = *(uint16_t*)ptr; ptr += 2;
+        uint16_t size = *(uint16_t*)ptr;
+        ptr += 2;
+        uint8_t style = *(uint8_t*)ptr;
+        ptr += 1;
+        uint16_t atlas_width = *(uint16_t*)ptr;
+        ptr += 2;
+        uint16_t atlas_height = *(uint16_t*)ptr;
+        ptr += 2;
+        uint16_t glyph_count = *(uint16_t*)ptr;
+        ptr += 2;
+        uint16_t kerning_count = *(uint16_t*)ptr;
+        ptr += 2;
 
         FontData* new_font = new FontData{};
-        new_font->magic         = magic;
-        new_font->size          = size;
-        new_font->style         = style;
-        new_font->atlas_width   = atlas_width;
-        new_font->atlas_height  = atlas_height;
-        new_font->glyph_count   = glyph_count;
+        new_font->magic = magic;
+        new_font->size = size;
+        new_font->style = style;
+        new_font->atlas_width = atlas_width;
+        new_font->atlas_height = atlas_height;
+        new_font->glyph_count = glyph_count;
         new_font->kerning_count = kerning_count;
 
         // ---- Atlas ----
@@ -171,8 +177,8 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
 
         new_font_file->font_data_list[size][style] = new_font;
 
-        DEBUG_LOG("Font loaded: size=%d, style=%d, glyphs=%d, kernings=%d",
-                  size, style, glyph_count, kerning_count);
+        DEBUG_LOG("Font loaded: size=%d, style=%d, glyphs=%d, kernings=%d", size, style,
+                  glyph_count, kerning_count);
     }
 
     font_list->Add(new_font_file);

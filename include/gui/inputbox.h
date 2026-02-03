@@ -17,7 +17,9 @@ public:
 
     void update();
     void setText(const char* newText);
-    const char* getText() const { return text; }
+    const char* getText() const {
+        return text;
+    }
 
     void setSize(FontSize size);
     void setType(FontType type);
@@ -29,4 +31,4 @@ public:
     void OnKeyUp(const char* key) override;
 };
 
-#endif // INPUTBOX_H
+#endif  // INPUTBOX_H

@@ -40,4 +40,4 @@
 #define MSGBOXWIDTH 300
 #define MSGBOXHEIGHT 120
 
-#endif // GUI_CONFIG_H
+#endif  // GUI_CONFIG_H

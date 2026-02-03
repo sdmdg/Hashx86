@@ -1,0 +1,2442 @@
+
+Discarded input sections
+
+ .group         0x00000000        0x8 audio/wav.o
+ .group         0x00000000        0x8 audio/wav.o
+ .comment       0x00000000       0x2c audio/wav.o
+ .group         0x00000000        0x8 core/driver.o
+ .group         0x00000000        0x8 core/driver.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/driver.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/driver.o
+ .comment       0x00000000       0x2c core/driver.o
+ .group         0x00000000        0xc core/drivers/ata.o
+ .group         0x00000000        0x8 core/drivers/ata.o
+ .group         0x00000000        0x8 core/drivers/ata.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/ata.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/ata.o
+ .comment       0x00000000       0x2c core/drivers/ata.o
+ .group         0x00000000        0xc core/drivers/AudioMixer.o
+ .group         0x00000000        0x8 core/drivers/AudioMixer.o
+ .group         0x00000000        0x8 core/drivers/AudioMixer.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/AudioMixer.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/AudioMixer.o
+ .comment       0x00000000       0x2c core/drivers/AudioMixer.o
+ .group         0x00000000        0xc core/drivers/GraphicsDriver.o
+ .group         0x00000000        0x8 core/drivers/GraphicsDriver.o
+ .group         0x00000000        0x8 core/drivers/GraphicsDriver.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/GraphicsDriver.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/GraphicsDriver.o
+ .comment       0x00000000       0x2c core/drivers/GraphicsDriver.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000       0x14 core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0xc core/drivers/keyboard.o
+ .group         0x00000000        0x8 core/drivers/keyboard.o
+ .group         0x00000000        0x8 core/drivers/keyboard.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/keyboard.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/keyboard.o
+ .comment       0x00000000       0x2c core/drivers/keyboard.o
+ .group         0x00000000        0x8 core/drivers/ModuleLoader.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/ModuleLoader.o
+ .comment       0x00000000       0x2c core/drivers/ModuleLoader.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000       0x14 core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0xc core/drivers/mouse.o
+ .group         0x00000000        0x8 core/drivers/mouse.o
+ .group         0x00000000        0x8 core/drivers/mouse.o
+ .text._ZN6DriverC2Ev
+                0x00000000       0x2e core/drivers/mouse.o
+ .text._ZN6DriverD2Ev
+                0x00000000       0x1b core/drivers/mouse.o
+ .text._ZN6DriverD0Ev
+                0x00000000       0x35 core/drivers/mouse.o
+ .text._ZN6Driver8ActivateEv
+                0x00000000       0x10 core/drivers/mouse.o
+ .text._ZN6Driver5ResetEv
+                0x00000000       0x14 core/drivers/mouse.o
+ .text._ZN6Driver10DeactivateEv
+                0x00000000       0x10 core/drivers/mouse.o
+ .text._ZN6Driver13AsAudioDriverEv
+                0x00000000       0x14 core/drivers/mouse.o
+ .text._ZN6Driver16AsGraphicsDriverEv
+                0x00000000       0x14 core/drivers/mouse.o
+ .data.rel.ro.local._ZTV6Driver
+                0x00000000       0x24 core/drivers/mouse.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/mouse.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/mouse.o
+ .comment       0x00000000       0x2c core/drivers/mouse.o
+ .group         0x00000000        0x8 core/drivers/SymbolTable.o
+ .group         0x00000000        0x8 core/drivers/SymbolTable.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/SymbolTable.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/SymbolTable.o
+ .comment       0x00000000       0x2c core/drivers/SymbolTable.o
+ .group         0x00000000        0xc core/drivers/vbe.o
+ .group         0x00000000        0x8 core/drivers/vbe.o
+ .group         0x00000000        0x8 core/drivers/vbe.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/drivers/vbe.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/drivers/vbe.o
+ .comment       0x00000000       0x2c core/drivers/vbe.o
+ .group         0x00000000        0x8 core/elf.o
+ .group         0x00000000        0x8 core/elf.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/elf.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/elf.o
+ .comment       0x00000000       0x2c core/elf.o
+ .group         0x00000000        0x8 core/filesystem/FAT32.o
+ .group         0x00000000        0x8 core/filesystem/FAT32.o
+ .group         0x00000000        0x8 core/filesystem/FAT32.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/filesystem/FAT32.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/filesystem/FAT32.o
+ .comment       0x00000000       0x2c core/filesystem/FAT32.o
+ .group         0x00000000        0x8 core/filesystem/File.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/filesystem/File.o
+ .comment       0x00000000       0x2c core/filesystem/File.o
+ .group         0x00000000        0xc core/filesystem/msdospart.o
+ .group         0x00000000        0x8 core/filesystem/msdospart.o
+ .group         0x00000000        0x8 core/filesystem/msdospart.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/filesystem/msdospart.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/filesystem/msdospart.o
+ .comment       0x00000000       0x2c core/filesystem/msdospart.o
+ .group         0x00000000        0x8 core/gdt.o
+ .group         0x00000000        0x8 core/gdt.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/gdt.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/gdt.o
+ .comment       0x00000000       0x2c core/gdt.o
+ .comment       0x00000000       0x2c core/globals.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0xc core/interrupts.o
+ .group         0x00000000        0x8 core/interrupts.o
+ .group         0x00000000        0x8 core/interrupts.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/interrupts.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/interrupts.o
+ .comment       0x00000000       0x2c core/interrupts.o
+ .group         0x00000000        0x8 core/KernelSymbolResolver.o
+ .group         0x00000000        0x8 core/KernelSymbolResolver.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/KernelSymbolResolver.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/KernelSymbolResolver.o
+ .comment       0x00000000       0x2c core/KernelSymbolResolver.o
+ .group         0x00000000        0xc core/memory.o
+ .group         0x00000000        0xc core/memory.o
+ .group         0x00000000        0x8 core/memory.o
+ .group         0x00000000        0x8 core/memory.o
+ .text._ZN14InterruptGuardC2Ev
+                0x00000000       0x2b core/memory.o
+ .text._ZN14InterruptGuardD2Ev
+                0x00000000       0x1b core/memory.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/memory.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/memory.o
+ .comment       0x00000000       0x2c core/memory.o
+ .group         0x00000000        0x8 core/paging.o
+ .group         0x00000000        0x8 core/paging.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/paging.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/paging.o
+ .comment       0x00000000       0x2c core/paging.o
+ .group         0x00000000        0x8 core/pci.o
+ .group         0x00000000        0x8 core/pci.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/pci.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/pci.o
+ .comment       0x00000000       0x2c core/pci.o
+ .group         0x00000000        0x8 core/pmm.o
+ .group         0x00000000        0x8 core/pmm.o
+ .group         0x00000000        0x8 core/pmm.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/pmm.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/pmm.o
+ .comment       0x00000000       0x2c core/pmm.o
+ .group         0x00000000        0xc core/ports.o
+ .group         0x00000000        0xc core/ports.o
+ .group         0x00000000        0xc core/ports.o
+ .group         0x00000000        0xc core/ports.o
+ .group         0x00000000        0x8 core/ports.o
+ .group         0x00000000        0x8 core/ports.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/ports.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/ports.o
+ .comment       0x00000000       0x2c core/ports.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0xc core/scheduler.o
+ .group         0x00000000        0x8 core/scheduler.o
+ .group         0x00000000        0x8 core/scheduler.o
+ .group         0x00000000        0x8 core/scheduler.o
+ .text._ZN14InterruptGuardC2Ev
+                0x00000000       0x2b core/scheduler.o
+ .text._ZN14InterruptGuardD2Ev
+                0x00000000       0x1b core/scheduler.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/scheduler.o
+ .text.__x86.get_pc_thunk.dx
+                0x00000000        0x4 core/scheduler.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/scheduler.o
+ .comment       0x00000000       0x2c core/scheduler.o
+ .group         0x00000000        0xc core/syscalls.o
+ .group         0x00000000        0xc core/syscalls.o
+ .group         0x00000000        0xc core/syscalls.o
+ .group         0x00000000        0xc core/syscalls.o
+ .group         0x00000000        0xc core/syscalls.o
+ .group         0x00000000        0x8 core/syscalls.o
+ .group         0x00000000        0x8 core/syscalls.o
+ .group         0x00000000        0x8 core/syscalls.o
+ .text._ZN14InterruptGuardC2Ev
+                0x00000000       0x2b core/syscalls.o
+ .text._ZN14InterruptGuardD2Ev
+                0x00000000       0x1b core/syscalls.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 core/syscalls.o
+ .text.__x86.get_pc_thunk.dx
+                0x00000000        0x4 core/syscalls.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 core/syscalls.o
+ .comment       0x00000000       0x2c core/syscalls.o
+ .group         0x00000000        0xc debug.o
+ .group         0x00000000        0xc debug.o
+ .group         0x00000000        0x8 debug.o
+ .group         0x00000000        0x8 debug.o
+ .text._ZN14InterruptGuardC2Ev
+                0x00000000       0x2b debug.o
+ .text._ZN14InterruptGuardD2Ev
+                0x00000000       0x1b debug.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 debug.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 debug.o
+ .comment       0x00000000       0x2c debug.o
+ .group         0x00000000        0x8 gui/bmp.o
+ .group         0x00000000        0x8 gui/bmp.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/bmp.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/bmp.o
+ .comment       0x00000000       0x2c gui/bmp.o
+ .group         0x00000000        0xc gui/button.o
+ .group         0x00000000        0xc gui/button.o
+ .group         0x00000000        0xc gui/button.o
+ .group         0x00000000        0x8 gui/button.o
+ .group         0x00000000        0x8 gui/button.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/button.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/button.o
+ .comment       0x00000000       0x2c gui/button.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0xc gui/desktop.o
+ .group         0x00000000        0x8 gui/desktop.o
+ .group         0x00000000        0x8 gui/desktop.o
+ .group         0x00000000        0x8 gui/desktop.o
+ .text._ZN14InterruptGuardC2Ev
+                0x00000000       0x2b gui/desktop.o
+ .text._ZN14InterruptGuardD2Ev
+                0x00000000       0x1b gui/desktop.o
+ .text._ZN6Bitmap7IsValidEv
+                0x00000000       0x16 gui/desktop.o
+ .text._ZN6Bitmap8GetWidthEv
+                0x00000000       0x14 gui/desktop.o
+ .text._ZN6Bitmap9GetHeightEv
+                0x00000000       0x15 gui/desktop.o
+ .text._ZN6Bitmap9GetBufferEv
+                0x00000000       0x15 gui/desktop.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/desktop.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/desktop.o
+ .comment       0x00000000       0x2c gui/desktop.o
+ .group         0x00000000        0xc gui/elements/window_action_button.o
+ .group         0x00000000        0x8 gui/elements/window_action_button.o
+ .group         0x00000000        0x8 gui/elements/window_action_button.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/elements/window_action_button.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/elements/window_action_button.o
+ .comment       0x00000000       0x2c gui/elements/window_action_button.o
+ .group         0x00000000        0xc gui/elements/window_action_button_round.o
+ .group         0x00000000        0x8 gui/elements/window_action_button_round.o
+ .group         0x00000000        0x8 gui/elements/window_action_button_round.o
+ .group         0x00000000        0x8 gui/elements/window_action_button_round.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/elements/window_action_button_round.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/elements/window_action_button_round.o
+ .comment       0x00000000       0x2c gui/elements/window_action_button_round.o
+ .group         0x00000000        0xc gui/fonts/font.o
+ .group         0x00000000        0xc gui/fonts/font.o
+ .group         0x00000000        0xc gui/fonts/font.o
+ .group         0x00000000        0xc gui/fonts/font.o
+ .group         0x00000000        0xc gui/fonts/font.o
+ .group         0x00000000        0x8 gui/fonts/font.o
+ .group         0x00000000        0x8 gui/fonts/font.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/fonts/font.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/fonts/font.o
+ .comment       0x00000000       0x2c gui/fonts/font.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0xc gui/Hgui.o
+ .group         0x00000000        0x8 gui/Hgui.o
+ .group         0x00000000        0x8 gui/Hgui.o
+ .group         0x00000000        0x8 gui/Hgui.o
+ .group         0x00000000        0x8 gui/Hgui.o
+ .group         0x00000000        0x8 gui/Hgui.o
+ .text._ZN9Scheduler17GetCurrentProcessEv
+                0x00000000       0x29 gui/Hgui.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/Hgui.o
+ .text.__x86.get_pc_thunk.dx
+                0x00000000        0x4 gui/Hgui.o
+ .text.__x86.get_pc_thunk.cx
+                0x00000000        0x4 gui/Hgui.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/Hgui.o
+ .text.__x86.get_pc_thunk.di
+                0x00000000        0x4 gui/Hgui.o
+ .comment       0x00000000       0x2c gui/Hgui.o
+ .group         0x00000000        0xc gui/label.o
+ .group         0x00000000        0x8 gui/label.o
+ .group         0x00000000        0x8 gui/label.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/label.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/label.o
+ .comment       0x00000000       0x2c gui/label.o
+ .group         0x00000000        0x8 gui/renderer/nina.o
+ .group         0x00000000        0x8 gui/renderer/nina.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/renderer/nina.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/renderer/nina.o
+ .comment       0x00000000       0x2c gui/renderer/nina.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0xc gui/widget.o
+ .group         0x00000000        0x8 gui/widget.o
+ .group         0x00000000        0x8 gui/widget.o
+ .group         0x00000000        0x8 gui/widget.o
+ .text._ZN10LinkedListIP6WidgetEC2Ev
+                0x00000000       0x2d gui/widget.o
+ .text._ZN10LinkedListIP6WidgetED2Ev
+                0x00000000       0x21 gui/widget.o
+ .text._ZN10LinkedListIP6WidgetE3AddERKS1_
+                0x00000000       0x71 gui/widget.o
+ .text._ZN10LinkedListIP6WidgetE5ClearEv
+                0x00000000       0x6b gui/widget.o
+ .text._ZN10LinkedListIP6WidgetE4NodeC2ERKS1_
+                0x00000000       0x24 gui/widget.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/widget.o
+ .text.__x86.get_pc_thunk.cx
+                0x00000000        0x4 gui/widget.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/widget.o
+ .comment       0x00000000       0x2c gui/widget.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0xc gui/window.o
+ .group         0x00000000        0x8 gui/window.o
+ .group         0x00000000        0x8 gui/window.o
+ .group         0x00000000        0x8 gui/window.o
+ .text._ZN10LinkedListIP5EventE3AddERKS1_
+                0x00000000       0x71 gui/window.o
+ .text._ZN10LinkedListIP5EventE4NodeC2ERKS1_
+                0x00000000       0x24 gui/window.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 gui/window.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 gui/window.o
+ .text.__x86.get_pc_thunk.di
+                0x00000000        0x4 gui/window.o
+ .comment       0x00000000       0x2c gui/window.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0xc kernel.o
+ .group         0x00000000        0x8 kernel.o
+ .group         0x00000000        0x8 kernel.o
+ .text._ZN14GraphicsDriver8GetWidthEv
+                0x00000000       0x15 kernel.o
+ .text._ZN14GraphicsDriver9GetHeightEv
+                0x00000000       0x15 kernel.o
+ .text._ZN14GraphicsDriver13GetBackBufferEv
+                0x00000000       0x18 kernel.o
+ .text._ZN6Bitmap7IsValidEv
+                0x00000000       0x16 kernel.o
+ .text._ZN6Bitmap8GetWidthEv
+                0x00000000       0x14 kernel.o
+ .text._ZN6Bitmap9GetHeightEv
+                0x00000000       0x15 kernel.o
+ .text._ZN6Bitmap9GetBufferEv
+                0x00000000       0x15 kernel.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 kernel.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 kernel.o
+ .comment       0x00000000       0x2c kernel.o
+ .group         0x00000000        0x8 stdlib.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 stdlib.o
+ .comment       0x00000000       0x2c stdlib.o
+ .group         0x00000000        0x8 stdlib/math.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 stdlib/math.o
+ .comment       0x00000000       0x2c stdlib/math.o
+ .group         0x00000000        0x8 utils/string.o
+ .group         0x00000000        0x8 utils/string.o
+ .text.__x86.get_pc_thunk.ax
+                0x00000000        0x4 utils/string.o
+ .text.__x86.get_pc_thunk.bx
+                0x00000000        0x4 utils/string.o
+ .comment       0x00000000       0x2c utils/string.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00000000                        __kernel_section_start = .
+                0x00100000                        . = 0x100000
+
+.text           0x00100000    0x16000
+                0x00100000                        __kernel_text_section_start = .
+ *(.multiboot)
+ .multiboot     0x00100000       0x30 asm/loader.o
+                0x00100030                        code = .
+                0x00100030                        _code = .
+                0x00100030                        __code = .
+ *(.text*)
+ .text          0x00100030      0x23a asm/common_handler.o
+                0x00100030                InterruptManager::HandleException0x00()
+                0x0010003e                InterruptManager::HandleException0x01()
+                0x0010004c                InterruptManager::HandleException0x02()
+                0x0010005a                InterruptManager::HandleException0x03()
+                0x00100068                InterruptManager::HandleException0x04()
+                0x00100076                InterruptManager::HandleException0x05()
+                0x00100084                InterruptManager::HandleException0x06()
+                0x00100092                InterruptManager::HandleException0x07()
+                0x001000a0                InterruptManager::HandleException0x08()
+                0x001000ac                InterruptManager::HandleException0x09()
+                0x001000ba                InterruptManager::HandleException0x0A()
+                0x001000c6                InterruptManager::HandleException0x0B()
+                0x001000d2                InterruptManager::HandleException0x0C()
+                0x001000de                InterruptManager::HandleException0x0D()
+                0x001000ea                InterruptManager::HandleException0x0E()
+                0x001000f6                InterruptManager::HandleException0x0F()
+                0x00100104                InterruptManager::HandleException0x10()
+                0x00100112                InterruptManager::HandleException0x11()
+                0x0010011e                InterruptManager::HandleException0x12()
+                0x0010012c                InterruptManager::HandleException0x13()
+                0x0010013a                InterruptManager::HandleInterruptRequest0x00()
+                0x00100148                InterruptManager::HandleInterruptRequest0x01()
+                0x00100156                InterruptManager::HandleInterruptRequest0x02()
+                0x00100164                InterruptManager::HandleInterruptRequest0x03()
+                0x00100172                InterruptManager::HandleInterruptRequest0x04()
+                0x00100180                InterruptManager::HandleInterruptRequest0x05()
+                0x0010018e                InterruptManager::HandleInterruptRequest0x06()
+                0x0010019c                InterruptManager::HandleInterruptRequest0x07()
+                0x001001aa                InterruptManager::HandleInterruptRequest0x08()
+                0x001001b8                InterruptManager::HandleInterruptRequest0x09()
+                0x001001c6                InterruptManager::HandleInterruptRequest0x0A()
+                0x001001d1                InterruptManager::HandleInterruptRequest0x0B()
+                0x001001dc                InterruptManager::HandleInterruptRequest0x0C()
+                0x001001e7                InterruptManager::HandleInterruptRequest0x0D()
+                0x001001f2                InterruptManager::HandleInterruptRequest0x0E()
+                0x001001fd                InterruptManager::HandleInterruptRequest0x0F()
+                0x00100208                InterruptManager::HandleInterruptRequest0x31()
+                0x00100213                InterruptManager::HandleInterruptRequest0x80()
+                0x0010021e                InterruptManager::HandleInterruptRequest0x81()
+                0x00100269                InterruptManager::IgnoreInterruptRequest()
+ *fill*         0x0010026a        0x6 
+ .text          0x00100270       0x27 asm/load_gdt.o
+                0x00100270                load_gdt
+ *fill*         0x00100297        0x9 
+ .text          0x001002a0        0xb asm/load_tss.o
+                0x001002a0                load_tss
+                0x001002a8                get_eip
+ *fill*         0x001002ab        0x5 
+ .text          0x001002b0       0x15 asm/loader.o
+                0x001002b0                loader
+ *fill*         0x001002c5        0x1 
+ .text          0x001002c6      0x602 audio/wav.o
+                0x00100302                Wav::Wav(File*)
+                0x00100302                Wav::Wav(File*)
+                0x0010034a                Wav::Wav(char*)
+                0x0010034a                Wav::Wav(char*)
+                0x00100492                Wav::~Wav()
+                0x00100492                Wav::~Wav()
+                0x001004ce                Wav::Load(File*)
+                0x00100844                Wav::Play(bool)
+ .text.__x86.get_pc_thunk.ax
+                0x001008c8        0x4 audio/wav.o
+                0x001008c8                __x86.get_pc_thunk.ax
+ .text.__x86.get_pc_thunk.bx
+                0x001008cc        0x4 audio/wav.o
+                0x001008cc                __x86.get_pc_thunk.bx
+ .text          0x001008d0      0x46a core/driver.o
+                0x0010090c                DriverManager::DriverManager()
+                0x0010090c                DriverManager::DriverManager()
+                0x00100c60                DriverManager::AddDriver(Driver*)
+                0x00100c98                DriverManager::ActivateAll()
+ .text          0x00100d3a      0xa34 core/drivers/ata.o
+                0x00100df2                AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool, unsigned short)
+                0x00100df2                AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool, unsigned short)
+                0x00100f22                AdvancedTechnologyAttachment::~AdvancedTechnologyAttachment()
+                0x00100f22                AdvancedTechnologyAttachment::~AdvancedTechnologyAttachment()
+                0x00100fdc                AdvancedTechnologyAttachment::Identify()
+                0x00101252                AdvancedTechnologyAttachment::Read28(unsigned int, unsigned char*, int)
+                0x00101484                AdvancedTechnologyAttachment::Write28(unsigned int, unsigned char*, unsigned int)
+                0x001016ce                AdvancedTechnologyAttachment::Flush()
+ .text._ZN4Port13getPortNumberEv
+                0x0010176e       0x15 core/drivers/ata.o
+                0x0010176e                Port::getPortNumber()
+ *fill*         0x00101783        0x1 
+ .text          0x00101784      0x447 core/drivers/AudioMixer.o
+                0x001017c0                AudioMixer::AudioMixer(AudioDriver*)
+                0x001017c0                AudioMixer::AudioMixer(AudioDriver*)
+                0x00101882                AudioMixer::SetOutputSampleRate(unsigned int)
+                0x001018bc                AudioMixer::PlayBuffer(unsigned char*, unsigned int, bool)
+                0x001019dc                AudioMixer::Update()
+                0x00101a36                AudioMixer::ProcessAudio()
+ *fill*         0x00101bcb        0x1 
+ .text._ZN11AudioDriver9IsPlayingEv
+                0x00101bcc       0x16 core/drivers/AudioMixer.o
+                0x00101bcc                AudioDriver::IsPlaying()
+ .text          0x00101be2     0x1264 core/drivers/GraphicsDriver.o
+                0x00101be2                GraphicsDriver::GraphicsDriver(unsigned int, unsigned int, unsigned int, unsigned int*)
+                0x00101be2                GraphicsDriver::GraphicsDriver(unsigned int, unsigned int, unsigned int, unsigned int*)
+                0x00101ca8                GraphicsDriver::~GraphicsDriver()
+                0x00101ca8                GraphicsDriver::~GraphicsDriver()
+                0x00101d0c                GraphicsDriver::~GraphicsDriver()
+                0x00101d44                GraphicsDriver::Flush()
+                0x00101dae                GraphicsDriver::PrecomputeAlphaTable()
+                0x00101e28                GraphicsDriver::PutPixel(int, int, unsigned int)
+                0x00101fa8                GraphicsDriver::PutPixel(int, int, unsigned char, unsigned char, unsigned char, unsigned char)
+                0x00102012                GraphicsDriver::DrawBitmap(int, int, unsigned int const*, int, int)
+                0x0010228c                GraphicsDriver::FillRectangle(int, int, unsigned int, unsigned int, unsigned int)
+                0x001022e4                GraphicsDriver::DrawRectangle(int, int, unsigned int, unsigned int, unsigned int)
+                0x0010233c                GraphicsDriver::FillRoundedRectangle(int, int, unsigned int, unsigned int, unsigned int, unsigned int)
+                0x00102398                GraphicsDriver::DrawRoundedRectangle(int, int, unsigned int, unsigned int, unsigned int, unsigned int)
+                0x001023f4                GraphicsDriver::DrawRoundedRectangleShadow(int, int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)
+                0x001026ca                GraphicsDriver::BlurRoundedRectangle(int, int, unsigned int, unsigned int, unsigned int, unsigned int)
+                0x00102b88                GraphicsDriver::FillCircle(int, int, unsigned int, unsigned int)
+                0x00102bda                GraphicsDriver::DrawCircle(int, int, unsigned int, unsigned int)
+                0x00102c2c                GraphicsDriver::DrawLine(int, int, int, int, unsigned int)
+                0x00102c84                GraphicsDriver::DrawHorizontalLine(int, int, int, unsigned int)
+                0x00102cd6                GraphicsDriver::DrawVerticalLine(int, int, int, unsigned int)
+                0x00102d28                GraphicsDriver::DrawCharacter(int, int, char, Font*, unsigned int)
+                0x00102d8e                GraphicsDriver::DrawString(int, int, char const*, Font*, unsigned int)
+                0x00102de6                GraphicsDriver::GetScreenCenter(unsigned int, unsigned int, int&, int&)
+ .text          0x00102e46      0xea8 core/drivers/keyboard.o
+                0x00102e82                KeyboardEventHandler::KeyboardEventHandler()
+                0x00102e82                KeyboardEventHandler::KeyboardEventHandler()
+                0x00102e9e                KeyboardEventHandler::OnKeyDown(char const*)
+                0x00102eae                KeyboardEventHandler::OnKeyUp(char const*)
+                0x00102ebe                KeyboardEventHandler::OnSpecialKeyDown(unsigned char)
+                0x00102ed8                KeyboardEventHandler::OnSpecialKeyUp(unsigned char)
+                0x00102ef2                KeyboardDriver::KeyboardDriver(InterruptManager*, KeyboardEventHandler*)
+                0x00102ef2                KeyboardDriver::KeyboardDriver(InterruptManager*, KeyboardEventHandler*)
+                0x00102f84                KeyboardDriver::~KeyboardDriver()
+                0x00102f84                KeyboardDriver::~KeyboardDriver()
+                0x00102ff8                non-virtual thunk to KeyboardDriver::~KeyboardDriver()
+                0x00103000                KeyboardDriver::~KeyboardDriver()
+                0x00103035                non-virtual thunk to KeyboardDriver::~KeyboardDriver()
+                0x0010303c                KeyboardDriver::Activate()
+                0x00103118                non-virtual thunk to KeyboardDriver::Activate()
+                0x00103122                KeyboardDriver::HandleInterrupt(unsigned int)
+ .text._ZN6DriverC2Ev
+                0x00103cee       0x2e core/drivers/keyboard.o
+                0x00103cee                Driver::Driver()
+                0x00103cee                Driver::Driver()
+ .text._ZN6DriverD2Ev
+                0x00103d1c       0x1b core/drivers/keyboard.o
+                0x00103d1c                Driver::~Driver()
+                0x00103d1c                Driver::~Driver()
+ *fill*         0x00103d37        0x1 
+ .text._ZN6DriverD0Ev
+                0x00103d38       0x35 core/drivers/keyboard.o
+                0x00103d38                Driver::~Driver()
+ *fill*         0x00103d6d        0x1 
+ .text._ZN6Driver8ActivateEv
+                0x00103d6e       0x10 core/drivers/keyboard.o
+                0x00103d6e                Driver::Activate()
+ .text._ZN6Driver5ResetEv
+                0x00103d7e       0x14 core/drivers/keyboard.o
+                0x00103d7e                Driver::Reset()
+ .text._ZN6Driver10DeactivateEv
+                0x00103d92       0x10 core/drivers/keyboard.o
+                0x00103d92                Driver::Deactivate()
+ .text._ZN6Driver13AsAudioDriverEv
+                0x00103da2       0x14 core/drivers/keyboard.o
+                0x00103da2                Driver::AsAudioDriver()
+ .text._ZN6Driver16AsGraphicsDriverEv
+                0x00103db6       0x14 core/drivers/keyboard.o
+                0x00103db6                Driver::AsGraphicsDriver()
+ .text          0x00103dca      0xb3a core/drivers/ModuleLoader.o
+                0x00103dca                ModuleLoader::LoadMatchingDriver(File*, unsigned short, unsigned short)
+                0x00103eec                ModuleLoader::LoadDriver(File*)
+                0x001046a0                ModuleLoader::Probe(File*, DriverManifest*)
+ .text          0x00104904      0x492 core/drivers/mouse.o
+                0x00104940                MouseEventHandler::MouseEventHandler()
+                0x00104940                MouseEventHandler::MouseEventHandler()
+                0x0010495c                MouseEventHandler::OnMouseMove(int, int)
+                0x0010496c                MouseEventHandler::OnMouseDown(unsigned char)
+                0x00104986                MouseEventHandler::OnMouseUp(unsigned char)
+                0x001049a0                MouseDriver::MouseDriver(InterruptManager*, MouseEventHandler*)
+                0x001049a0                MouseDriver::MouseDriver(InterruptManager*, MouseEventHandler*)
+                0x00104a4e                MouseDriver::~MouseDriver()
+                0x00104a4e                MouseDriver::~MouseDriver()
+                0x00104ac2                non-virtual thunk to MouseDriver::~MouseDriver()
+                0x00104aca                MouseDriver::~MouseDriver()
+                0x00104aff                non-virtual thunk to MouseDriver::~MouseDriver()
+                0x00104b06                MouseDriver::Activate()
+                0x00104bd3                non-virtual thunk to MouseDriver::Activate()
+                0x00104bde                MouseDriver::HandleInterrupt(unsigned int)
+ .text          0x00104d96       0xce core/drivers/SymbolTable.o
+                0x00104d96                SymbolTable::Register(char const*, unsigned int)
+                0x00104e00                SymbolTable::Lookup(char const*)
+ .text          0x00104e64       0xaa core/drivers/vbe.o
+                0x00104e64                VESA_BIOS_Extensions::VESA_BIOS_Extensions(unsigned int, unsigned int, unsigned int, unsigned int*)
+                0x00104e64                VESA_BIOS_Extensions::VESA_BIOS_Extensions(unsigned int, unsigned int, unsigned int, unsigned int*)
+                0x00104ea2                VESA_BIOS_Extensions::~VESA_BIOS_Extensions()
+                0x00104ea2                VESA_BIOS_Extensions::~VESA_BIOS_Extensions()
+                0x00104ed6                VESA_BIOS_Extensions::~VESA_BIOS_Extensions()
+ .text          0x00104f0e      0x450 core/elf.o
+                0x00104f0e                ELFLoader::ELFLoader(Paging*, Scheduler*)
+                0x00104f0e                ELFLoader::ELFLoader(Paging*, Scheduler*)
+                0x00104f30                ELFLoader::~ELFLoader()
+                0x00104f30                ELFLoader::~ELFLoader()
+                0x00104f40                ELFLoader::loadELF(File*, void*)
+                0x0010534e                ELFLoader::ElevatetoKernel(ProcessControlBlock*)
+ .text          0x0010535e     0x223b core/filesystem/FAT32.o
+                0x0010539a                FAT32::FAT32(AdvancedTechnologyAttachment*, unsigned int)
+                0x0010539a                FAT32::FAT32(AdvancedTechnologyAttachment*, unsigned int)
+                0x001054b2                FAT32::~FAT32()
+                0x001054b2                FAT32::~FAT32()
+                0x001054c2                FAT32::StringToFatName(char*, char*, char*)
+                0x00105600                FAT32::ResolvePath(char*)
+                0x00105750                FAT32::ParsePath(char*, char*)
+                0x0010585e                FAT32::ClusterToSector(unsigned int)
+                0x00105888                FAT32::GetFATEntry(unsigned int)
+                0x001058fe                FAT32::SetFATEntry(unsigned int, unsigned int)
+                0x00105988                FAT32::AllocateCluster()
+                0x00105ade                FAT32::FreeChain(unsigned int)
+                0x00105b36                FAT32::FindEntryInCluster(unsigned int, char*, unsigned int&, unsigned int&, DirectoryEntryFat32&)
+                0x00105d3a                FAT32::FindFreeEntryInCluster(unsigned int, unsigned int&, unsigned int&)
+                0x00105ea0                FAT32::IsDirectoryEmpty(unsigned int)
+                0x00105fac                FAT32::Open(char*)
+                0x001060e4                FAT32::ReadStream(File*, unsigned char*, unsigned int)
+                0x00106260                FAT32::ListRoot()
+                0x00106288                FAT32::ListDir(char*)
+                0x001064ba                FAT32::CreateFile(char*)
+                0x0010668c                FAT32::DeleteFile(char*)
+                0x001067de                FAT32::DeleteDirectory(char*)
+                0x0010695c                FAT32::MakeDirectory(char*)
+                0x00106bea                FAT32::Format()
+                0x00106d50                FAT32::ReadFile(char*, unsigned char*, unsigned int)
+                0x00106eda                FAT32::WriteFile(char*, unsigned char*, unsigned int)
+                0x001071ac                FAT32::GetFileSize(char*)
+                0x00107216                FAT32::FormatRaw(AdvancedTechnologyAttachment*, unsigned int, unsigned int)
+ .text.__x86.get_pc_thunk.si
+                0x00107599        0x4 core/filesystem/FAT32.o
+                0x00107599                __x86.get_pc_thunk.si
+ *fill*         0x0010759d        0x1 
+ .text          0x0010759e      0x1f6 core/filesystem/File.o
+                0x001075da                File::File()
+                0x001075da                File::File()
+                0x0010764e                File::~File()
+                0x0010764e                File::~File()
+                0x0010767c                File::Read(unsigned char*, unsigned int)
+                0x00107730                File::Seek(unsigned int)
+                0x00107774                File::Write(unsigned char*, unsigned int)
+                0x00107784                File::Close()
+ .text          0x00107794      0x440 core/filesystem/msdospart.o
+                0x001077d0                MSDOSPartitionTable::MSDOSPartitionTable(AdvancedTechnologyAttachment*)
+                0x001077d0                MSDOSPartitionTable::MSDOSPartitionTable(AdvancedTechnologyAttachment*)
+                0x001077fc                MSDOSPartitionTable::~MSDOSPartitionTable()
+                0x001077fc                MSDOSPartitionTable::~MSDOSPartitionTable()
+                0x0010780c                MSDOSPartitionTable::Initialize()
+                0x00107a10                MSDOSPartitionTable::ReadPartitions()
+ .text._ZN28AdvancedTechnologyAttachment16GetSizeInSectorsEv
+                0x00107bd4       0x14 core/filesystem/msdospart.o
+                0x00107bd4                AdvancedTechnologyAttachment::GetSizeInSectors()
+ .text          0x00107be8      0x145 core/gdt.o
+                0x00107be8                gdt_set_entry(int, unsigned int, unsigned int, unsigned char, unsigned char)
+                0x00107c7c                gdt_init()
+ .text          0x00107d2d        0x0 core/globals.o
+ *fill*         0x00107d2d        0x1 
+ .text          0x00107d2e     0x1360 core/interrupts.o
+                0x00107d6a                InterruptHandler::InterruptHandler(unsigned char, InterruptManager*)
+                0x00107d6a                InterruptHandler::InterruptHandler(unsigned char, InterruptManager*)
+                0x00107dae                InterruptHandler::~InterruptHandler()
+                0x00107dae                InterruptHandler::~InterruptHandler()
+                0x00107df8                InterruptHandler::HandleInterrupt(unsigned int)
+                0x00107e0a                InterruptManager::SetInterruptDescriptorTableEntry(unsigned char, unsigned short, void (*)(), unsigned char, unsigned char)
+                0x00107ea4                InterruptManager::InterruptManager(Scheduler*, Paging*)
+                0x00107ea4                InterruptManager::InterruptManager(Scheduler*, Paging*)
+                0x00108592                InterruptManager::~InterruptManager()
+                0x00108592                InterruptManager::~InterruptManager()
+                0x001085fa                InterruptManager::Activate()
+                0x00108646                InterruptManager::Deactivate()
+                0x001086a6                InterruptManager::handleInterrupt(unsigned char, unsigned int)
+                0x0010870e                InterruptManager::handleException(unsigned char, unsigned int)
+                0x00108776                InterruptManager::DoHandleInterrupt(unsigned char, unsigned int)
+                0x00108a26                InterruptManager::DohandleException(unsigned char, unsigned int)
+ .text._ZN14InterruptGuardC2Ev
+                0x0010908e       0x2b core/interrupts.o
+                0x0010908e                InterruptGuard::InterruptGuard()
+                0x0010908e                InterruptGuard::InterruptGuard()
+ *fill*         0x001090b9        0x1 
+ .text._ZN14InterruptGuardD2Ev
+                0x001090ba       0x1b core/interrupts.o
+                0x001090ba                InterruptGuard::~InterruptGuard()
+                0x001090ba                InterruptGuard::~InterruptGuard()
+ *fill*         0x001090d5        0x1 
+ .text._ZN6Bitmap7IsValidEv
+                0x001090d6       0x16 core/interrupts.o
+                0x001090d6                Bitmap::IsValid()
+ .text._ZN6Bitmap8GetWidthEv
+                0x001090ec       0x14 core/interrupts.o
+                0x001090ec                Bitmap::GetWidth()
+ .text._ZN6Bitmap9GetHeightEv
+                0x00109100       0x15 core/interrupts.o
+                0x00109100                Bitmap::GetHeight()
+ *fill*         0x00109115        0x1 
+ .text._ZN6Bitmap9GetBufferEv
+                0x00109116       0x15 core/interrupts.o
+                0x00109116                Bitmap::GetBuffer()
+ *fill*         0x0010912b        0x1 
+ .text          0x0010912c      0x511 core/KernelSymbolResolver.o
+                0x00109168                KernelSymbolTable::Load(FAT32*, char const*)
+                0x001094b4                KernelSymbolTable::Lookup(unsigned int, unsigned int*)
+                0x0010956e                KernelSymbolTable::PrintStackTrace(unsigned int)
+ .text          0x0010963d      0xa0f core/memory.o
+                0x0010966c                CheckSSE()
+                0x001096bc                EnableSSE_ASM()
+                0x001096e4                init_memory_optimizations()
+                0x00109869                memcpy
+                0x001098aa                memset
+                0x001098e7                memcmp
+                0x0010995b                kheap_init(void*, void*)
+                0x001099af                kbrk(int)
+                0x00109a18                kheap_print_blocks()
+                0x00109a46                is_block_free(_kheap_block*)
+                0x00109a6e                worst_fit(int)
+                0x00109abd                allocate_new_block(int)
+                0x00109b4e                kmalloc(int)
+                0x00109ca6                aligned_kmalloc(unsigned int, unsigned int)
+                0x00109d18                kcalloc(int, int)
+                0x00109d98                krealloc(void*, int)
+                0x00109e81                kfree(void*)
+                0x00109efe                operator new(unsigned int)
+                0x00109f1f                operator new[](unsigned int)
+                0x00109f40                operator new(unsigned int, std::align_val_t)
+                0x00109f63                operator new[](unsigned int, std::align_val_t)
+                0x00109f86                operator delete(void*)
+                0x00109fa7                operator delete[](void*)
+                0x00109fc8                operator delete(void*, unsigned int)
+                0x00109fe9                operator delete[](void*, unsigned int)
+                0x0010a00a                operator delete(void*, std::align_val_t)
+                0x0010a02b                operator delete[](void*, std::align_val_t)
+ .text          0x0010a04c      0x414 core/paging.o
+                0x0010a04c                Paging::Paging()
+                0x0010a04c                Paging::Paging()
+                0x0010a066                Paging::~Paging()
+                0x0010a066                Paging::~Paging()
+                0x0010a076                Paging::Activate()
+                0x0010a22c                Paging::CreateProcessDirectory()
+                0x0010a2dc                Paging::SwitchDirectory(unsigned int*)
+                0x0010a2fa                Paging::MapPage(unsigned int*, unsigned int, unsigned int, unsigned int)
+                0x0010a3be                Paging::GetPhysicalAddress(unsigned int*, unsigned int)
+ .text          0x0010a460      0x7e0 core/pci.o
+                0x0010a49c                PeripheralComponentInterconnectDeviceDescriptor::PeripheralComponentInterconnectDeviceDescriptor()
+                0x0010a49c                PeripheralComponentInterconnectDeviceDescriptor::PeripheralComponentInterconnectDeviceDescriptor()
+                0x0010a508                PeripheralComponentInterconnectDeviceDescriptor::~PeripheralComponentInterconnectDeviceDescriptor()
+                0x0010a508                PeripheralComponentInterconnectDeviceDescriptor::~PeripheralComponentInterconnectDeviceDescriptor()
+                0x0010a518                PeripheralComponentInterconnectController::PeripheralComponentInterconnectController()
+                0x0010a518                PeripheralComponentInterconnectController::PeripheralComponentInterconnectController()
+                0x0010a55c                PeripheralComponentInterconnectController::~PeripheralComponentInterconnectController()
+                0x0010a55c                PeripheralComponentInterconnectController::~PeripheralComponentInterconnectController()
+                0x0010a596                PeripheralComponentInterconnectController::Read(unsigned short, unsigned short, unsigned short, unsigned int)
+                0x0010a636                PeripheralComponentInterconnectController::Write(unsigned short, unsigned short, unsigned short, unsigned int, unsigned int)
+                0x0010a6c4                PeripheralComponentInterconnectController::DeviceHasFunctions(unsigned short, unsigned short)
+                0x0010a70a                PeripheralComponentInterconnectController::GetDeviceDescriptor(unsigned short, unsigned short, unsigned short)
+                0x0010a88a                PeripheralComponentInterconnectController::GetBaseAddressRegister(unsigned short, unsigned short, unsigned short, unsigned short)
+                0x0010a98a                PeripheralComponentInterconnectController::FindHardwareDevice(unsigned short, unsigned short)
+                0x0010aaad                pci_find_bar0
+                0x0010ab5b                pci_enable_bus_master
+ .text          0x0010ac40      0x5ed core/pmm.o
+                0x0010ad74                pmm_get_max_blocks()
+                0x0010ad89                pmm_get_used_blocks()
+                0x0010ad9e                pmm_mmap_first_free()
+                0x0010ae2f                pmm_mmap_first_free_by_size(unsigned int)
+                0x0010af16                pmm_next_free_frame(int)
+                0x0010af31                pmm_init(unsigned int, unsigned int)
+                0x0010afda                pmm_init_region(unsigned int, unsigned int)
+                0x0010b039                pmm_deinit_region(unsigned int, unsigned int)
+                0x0010b098                pmm_alloc_block()
+                0x0010b101                pmm_free_block(void*)
+                0x0010b142                pmm_alloc_blocks(unsigned int)
+                0x0010b1d1                pmm_free_blocks(void*, unsigned int)
+ .text.__x86.get_pc_thunk.dx
+                0x0010b22d        0x4 core/pmm.o
+                0x0010b22d                __x86.get_pc_thunk.dx
+ *fill*         0x0010b231        0x1 
+ .text          0x0010b232      0x2d0 core/ports.o
+                0x0010b232                Port::Port(unsigned short)
+                0x0010b232                Port::Port(unsigned short)
+                0x0010b256                Port::~Port()
+                0x0010b256                Port::~Port()
+                0x0010b266                Port8Bit::Port8Bit(unsigned short)
+                0x0010b266                Port8Bit::Port8Bit(unsigned short)
+                0x0010b2a4                Port8Bit::~Port8Bit()
+                0x0010b2a4                Port8Bit::~Port8Bit()
+                0x0010b2ce                Port8Bit::Write(unsigned char)
+                0x0010b2f4                Port8Bit::Read()
+                0x0010b318                Port8BitSlow::Port8BitSlow(unsigned short)
+                0x0010b318                Port8BitSlow::Port8BitSlow(unsigned short)
+                0x0010b354                Port8BitSlow::~Port8BitSlow()
+                0x0010b354                Port8BitSlow::~Port8BitSlow()
+                0x0010b37c                Port8BitSlow::Write(unsigned char)
+                0x0010b3a6                Port16Bit::Port16Bit(unsigned short)
+                0x0010b3a6                Port16Bit::Port16Bit(unsigned short)
+                0x0010b3e4                Port16Bit::~Port16Bit()
+                0x0010b3e4                Port16Bit::~Port16Bit()
+                0x0010b40e                Port16Bit::Write(unsigned short)
+                0x0010b436                Port16Bit::Read()
+                0x0010b45c                Port32Bit::Port32Bit(unsigned short)
+                0x0010b45c                Port32Bit::Port32Bit(unsigned short)
+                0x0010b49a                Port32Bit::~Port32Bit()
+                0x0010b49a                Port32Bit::~Port32Bit()
+                0x0010b4c4                Port32Bit::Write(unsigned int)
+                0x0010b4e0                Port32Bit::Read()
+ .text          0x0010b502      0xa93 core/scheduler.o
+                0x0010b502                IdleTask(void*)
+                0x0010b51e                ThreadExit()
+                0x0010b560                Scheduler::Scheduler(Paging*)
+                0x0010b560                Scheduler::Scheduler(Paging*)
+                0x0010b60a                Scheduler::CreateProcess(bool, void (*)(void*), void*)
+                0x0010b6da                Scheduler::CreateThread(ProcessControlBlock*, void (*)(void*), void*)
+                0x0010b898                Scheduler::KillProcess(unsigned int)
+                0x0010b9e2                Scheduler::TerminateThread(ThreadControlBlock*)
+                0x0010baa0                Scheduler::Sleep(unsigned int)
+                0x0010bb16                Scheduler::Schedule(CPUState*)
+ *fill*         0x0010bf95        0x1 
+ .text._ZN19ProcessControlBlockC2Ev
+                0x0010bf96       0x25 core/scheduler.o
+                0x0010bf96                ProcessControlBlock::ProcessControlBlock()
+                0x0010bf96                ProcessControlBlock::ProcessControlBlock()
+ *fill*         0x0010bfbb        0x1 
+ .text._ZN10LinkedListIP19ProcessControlBlockEC2Ev
+                0x0010bfbc       0x2d core/scheduler.o
+                0x0010bfbc                LinkedList<ProcessControlBlock*>::LinkedList()
+                0x0010bfbc                LinkedList<ProcessControlBlock*>::LinkedList()
+ *fill*         0x0010bfe9        0x1 
+ .text._ZN10LinkedListIP18ThreadControlBlockEC2Ev
+                0x0010bfea       0x2d core/scheduler.o
+                0x0010bfea                LinkedList<ThreadControlBlock*>::LinkedList()
+                0x0010bfea                LinkedList<ThreadControlBlock*>::LinkedList()
+ *fill*         0x0010c017        0x1 
+ .text._ZN10LinkedListIP19ProcessControlBlockE8PushBackERKS1_
+                0x0010c018       0x7e core/scheduler.o
+                0x0010c018                LinkedList<ProcessControlBlock*>::PushBack(ProcessControlBlock* const&)
+ .text._ZN10LinkedListIP18ThreadControlBlockE8PushBackERKS1_
+                0x0010c096       0x7e core/scheduler.o
+                0x0010c096                LinkedList<ThreadControlBlock*>::PushBack(ThreadControlBlock* const&)
+ .text._ZNK10LinkedListIP19ProcessControlBlockE7GetSizeEv
+                0x0010c114       0x15 core/scheduler.o
+                0x0010c114                LinkedList<ProcessControlBlock*>::GetSize() const
+ *fill*         0x0010c129        0x1 
+ .text._ZN10LinkedListIP19ProcessControlBlockE8PopFrontEv
+                0x0010c12a       0x82 core/scheduler.o
+                0x0010c12a                LinkedList<ProcessControlBlock*>::PopFront()
+ .text._ZNK10LinkedListIP18ThreadControlBlockE7GetSizeEv
+                0x0010c1ac       0x15 core/scheduler.o
+                0x0010c1ac                LinkedList<ThreadControlBlock*>::GetSize() const
+ *fill*         0x0010c1c1        0x1 
+ .text._ZN10LinkedListIP18ThreadControlBlockE8PopFrontEv
+                0x0010c1c2       0x82 core/scheduler.o
+                0x0010c1c2                LinkedList<ThreadControlBlock*>::PopFront()
+ .text._ZN10LinkedListIP19ProcessControlBlockE4NodeC2ERKS1_
+                0x0010c244       0x24 core/scheduler.o
+                0x0010c244                LinkedList<ProcessControlBlock*>::Node::Node(ProcessControlBlock* const&)
+                0x0010c244                LinkedList<ProcessControlBlock*>::Node::Node(ProcessControlBlock* const&)
+ .text._ZN10LinkedListIP18ThreadControlBlockE4NodeC2ERKS1_
+                0x0010c268       0x24 core/scheduler.o
+                0x0010c268                LinkedList<ThreadControlBlock*>::Node::Node(ThreadControlBlock* const&)
+                0x0010c268                LinkedList<ThreadControlBlock*>::Node::Node(ThreadControlBlock* const&)
+ .text          0x0010c28c      0x4d7 core/syscalls.o
+                0x0010c2c8                SyscallHandler::SyscallHandler(unsigned char, InterruptManager*)
+                0x0010c2c8                SyscallHandler::SyscallHandler(unsigned char, InterruptManager*)
+                0x0010c30e                SyscallHandler::~SyscallHandler()
+                0x0010c30e                SyscallHandler::~SyscallHandler()
+                0x0010c342                SyscallHandler::HandleInterrupt(unsigned int)
+                0x0010c432                SyscallHandlers::Handle_sys_restart(unsigned int)
+                0x0010c46e                SyscallHandlers::Handle_sys_exit(unsigned int)
+                0x0010c50a                SyscallHandlers::Handle_sys_clone(unsigned int)
+                0x0010c58c                SyscallHandlers::Handle_sys_sleep(unsigned int)
+                0x0010c5dc                SyscallHandlers::Handle_sys_debug(unsigned int)
+                0x0010c636                SyscallHandlers::Handle_sys_Hcall(unsigned int)
+ *fill*         0x0010c763        0x1 
+ .text._ZN9Scheduler16GetCurrentThreadEv
+                0x0010c764       0x15 core/syscalls.o
+                0x0010c764                Scheduler::GetCurrentThread()
+ *fill*         0x0010c779        0x1 
+ .text._ZN9Scheduler17GetCurrentProcessEv
+                0x0010c77a       0x29 core/syscalls.o
+                0x0010c77a                Scheduler::GetCurrentProcess()
+ .text          0x0010c7a3      0x6e3 debug.o
+                0x0010c7f3                initSerial()
+                0x0010c872                IsSerialReady()
+                0x0010c899                FlushSerial()
+                0x0010c917                SerialPush(char)
+                0x0010c971                writeSerial(char)
+                0x0010c997                SerialPrint(char const*)
+                0x0010c9de                printf(char const*, ...)
+                0x0010ca26                vprintf(char const*, char*)
+                0x0010cdb0                DebugPrintf(char const*, char const*, ...)
+                0x0010ce24                Printf(char const*, char const*, ...)
+ .text          0x0010ce86      0x5af gui/bmp.o
+                0x0010cec2                Bitmap::Bitmap(File*)
+                0x0010cec2                Bitmap::Bitmap(File*)
+                0x0010cf0a                Bitmap::Bitmap(char*)
+                0x0010cf0a                Bitmap::Bitmap(char*)
+                0x0010d030                Bitmap::Bitmap(int, int, unsigned int)
+                0x0010d030                Bitmap::Bitmap(int, int, unsigned int)
+                0x0010d0bc                Bitmap::~Bitmap()
+                0x0010d0bc                Bitmap::~Bitmap()
+                0x0010d106                Bitmap::Load(File*)
+ *fill*         0x0010d435        0x1 
+ .text          0x0010d436      0x75b gui/button.o
+                0x0010d472                Button::Button(Widget*, int, int, unsigned int, unsigned int, char const*)
+                0x0010d472                Button::Button(Widget*, int, int, unsigned int, unsigned int, char const*)
+                0x0010d58c                Button::~Button()
+                0x0010d58c                Button::~Button()
+                0x0010d5e4                Button::~Button()
+                0x0010d61a                Button::update()
+                0x0010d644                Button::SetLabel(char const*)
+                0x0010d6d2                Button::SetWidth(int)
+                0x0010d7b0                Button::SetHeight(int)
+                0x0010d88a                Button::RedrawToCache()
+                0x0010da26                Button::OnMouseDown(int, int, unsigned char)
+                0x0010da6c                Button::OnMouseUp(int, int, unsigned char)
+                0x0010db2c                Button::OnMouseMove(int, int, int, int)
+ *fill*         0x0010db91        0x1 
+ .text._ZN10LinkedListIP5EventE3AddERKS1_
+                0x0010db92       0x71 gui/button.o
+                0x0010db92                LinkedList<Event*>::Add(Event* const&)
+ *fill*         0x0010dc03        0x1 
+ .text._ZN10LinkedListIP5EventE4NodeC2ERKS1_
+                0x0010dc04       0x24 gui/button.o
+                0x0010dc04                LinkedList<Event*>::Node::Node(Event* const&)
+                0x0010dc04                LinkedList<Event*>::Node::Node(Event* const&)
+ .text          0x0010dc28      0xbcd gui/desktop.o
+                0x0010dc64                Desktop::Desktop(int, int)
+                0x0010dc64                Desktop::Desktop(int, int)
+                0x0010de18                Desktop::~Desktop()
+                0x0010de18                Desktop::~Desktop()
+                0x0010dea4                Desktop::~Desktop()
+                0x0010dedc                Desktop::createNewHandler(unsigned int, ThreadControlBlock*)
+                0x0010df80                Desktop::deleteEventHandler(unsigned int)
+                0x0010dfd8                Desktop::getHandler(unsigned int)
+                0x0010e01a                Desktop::Draw(GraphicsDriver*)
+                0x0010e3b6                Desktop::getNewID()
+                0x0010e40c                Desktop::RemoveAppByPID(unsigned int)
+                0x0010e480                Desktop::OnMouseDown(unsigned char)
+                0x0010e4c3                non-virtual thunk to Desktop::OnMouseDown(unsigned char)
+                0x0010e4ca                Desktop::OnMouseUp(unsigned char)
+                0x0010e50d                non-virtual thunk to Desktop::OnMouseUp(unsigned char)
+                0x0010e514                Desktop::OnMouseMove(int, int)
+                0x0010e5d5                non-virtual thunk to Desktop::OnMouseMove(int, int)
+                0x0010e5e0                Desktop::OnKeyDown(char const*)
+                0x0010e60b                non-virtual thunk to Desktop::OnKeyDown(char const*)
+                0x0010e612                Desktop::OnKeyUp(char const*)
+                0x0010e63d                non-virtual thunk to Desktop::OnKeyUp(char const*)
+                0x0010e644                Desktop::OnSpecialKeyDown(unsigned char)
+                0x0010e677                non-virtual thunk to Desktop::OnSpecialKeyDown(unsigned char)
+                0x0010e67e                Desktop::OnSpecialKeyUp(unsigned char)
+                0x0010e6b1                non-virtual thunk to Desktop::OnSpecialKeyUp(unsigned char)
+ *fill*         0x0010e7f5        0x1 
+ .text._ZN14GraphicsDriver8GetWidthEv
+                0x0010e7f6       0x15 gui/desktop.o
+                0x0010e7f6                GraphicsDriver::GetWidth()
+ *fill*         0x0010e80b        0x1 
+ .text._ZN14GraphicsDriver9GetHeightEv
+                0x0010e80c       0x15 gui/desktop.o
+                0x0010e80c                GraphicsDriver::GetHeight()
+ *fill*         0x0010e821        0x1 
+ .text._ZN14GraphicsDriver13GetBackBufferEv
+                0x0010e822       0x18 gui/desktop.o
+                0x0010e822                GraphicsDriver::GetBackBuffer()
+ .text._ZN12EventHandlerC2Ev
+                0x0010e83a       0x25 gui/desktop.o
+                0x0010e83a                EventHandler::EventHandler()
+                0x0010e83a                EventHandler::EventHandler()
+ *fill*         0x0010e85f        0x1 
+ .text._ZN10LinkedListIP12EventHandlerEC2Ev
+                0x0010e860       0x2d gui/desktop.o
+                0x0010e860                LinkedList<EventHandler*>::LinkedList()
+                0x0010e860                LinkedList<EventHandler*>::LinkedList()
+ *fill*         0x0010e88d        0x1 
+ .text._ZN10LinkedListIP12EventHandlerED2Ev
+                0x0010e88e       0x21 gui/desktop.o
+                0x0010e88e                LinkedList<EventHandler*>::~LinkedList()
+                0x0010e88e                LinkedList<EventHandler*>::~LinkedList()
+ *fill*         0x0010e8af        0x1 
+ .text._ZN10LinkedListIP5EventEC2Ev
+                0x0010e8b0       0x2d gui/desktop.o
+                0x0010e8b0                LinkedList<Event*>::LinkedList()
+                0x0010e8b0                LinkedList<Event*>::LinkedList()
+ *fill*         0x0010e8dd        0x1 
+ .text._ZN10LinkedListIP12EventHandlerE3AddERKS1_
+                0x0010e8de       0x71 gui/desktop.o
+                0x0010e8de                LinkedList<EventHandler*>::Add(EventHandler* const&)
+ *fill*         0x0010e94f        0x1 
+ .text._ZN10LinkedListIP12EventHandlerE5ClearEv
+                0x0010e950       0x6b gui/desktop.o
+                0x0010e950                LinkedList<EventHandler*>::Clear()
+ *fill*         0x0010e9bb        0x1 
+ .text._ZN10LinkedListIP12EventHandlerE4NodeC2ERKS1_
+                0x0010e9bc       0x24 gui/desktop.o
+                0x0010e9bc                LinkedList<EventHandler*>::Node::Node(EventHandler* const&)
+                0x0010e9bc                LinkedList<EventHandler*>::Node::Node(EventHandler* const&)
+ .text.__x86.get_pc_thunk.cx
+                0x0010e9e0        0x4 gui/desktop.o
+                0x0010e9e0                __x86.get_pc_thunk.cx
+ .text          0x0010e9e4      0x1cb gui/elements/window_action_button.o
+                0x0010ea20                ACButton::ACButton(Widget*, int, int, char const*)
+                0x0010ea20                ACButton::ACButton(Widget*, int, int, char const*)
+                0x0010ea80                ACButton::~ACButton()
+                0x0010ea80                ACButton::~ACButton()
+                0x0010eab4                ACButton::~ACButton()
+                0x0010eaea                ACButton::OnClick(void (*)())
+                0x0010eb04                ACButton::OnClick(void*, void (*)(void*))
+                0x0010eb26                ACButton::OnMouseUp(int, int, unsigned char)
+ *fill*         0x0010ebaf        0x1 
+ .text          0x0010ebb0      0x3b9 gui/elements/window_action_button_round.o
+                0x0010ebec                ACRButton::ACRButton(Widget*, int, int, char const*)
+                0x0010ebec                ACRButton::ACRButton(Widget*, int, int, char const*)
+                0x0010ed30                ACRButton::~ACRButton()
+                0x0010ed30                ACRButton::~ACRButton()
+                0x0010ed64                ACRButton::~ACRButton()
+                0x0010ed9a                ACRButton::RedrawToCache()
+ .text.__x86.get_pc_thunk.di
+                0x0010ef69        0x4 gui/elements/window_action_button_round.o
+                0x0010ef69                __x86.get_pc_thunk.di
+ *fill*         0x0010ef6d        0x1 
+ .text          0x0010ef6e      0x8e6 gui/fonts/font.o
+                0x0010ef6e                FontFile::FontFile()
+                0x0010ef6e                FontFile::FontFile()
+                0x0010ef7e                FontFile::~FontFile()
+                0x0010ef7e                FontFile::~FontFile()
+                0x0010ef8e                Font::Font(FontFile*, FontSize, FontType)
+                0x0010ef8e                Font::Font(FontFile*, FontSize, FontType)
+                0x0010f0c6                Font::~Font()
+                0x0010f0c6                Font::~Font()
+                0x0010f0d6                Font::getStringLength(char const*)
+                0x0010f1f0                Font::setSize(FontSize)
+                0x0010f21c                Font::setType(FontType)
+                0x0010f246                Font::update()
+                0x0010f36e                Font::getLineHeight()
+                0x0010f404                FontManager::FontManager()
+                0x0010f404                FontManager::FontManager()
+                0x0010f446                FontManager::~FontManager()
+                0x0010f446                FontManager::~FontManager()
+                0x0010f456                FontManager::LoadFile(unsigned int, unsigned int)
+                0x0010f734                FontManager::LoadFile(File*)
+                0x0010f7e6                FontManager::getNewFont(FontSize, FontType)
+ .text._ZN10LinkedListIP8FontFileEC2Ev
+                0x0010f854       0x2d gui/fonts/font.o
+                0x0010f854                LinkedList<FontFile*>::LinkedList()
+                0x0010f854                LinkedList<FontFile*>::LinkedList()
+ *fill*         0x0010f881        0x1 
+ .text._ZN10LinkedListIP8FontFileE3AddERKS1_
+                0x0010f882       0x71 gui/fonts/font.o
+                0x0010f882                LinkedList<FontFile*>::Add(FontFile* const&)
+ *fill*         0x0010f8f3        0x1 
+ .text._ZNK10LinkedListIP8FontFileE7IsEmptyEv
+                0x0010f8f4       0x1a gui/fonts/font.o
+                0x0010f8f4                LinkedList<FontFile*>::IsEmpty() const
+ .text._ZN10LinkedListIP8FontFileE8GetFrontEv
+                0x0010f90e       0x2f gui/fonts/font.o
+                0x0010f90e                LinkedList<FontFile*>::GetFront()
+ *fill*         0x0010f93d        0x1 
+ .text._ZN10LinkedListIP8FontFileE4NodeC2ERKS1_
+                0x0010f93e       0x24 gui/fonts/font.o
+                0x0010f93e                LinkedList<FontFile*>::Node::Node(FontFile* const&)
+                0x0010f93e                LinkedList<FontFile*>::Node::Node(FontFile* const&)
+ .text          0x0010f962      0xb69 gui/Hgui.o
+                0x0010f99e                HguiHandler::HguiHandler(unsigned char, InterruptManager*)
+                0x0010f99e                HguiHandler::HguiHandler(unsigned char, InterruptManager*)
+                0x0010fa2a                HguiHandler::~HguiHandler()
+                0x0010fa2a                HguiHandler::~HguiHandler()
+                0x0010fa6e                HguiHandler::HandleInterrupt(unsigned int)
+                0x0010fb4c                HguiHandler::HandleWidget(unsigned int)
+                0x0010fc46                HguiHandler::HandleWindow(unsigned int)
+                0x0010fdde                HguiHandler::HandleButton(unsigned int)
+                0x0010ff3c                HguiHandler::HandleLabel(unsigned int)
+                0x0011014e                HguiHandler::HandleEvent(unsigned int)
+                0x0011024a                HguiHandler::FindWidgetByID(unsigned int)
+                0x001102ac                HguiHandler::RemoveAppByPID(unsigned int)
+                0x001102f2                HguiHandler::getNewID()
+ *fill*         0x001104cb        0x1 
+ .text._ZN10LinkedListIP6WidgetEC2Ev
+                0x001104cc       0x2d gui/Hgui.o
+                0x001104cc                LinkedList<Widget*>::LinkedList()
+                0x001104cc                LinkedList<Widget*>::LinkedList()
+ *fill*         0x001104f9        0x1 
+ .text._ZN10LinkedListIP6WidgetED2Ev
+                0x001104fa       0x21 gui/Hgui.o
+                0x001104fa                LinkedList<Widget*>::~LinkedList()
+                0x001104fa                LinkedList<Widget*>::~LinkedList()
+ *fill*         0x0011051b        0x1 
+ .text._ZN10LinkedListIP6WidgetE3AddERKS1_
+                0x0011051c       0x71 gui/Hgui.o
+                0x0011051c                LinkedList<Widget*>::Add(Widget* const&)
+ *fill*         0x0011058d        0x1 
+ .text._ZNK10LinkedListIP5EventE7GetSizeEv
+                0x0011058e       0x15 gui/Hgui.o
+                0x0011058e                LinkedList<Event*>::GetSize() const
+ *fill*         0x001105a3        0x1 
+ .text._ZN10LinkedListIP5EventE8PopFrontEv
+                0x001105a4       0x82 gui/Hgui.o
+                0x001105a4                LinkedList<Event*>::PopFront()
+ .text._ZN10LinkedListIP6WidgetE5ClearEv
+                0x00110626       0x6b gui/Hgui.o
+                0x00110626                LinkedList<Widget*>::Clear()
+ *fill*         0x00110691        0x1 
+ .text._ZN10LinkedListIP6WidgetE4NodeC2ERKS1_
+                0x00110692       0x24 gui/Hgui.o
+                0x00110692                LinkedList<Widget*>::Node::Node(Widget* const&)
+                0x00110692                LinkedList<Widget*>::Node::Node(Widget* const&)
+ .text          0x001106b6      0x2e9 gui/label.o
+                0x001106f2                Label::Label(Widget*, int, int, int, int, char const*)
+                0x001106f2                Label::Label(Widget*, int, int, int, int, char const*)
+                0x0011078c                Label::~Label()
+                0x0011078c                Label::~Label()
+                0x001107da                Label::~Label()
+                0x00110810                Label::setText(char const*)
+                0x0011089e                Label::setSize(FontSize)
+                0x001108e2                Label::RedrawToCache()
+                0x00110976                Label::update()
+ *fill*         0x0011099f        0x1 
+ .text          0x001109a0     0x1563 gui/renderer/nina.o
+                0x001109a0                NINA::NINA()
+                0x001109a0                NINA::NINA()
+                0x001109d0                NINA::PrecomputeAlphaTable()
+                0x00110a46                NINA::~NINA()
+                0x00110a46                NINA::~NINA()
+                0x00110a56                NINA::DrawBitmapToBuffer(unsigned int*, int, int, int, int, unsigned int*, int, int)
+                0x00110c70                NINA::DrawBitmap(unsigned int*, int, int, int, int, unsigned int const*, int, int)
+                0x00110f10                NINA::FillRectangle(unsigned int*, int, int, int, int, unsigned int, unsigned int, unsigned int)
+                0x00110fb2                NINA::DrawRectangle(unsigned int*, int, int, int, int, unsigned int, unsigned int, unsigned int)
+                0x001110ec                NINA::FillRoundedRectangle(unsigned int*, int, int, int, int, unsigned int, unsigned int, unsigned int, unsigned int)
+                0x001112f6                NINA::DrawRoundedRectangle(unsigned int*, int, int, int, int, unsigned int, unsigned int, unsigned int, unsigned int)
+                0x001115ee                NINA::FillCircle(unsigned int*, int, int, int, int, unsigned int, unsigned int)
+                0x00111818                NINA::DrawCircle(unsigned int*, int, int, int, int, unsigned int, unsigned int)
+                0x00111976                NINA::DrawLine(unsigned int*, int, int, int, int, int, int, unsigned int)
+                0x00111a72                NINA::DrawHorizontalLine(unsigned int*, int, int, int, int, int, unsigned int)
+                0x00111ae2                NINA::DrawVerticalLine(unsigned int*, int, int, int, int, int, unsigned int)
+                0x00111b52                NINA::DrawCharacter(unsigned int*, int, int, int, int, char, Font*, unsigned int)
+                0x00111d9a                NINA::DrawString(unsigned int*, int, int, int, int, char const*, Font*, unsigned int)
+ *fill*         0x00111f03        0x1 
+ .text          0x00111f04     0x110e gui/widget.o
+                0x00111f40                Widget::Widget(Widget*, int, int, int, int)
+                0x00111f40                Widget::Widget(Widget*, int, int, int, int)
+                0x00112044                Widget::~Widget()
+                0x00112044                Widget::~Widget()
+                0x001120a0                Widget::~Widget()
+                0x001120d6                Widget::MarkDirty()
+                0x00112116                Widget::RedrawToCache()
+                0x00112166                Widget::Draw(GraphicsDriver*)
+                0x001121ea                Widget::ModelToScreen(int&, int&)
+                0x0011224e                Widget::ContainsCoordinate(int, int)
+                0x001122a6                Widget::GetFocus(Widget*)
+                0x001122e2                Widget::SetFocus(bool)
+                0x0011231a                Widget::SetFocussable(bool)
+                0x0011233e                Widget::AddChild(Widget*)
+                0x001123a6                Widget::RemoveChild(Widget*)
+                0x00112420                Widget::SetPID(unsigned int)
+                0x00112452                Widget::SetID(unsigned int)
+                0x001124b4                Widget::FindWidgetByID(unsigned int)
+                0x0011254e                Widget::FindWidgetByPID(unsigned int)
+                0x001125a0                Widget::OnMouseDown(int, int, unsigned char)
+                0x001125dc                Widget::OnMouseUp(int, int, unsigned char)
+                0x001125f6                Widget::OnMouseMove(int, int, int, int)
+                0x00112606                Widget::OnKeyDown(char const*)
+                0x00112616                Widget::OnSpecialKeyDown(unsigned char)
+                0x00112630                Widget::OnKeyUp(char const*)
+                0x00112640                Widget::OnSpecialKeyUp(unsigned char)
+                0x0011265a                CompositeWidget::CompositeWidget(CompositeWidget*, int, int, int, int)
+                0x0011265a                CompositeWidget::CompositeWidget(CompositeWidget*, int, int, int, int)
+                0x001126a6                CompositeWidget::~CompositeWidget()
+                0x001126a6                CompositeWidget::~CompositeWidget()
+                0x001126d4                CompositeWidget::~CompositeWidget()
+                0x00112726                CompositeWidget::GetFocus(Widget*)
+                0x0011281c                CompositeWidget::Draw(GraphicsDriver*)
+                0x001128f0                CompositeWidget::OnMouseDown(int, int, unsigned char)
+                0x001129f4                CompositeWidget::OnMouseUp(int, int, unsigned char)
+                0x00112b06                CompositeWidget::OnMouseMove(int, int, int, int)
+                0x00112b88                CompositeWidget::OnKeyDown(char const*)
+                0x00112bc4                CompositeWidget::OnKeyUp(char const*)
+                0x00112c00                CompositeWidget::OnSpecialKeyDown(unsigned char)
+                0x00112c44                CompositeWidget::OnSpecialKeyUp(unsigned char)
+ .text._ZN10LinkedListIP6WidgetE8PushBackERKS1_
+                0x00113012       0x7e gui/widget.o
+                0x00113012                LinkedList<Widget*>::PushBack(Widget* const&)
+ .text          0x00113090      0x898 gui/window.o
+                0x00113126                Window::Window(CompositeWidget*, int, int, int, int)
+                0x00113126                Window::Window(CompositeWidget*, int, int, int, int)
+                0x00113230                Window::~Window()
+                0x00113230                Window::~Window()
+                0x001132c6                Window::~Window()
+                0x001132fc                Window::OnClose()
+                0x001133a2                Window::setWindowTitle(char const*)
+                0x00113430                Window::setVisible(bool)
+                0x00113476                Window::Draw(GraphicsDriver*)
+                0x001135d2                Window::RedrawToCache()
+                0x001137d2                Window::OnMouseDown(int, int, unsigned char)
+                0x00113852                Window::OnMouseUp(int, int, unsigned char)
+                0x00113890                Window::OnMouseMove(int, int, int, int)
+ .text._ZNK10LinkedListIP6WidgetE5beginEv
+                0x00113928       0x2b gui/window.o
+                0x00113928                LinkedList<Widget*>::begin() const
+ *fill*         0x00113953        0x1 
+ .text._ZNK10LinkedListIP6WidgetE3endEv
+                0x00113954       0x27 gui/window.o
+                0x00113954                LinkedList<Widget*>::end() const
+ *fill*         0x0011397b        0x1 
+ .text._ZNK10LinkedListIP6WidgetE8IteratorneERKS3_
+                0x0011397c       0x1e gui/window.o
+                0x0011397c                LinkedList<Widget*>::Iterator::operator!=(LinkedList<Widget*>::Iterator const&) const
+ .text._ZN10LinkedListIP6WidgetE8IteratorppEv
+                0x0011399a       0x28 gui/window.o
+                0x0011399a                LinkedList<Widget*>::Iterator::operator++()
+ .text._ZNK10LinkedListIP6WidgetE8IteratordeEv
+                0x001139c2       0x14 gui/window.o
+                0x001139c2                LinkedList<Widget*>::Iterator::operator*() const
+ .text._ZN10LinkedListIP6WidgetE8IteratorC2EPNS2_4NodeE
+                0x001139d6       0x18 gui/window.o
+                0x001139d6                LinkedList<Widget*>::Iterator::Iterator(LinkedList<Widget*>::Node*)
+                0x001139d6                LinkedList<Widget*>::Iterator::Iterator(LinkedList<Widget*>::Node*)
+ .text          0x001139ee     0x1791 kernel.o
+                0x00113a53                callConstructors
+                0x00113a8d                __cxa_pure_virtual
+                0x00113ab5                get_kernel_memory_map(KERNEL_MEMORY_MAP*, MultibootInfo*)
+                0x00113c75                display_kernel_memory_map(KERNEL_MEMORY_MAP*)
+                0x00113da1                init_memory(MultibootInfo*)
+                0x00113ffd                InitializePIT(unsigned int)
+                0x00114074                init_pci(FAT32*, DriverManager*)
+                0x00114561                pDesktop(void*)
+                0x00114744                pGame(void*)
+                0x0011479b                kernelMain
+ *fill*         0x0011517f        0x1 
+ .text._ZN7Desktop10MouseMovedEv
+                0x00115180       0x3b kernel.o
+                0x00115180                Desktop::MouseMoved()
+ .text          0x001151bb      0x10d stdlib.o
+                0x001151bb                itoa(unsigned int, char*, unsigned int)
+ .text          0x001152c8      0x1a7 stdlib/math.o
+                0x001152c8                sin(double)
+                0x001152f1                cos(double)
+                0x0011531a                tan(double)
+                0x00115345                sqrt(double)
+                0x0011536e                abs(double)
+                0x001153a1                pow(double, int)
+                0x001153e5                floor(double)
+                0x00115420                ceil(double)
+ .text          0x0011546f      0x4d5 utils/string.o
+                0x0011546f                strlen(char const*)
+                0x001154a6                strncmp(char const*, char const*, unsigned int)
+                0x00115509                strcpy(char*, char const*)
+                0x0011554e                strcat(char*, char const*)
+                0x001155af                isspace(char)
+                0x001155fa                isalpha(char)
+                0x00115639                upper(char)
+                0x0011566a                lower(char)
+                0x0011569b                itoa(char*, int, int)
+                0x00115789                atoi(char const*)
+                0x00115870                HexStrToInt(char const*)
+                0x00116000                        . = ALIGN (0x1000)
+ *fill*         0x00115944      0x6bc 
+                0x00116000                        __kernel_text_section_end = .
+
+.iplt           0x00116000        0x0
+ .iplt          0x00116000        0x0 asm/common_handler.o
+
+.data           0x00116000     0x1000
+                0x00116000                        __kernel_data_section_start = .
+                0x00116000                        data = .
+                0x00116000                        _data = .
+                0x00116000                        __data = .
+ *(.data)
+ .data          0x00116000        0x1 asm/common_handler.o
+ .data          0x00116001        0x0 audio/wav.o
+ .data          0x00116001        0x0 core/driver.o
+ .data          0x00116001        0x0 core/drivers/ata.o
+ .data          0x00116001        0x0 core/drivers/AudioMixer.o
+ .data          0x00116001        0x0 core/drivers/GraphicsDriver.o
+ .data          0x00116001        0x0 core/drivers/keyboard.o
+ .data          0x00116001        0x0 core/drivers/ModuleLoader.o
+ .data          0x00116001        0x0 core/drivers/mouse.o
+ .data          0x00116001        0x0 core/drivers/SymbolTable.o
+ .data          0x00116001        0x0 core/drivers/vbe.o
+ .data          0x00116001        0x0 core/elf.o
+ .data          0x00116001        0x0 core/filesystem/FAT32.o
+ .data          0x00116001        0x0 core/filesystem/File.o
+ .data          0x00116001        0x0 core/filesystem/msdospart.o
+ .data          0x00116001        0x0 core/gdt.o
+ .data          0x00116001        0x0 core/globals.o
+ *fill*         0x00116001        0x1 
+ .data          0x00116002        0x2 core/interrupts.o
+ .data          0x00116004        0x0 core/KernelSymbolResolver.o
+ .data          0x00116004        0x0 core/memory.o
+ .data          0x00116004        0x0 core/paging.o
+ .data          0x00116004        0x0 core/pci.o
+ .data          0x00116004        0x0 core/pmm.o
+ .data          0x00116004        0x0 core/ports.o
+ .data          0x00116004        0x0 core/scheduler.o
+ .data          0x00116004        0x0 core/syscalls.o
+ .data          0x00116004        0x0 debug.o
+ .data          0x00116004        0x0 gui/bmp.o
+ .data          0x00116004        0x0 gui/button.o
+ .data          0x00116004        0x0 gui/desktop.o
+ .data          0x00116004        0x0 gui/elements/window_action_button.o
+ .data          0x00116004        0x0 gui/elements/window_action_button_round.o
+ .data          0x00116004        0x0 gui/fonts/font.o
+ .data          0x00116004        0x0 gui/Hgui.o
+ .data          0x00116004        0x0 gui/label.o
+ .data          0x00116004        0x0 gui/renderer/nina.o
+ .data          0x00116004        0x0 gui/widget.o
+ .data          0x00116004        0x0 gui/window.o
+ .data          0x00116004        0x0 kernel.o
+ .data          0x00116004        0x0 stdlib.o
+ .data          0x00116004        0x0 stdlib/math.o
+ .data          0x00116004        0x0 utils/string.o
+                0x00117000                        . = ALIGN (0x1000)
+ *fill*         0x00116004      0xffc 
+                0x00117000                        __kernel_data_section_end = .
+
+.got            0x00117000        0x0
+ .got           0x00117000        0x0 asm/common_handler.o
+
+.got.plt        0x00117000        0xc
+ .got.plt       0x00117000        0xc asm/common_handler.o
+                0x00117000                _GLOBAL_OFFSET_TABLE_
+
+.igot.plt       0x0011700c        0x0
+ .igot.plt      0x0011700c        0x0 asm/common_handler.o
+
+.data.rel.ro.local
+                0x00117020     0x1cb8
+ .data.rel.ro.local
+                0x00117020      0x138 audio/wav.o
+ *fill*         0x00117158        0x8 
+ .data.rel.ro.local
+                0x00117160      0x138 core/driver.o
+ *fill*         0x00117298        0x8 
+ .data.rel.ro.local
+                0x001172a0      0x138 core/drivers/ata.o
+ *fill*         0x001173d8        0x8 
+ .data.rel.ro.local
+                0x001173e0      0x138 core/drivers/AudioMixer.o
+ *fill*         0x00117518        0x8 
+ .data.rel.ro.local
+                0x00117520      0x138 core/drivers/keyboard.o
+ *fill*         0x00117658        0x8 
+ .data.rel.ro.local
+                0x00117660      0x138 core/drivers/mouse.o
+ *fill*         0x00117798        0x8 
+ .data.rel.ro.local
+                0x001177a0      0x138 core/filesystem/FAT32.o
+ *fill*         0x001178d8        0x8 
+ .data.rel.ro.local
+                0x001178e0      0x138 core/filesystem/File.o
+ *fill*         0x00117a18        0x8 
+ .data.rel.ro.local
+                0x00117a20      0x138 core/filesystem/msdospart.o
+ *fill*         0x00117b58        0x8 
+ .data.rel.ro.local
+                0x00117b60      0x138 core/interrupts.o
+ *fill*         0x00117c98        0x8 
+ .data.rel.ro.local
+                0x00117ca0      0x138 core/KernelSymbolResolver.o
+ *fill*         0x00117dd8        0x8 
+ .data.rel.ro.local
+                0x00117de0      0x138 core/pci.o
+ *fill*         0x00117f18        0x8 
+ .data.rel.ro.local
+                0x00117f20      0x138 core/syscalls.o
+ *fill*         0x00118058        0x8 
+ .data.rel.ro.local
+                0x00118060      0x138 gui/bmp.o
+ *fill*         0x00118198        0x8 
+ .data.rel.ro.local
+                0x001181a0      0x138 gui/button.o
+ *fill*         0x001182d8        0x8 
+ .data.rel.ro.local
+                0x001182e0      0x138 gui/desktop.o
+ *fill*         0x00118418        0x8 
+ .data.rel.ro.local
+                0x00118420      0x138 gui/elements/window_action_button.o
+ *fill*         0x00118558        0x8 
+ .data.rel.ro.local
+                0x00118560      0x138 gui/elements/window_action_button_round.o
+ *fill*         0x00118698        0x8 
+ .data.rel.ro.local
+                0x001186a0      0x138 gui/Hgui.o
+ *fill*         0x001187d8        0x8 
+ .data.rel.ro.local
+                0x001187e0      0x138 gui/label.o
+ *fill*         0x00118918        0x8 
+ .data.rel.ro.local
+                0x00118920      0x138 gui/widget.o
+ *fill*         0x00118a58        0x8 
+ .data.rel.ro.local
+                0x00118a60      0x138 gui/window.o
+ *fill*         0x00118b98        0x8 
+ .data.rel.ro.local
+                0x00118ba0      0x138 kernel.o
+
+.data.rel.ro.local._ZTV14GraphicsDriver
+                0x00118cd8       0x18
+ .data.rel.ro.local._ZTV14GraphicsDriver
+                0x00118cd8       0x18 core/drivers/GraphicsDriver.o
+                0x00118cd8                vtable for GraphicsDriver
+
+.data.rel.ro.local._ZTV14KeyboardDriver
+                0x00118cf0       0x3c
+ .data.rel.ro.local._ZTV14KeyboardDriver
+                0x00118cf0       0x3c core/drivers/keyboard.o
+                0x00118cf0                vtable for KeyboardDriver
+
+.data.rel.ro.local._ZTV20KeyboardEventHandler
+                0x00118d2c       0x18
+ .data.rel.ro.local._ZTV20KeyboardEventHandler
+                0x00118d2c       0x18 core/drivers/keyboard.o
+                0x00118d2c                vtable for KeyboardEventHandler
+
+.data.rel.ro.local._ZTV6Driver
+                0x00118d44       0x24
+ .data.rel.ro.local._ZTV6Driver
+                0x00118d44       0x24 core/drivers/keyboard.o
+                0x00118d44                vtable for Driver
+
+.data.rel.ro.local._ZTV11MouseDriver
+                0x00118d68       0x3c
+ .data.rel.ro.local._ZTV11MouseDriver
+                0x00118d68       0x3c core/drivers/mouse.o
+                0x00118d68                vtable for MouseDriver
+
+.data.rel.ro.local._ZTV17MouseEventHandler
+                0x00118da4       0x14
+ .data.rel.ro.local._ZTV17MouseEventHandler
+                0x00118da4       0x14 core/drivers/mouse.o
+                0x00118da4                vtable for MouseEventHandler
+
+.data.rel.ro._ZTV20VESA_BIOS_Extensions
+                0x00118db8       0x18
+ .data.rel.ro._ZTV20VESA_BIOS_Extensions
+                0x00118db8       0x18 core/drivers/vbe.o
+                0x00118db8                vtable for VESA_BIOS_Extensions
+
+.data.rel.ro.local._ZTV16InterruptHandler
+                0x00118dd0        0xc
+ .data.rel.ro.local._ZTV16InterruptHandler
+                0x00118dd0        0xc core/interrupts.o
+                0x00118dd0                vtable for InterruptHandler
+
+.data.rel.ro.local._ZTV9Port32Bit
+                0x00118ddc       0x10
+ .data.rel.ro.local._ZTV9Port32Bit
+                0x00118ddc       0x10 core/ports.o
+                0x00118ddc                vtable for Port32Bit
+
+.data.rel.ro.local._ZTV9Port16Bit
+                0x00118dec       0x10
+ .data.rel.ro.local._ZTV9Port16Bit
+                0x00118dec       0x10 core/ports.o
+                0x00118dec                vtable for Port16Bit
+
+.data.rel.ro.local._ZTV12Port8BitSlow
+                0x00118dfc       0x10
+ .data.rel.ro.local._ZTV12Port8BitSlow
+                0x00118dfc       0x10 core/ports.o
+                0x00118dfc                vtable for Port8BitSlow
+
+.data.rel.ro.local._ZTV8Port8Bit
+                0x00118e0c       0x10
+ .data.rel.ro.local._ZTV8Port8Bit
+                0x00118e0c       0x10 core/ports.o
+                0x00118e0c                vtable for Port8Bit
+
+.data.rel.ro.local._ZTV14SyscallHandler
+                0x00118e1c        0xc
+ .data.rel.ro.local._ZTV14SyscallHandler
+                0x00118e1c        0xc core/syscalls.o
+                0x00118e1c                vtable for SyscallHandler
+
+.data.rel.ro._ZTV6Button
+                0x00118e28       0x64
+ .data.rel.ro._ZTV6Button
+                0x00118e28       0x64 gui/button.o
+                0x00118e28                vtable for Button
+
+.data.rel.ro._ZTV7Desktop
+                0x00118e8c       0x9c
+ .data.rel.ro._ZTV7Desktop
+                0x00118e8c       0x9c gui/desktop.o
+                0x00118e8c                vtable for Desktop
+
+.data.rel.ro._ZTV8ACButton
+                0x00118f28       0x64
+ .data.rel.ro._ZTV8ACButton
+                0x00118f28       0x64 gui/elements/window_action_button.o
+                0x00118f28                vtable for ACButton
+
+.data.rel.ro._ZTV9ACRButton
+                0x00118f8c       0x64
+ .data.rel.ro._ZTV9ACRButton
+                0x00118f8c       0x64 gui/elements/window_action_button_round.o
+                0x00118f8c                vtable for ACRButton
+
+.data.rel.ro.local._ZTV11HguiHandler
+                0x00118ff0       0x20
+ .data.rel.ro.local._ZTV11HguiHandler
+                0x00118ff0       0x20 gui/Hgui.o
+                0x00118ff0                vtable for HguiHandler
+
+.data.rel.ro._ZTV5Label
+                0x00119010       0x64
+ .data.rel.ro._ZTV5Label
+                0x00119010       0x64 gui/label.o
+                0x00119010                vtable for Label
+
+.data.rel.ro.local._ZTV15CompositeWidget
+                0x00119074       0x64
+ .data.rel.ro.local._ZTV15CompositeWidget
+                0x00119074       0x64 gui/widget.o
+                0x00119074                vtable for CompositeWidget
+
+.data.rel.ro.local._ZTV6Widget
+                0x001190d8       0x64
+ .data.rel.ro.local._ZTV6Widget
+                0x001190d8       0x64 gui/widget.o
+                0x001190d8                vtable for Widget
+
+.data.rel.ro._ZTV6Window
+                0x0011913c       0x64
+ .data.rel.ro._ZTV6Window
+                0x0011913c       0x64 gui/window.o
+                0x0011913c                vtable for Window
+
+.init_array     0x001191a0        0x0
+                0x001191a0                        start_ctors = .
+ *(.init_array)
+ *(SORT_BY_INIT_PRIORITY(.init_array.*))
+                0x001191a0                        end_ctors = .
+
+.rodata         0x001191a0    0x1b8c6
+                0x001191a0                        __kernel_rodata_section_start = .
+ *(.rodata)
+ .rodata        0x001191a0     0x11c8 audio/wav.o
+ *fill*         0x0011a368       0x18 
+ .rodata        0x0011a380     0x131d core/driver.o
+ *fill*         0x0011b69d        0x3 
+ .rodata        0x0011b6a0     0x108a core/drivers/ata.o
+ *fill*         0x0011c72a       0x16 
+ .rodata        0x0011c740      0xff8 core/drivers/AudioMixer.o
+ *fill*         0x0011d738        0x8 
+ .rodata        0x0011d740      0xc80 core/drivers/GraphicsDriver.o
+ .rodata        0x0011e3c0     0x1498 core/drivers/keyboard.o
+ .rodata        0x0011f858      0x1b0 core/drivers/ModuleLoader.o
+ *fill*         0x0011fa08       0x18 
+ .rodata        0x0011fa20     0x101a core/drivers/mouse.o
+ *fill*         0x00120a3a        0x2 
+ .rodata        0x00120a3c       0x22 core/drivers/SymbolTable.o
+ *fill*         0x00120a5e        0x2 
+ .rodata        0x00120a60      0xc80 core/drivers/vbe.o
+ .rodata        0x001216e0       0x8e core/elf.o
+ *fill*         0x0012176e       0x12 
+ .rodata        0x00121780     0x11f0 core/filesystem/FAT32.o
+ *fill*         0x00122970       0x10 
+ .rodata        0x00122980     0x1000 core/filesystem/File.o
+ .rodata        0x00123980     0x1127 core/filesystem/msdospart.o
+ *fill*         0x00124aa7       0x19 
+ .rodata        0x00124ac0     0x1498 core/interrupts.o
+ *fill*         0x00125f58        0x8 
+ .rodata        0x00125f60     0x10ce core/KernelSymbolResolver.o
+ *fill*         0x0012702e        0x2 
+ .rodata        0x00127030       0x24 core/memory.o
+ .rodata        0x00127054       0x7b core/paging.o
+ *fill*         0x001270cf       0x11 
+ .rodata        0x001270e0      0xff8 core/pci.o
+ .rodata        0x001280d8       0x36 core/scheduler.o
+ *fill*         0x0012810e       0x12 
+ .rodata        0x00128120     0x10d3 core/syscalls.o
+ .rodata        0x001291f3       0x23 debug.o
+ *fill*         0x00129216        0xa 
+ .rodata        0x00129220     0x10cd gui/bmp.o
+ *fill*         0x0012a2ed       0x13 
+ .rodata        0x0012a300      0xff8 gui/button.o
+ *fill*         0x0012b2f8        0x8 
+ .rodata        0x0012b300     0x1035 gui/desktop.o
+ *fill*         0x0012c335        0xb 
+ .rodata        0x0012c340      0xff8 gui/elements/window_action_button.o
+ *fill*         0x0012d338        0x8 
+ .rodata        0x0012d340      0xff8 gui/elements/window_action_button_round.o
+ .rodata        0x0012e338       0x84 gui/fonts/font.o
+ *fill*         0x0012e3bc        0x4 
+ .rodata        0x0012e3c0     0x1018 gui/Hgui.o
+ *fill*         0x0012f3d8        0x8 
+ .rodata        0x0012f3e0      0xff8 gui/label.o
+ *fill*         0x001303d8        0x8 
+ .rodata        0x001303e0      0xc80 gui/renderer/nina.o
+ .rodata        0x00131060      0xff8 gui/widget.o
+ *fill*         0x00132058        0x8 
+ .rodata        0x00132060     0x1003 gui/window.o
+ *fill*         0x00133063       0x1d 
+ .rodata        0x00133080     0x19e6 kernel.o
+                0x00134a66                        __kernel_rodata_section_end = .
+
+.eh_frame       0x00134a68     0x49d4
+ .eh_frame      0x00134a68      0x124 audio/wav.o
+ .eh_frame      0x00134b8c       0x88 core/driver.o
+                                 0xc8 (size before relaxing)
+ .eh_frame      0x00134c14      0x170 core/drivers/ata.o
+                                0x1b0 (size before relaxing)
+ .eh_frame      0x00134d84       0xe8 core/drivers/AudioMixer.o
+                                0x128 (size before relaxing)
+ .eh_frame      0x00134e6c      0x348 core/drivers/GraphicsDriver.o
+                                0x388 (size before relaxing)
+ .eh_frame      0x001351b4      0x2c0 core/drivers/keyboard.o
+                                0x300 (size before relaxing)
+ .eh_frame      0x00135474       0x74 core/drivers/ModuleLoader.o
+                                 0xa0 (size before relaxing)
+ .eh_frame      0x001354e8      0x198 core/drivers/mouse.o
+                                0x2dc (size before relaxing)
+ .eh_frame      0x00135680       0x48 core/drivers/SymbolTable.o
+                                 0x88 (size before relaxing)
+ .eh_frame      0x001356c8       0x6c core/drivers/vbe.o
+                                 0xac (size before relaxing)
+ .eh_frame      0x00135734       0x84 core/elf.o
+                                 0xc4 (size before relaxing)
+ .eh_frame      0x001357b8      0x3f0 core/filesystem/FAT32.o
+                                0x430 (size before relaxing)
+ .eh_frame      0x00135ba8       0xe4 core/filesystem/File.o
+                                0x110 (size before relaxing)
+ .eh_frame      0x00135c8c       0xd0 core/filesystem/msdospart.o
+                                0x110 (size before relaxing)
+ .eh_frame      0x00135d5c       0x44 core/gdt.o
+                                 0x84 (size before relaxing)
+ .eh_frame      0x00135da0      0x2b0 core/interrupts.o
+                                0x2f0 (size before relaxing)
+ .eh_frame      0x00136050       0x90 core/KernelSymbolResolver.o
+                                 0xd0 (size before relaxing)
+ .eh_frame      0x001360e0      0x3e8 core/memory.o
+                                0x468 (size before relaxing)
+ .eh_frame      0x001364c8       0xec core/paging.o
+                                0x12c (size before relaxing)
+ .eh_frame      0x001365b4      0x1c4 core/pci.o
+                                0x204 (size before relaxing)
+ .eh_frame      0x00136778      0x238 core/pmm.o
+                                0x278 (size before relaxing)
+ .eh_frame      0x001369b0      0x230 core/ports.o
+                                0x270 (size before relaxing)
+ .eh_frame      0x00136be0      0x388 core/scheduler.o
+                                0x41c (size before relaxing)
+ .eh_frame      0x00136f68      0x1a4 core/syscalls.o
+                                0x238 (size before relaxing)
+ .eh_frame      0x0013710c      0x190 debug.o
+                                0x210 (size before relaxing)
+ .eh_frame      0x0013729c       0xd8 gui/bmp.o
+                                0x118 (size before relaxing)
+ .eh_frame      0x00137374      0x200 gui/button.o
+                                0x240 (size before relaxing)
+ .eh_frame      0x00137574      0x52c gui/desktop.o
+                                0x62c (size before relaxing)
+ .eh_frame      0x00137aa0       0xec gui/elements/window_action_button.o
+                                0x12c (size before relaxing)
+ .eh_frame      0x00137b8c       0xd8 gui/elements/window_action_button_round.o
+                                0x118 (size before relaxing)
+ .eh_frame      0x00137c64      0x288 gui/fonts/font.o
+                                0x2c8 (size before relaxing)
+ .eh_frame      0x00137eec      0x378 gui/Hgui.o
+                                0x414 (size before relaxing)
+ .eh_frame      0x00138264      0x120 gui/label.o
+                                0x160 (size before relaxing)
+ .eh_frame      0x00138384      0x248 gui/renderer/nina.o
+                                0x288 (size before relaxing)
+ .eh_frame      0x001385cc      0x74c gui/widget.o
+                                0x848 (size before relaxing)
+ .eh_frame      0x00138d18      0x2e8 gui/window.o
+                                0x380 (size before relaxing)
+ .eh_frame      0x00139000      0x1b4 kernel.o
+                                0x2d4 (size before relaxing)
+ .eh_frame      0x001391b4       0x24 stdlib.o
+                                 0x50 (size before relaxing)
+ .eh_frame      0x001391d8      0x100 stdlib/math.o
+                                0x12c (size before relaxing)
+ .eh_frame      0x001392d8      0x164 utils/string.o
+                                0x1a4 (size before relaxing)
+
+.rel.dyn        0x0013943c        0x0
+ .rel.got       0x0013943c        0x0 asm/common_handler.o
+ .rel.iplt      0x0013943c        0x0 asm/common_handler.o
+ .rel.text      0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN6DriverD0Ev
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.data.rel.ro.local._ZTV14KeyboardDriver
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.data.rel.ro.local._ZTV6Driver
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.data.rel.ro.local._ZTV11MouseDriver
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN19ProcessControlBlockC2Ev
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP19ProcessControlBlockE8PushBackERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP18ThreadControlBlockE8PushBackERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP5EventE3AddERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN12EventHandlerC2Ev
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP12EventHandlerED2Ev
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP12EventHandlerE3AddERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP8FontFileE3AddERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP6WidgetED2Ev
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP6WidgetE3AddERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZN10LinkedListIP6WidgetE8PushBackERKS1_
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZNK10LinkedListIP6WidgetE5beginEv
+                0x0013943c        0x0 asm/common_handler.o
+ .rel.text._ZNK10LinkedListIP6WidgetE3endEv
+                0x0013943c        0x0 asm/common_handler.o
+
+.bss            0x00139440     0x7bc0
+                0x00139440                        __kernel_bss_section_start = .
+                0x00139440                        bss = .
+                0x00139440                        _bss = .
+                0x00139440                        __bss = .
+ *(.bss)
+ .bss           0x00139440     0x4000 asm/loader.o
+ .bss           0x0013d440        0x0 audio/wav.o
+ .bss           0x0013d440        0x0 core/driver.o
+ .bss           0x0013d440        0x0 core/drivers/ata.o
+ .bss           0x0013d440        0x0 core/drivers/AudioMixer.o
+ .bss           0x0013d440        0x0 core/drivers/GraphicsDriver.o
+ .bss           0x0013d440        0x8 core/drivers/keyboard.o
+                0x0013d440                leftShiftPressed
+                0x0013d441                rightShiftPressed
+                0x0013d442                leftCtrlPressed
+                0x0013d443                rightCtrlPressed
+                0x0013d444                leftAltPressed
+                0x0013d445                rightAltPressed
+                0x0013d446                capsLockActive
+ .bss           0x0013d448        0x0 core/drivers/ModuleLoader.o
+ .bss           0x0013d448        0x0 core/drivers/mouse.o
+ *fill*         0x0013d448       0x18 
+ .bss           0x0013d460     0x2004 core/drivers/SymbolTable.o
+                0x0013d460                SymbolTable::symbols
+                0x0013f460                SymbolTable::count
+ .bss           0x0013f464        0x0 core/drivers/vbe.o
+ .bss           0x0013f464        0x0 core/elf.o
+ .bss           0x0013f464        0x0 core/filesystem/FAT32.o
+ .bss           0x0013f464        0x0 core/filesystem/File.o
+ .bss           0x0013f464       0x14 core/filesystem/msdospart.o
+                0x0013f464                MSDOSPartitionTable::partitions
+                0x0013f474                MSDOSPartitionTable::activeInstance
+ *fill*         0x0013f478        0x8 
+ .bss           0x0013f480       0x46 core/gdt.o
+                0x0013f480                g_gdt
+                0x0013f4c0                g_gdt_ptr
+ *fill*         0x0013f4c6       0x1a 
+ .bss           0x0013f4e0       0x38 core/globals.o
+                0x0013f4e0                Buffer
+                0x0013f500                timerTicks
+                0x0013f508                g_sse_active
+                0x0013f50c                g_systemMixer
+                0x0013f510                g_systemcGraphicsDriver
+                0x0013f514                g_systemcAudioDriver
+ *fill*         0x0013f518        0x8 
+ .bss           0x0013f520      0x824 core/interrupts.o
+                0x0013f520                audioTickCounter
+                0x0013f540                InterruptManager::interruptDescriptorTable
+                0x0013fd40                InterruptManager::activeInstance
+ .bss           0x0013fd44        0xc core/KernelSymbolResolver.o
+ .bss           0x0013fd50       0x15 core/memory.o
+                0x0013fd50                g_kheap_start_addr
+                0x0013fd54                g_kheap_end_addr
+                0x0013fd58                g_total_size
+                0x0013fd5c                g_total_used_size
+                0x0013fd60                g_head
+ .bss           0x0013fd65        0x0 core/paging.o
+ .bss           0x0013fd65        0x0 core/pci.o
+ *fill*         0x0013fd65        0x3 
+ .bss           0x0013fd68       0x14 core/pmm.o
+                0x0013fd68                g_pmm_info
+ .bss           0x0013fd7c        0x0 core/ports.o
+ .bss           0x0013fd7c        0x4 core/scheduler.o
+                0x0013fd7c                Scheduler::activeInstance
+ .bss           0x0013fd80        0x0 core/syscalls.o
+ .bss           0x0013fd80      0x808 debug.o
+ .bss           0x00140588        0x0 gui/bmp.o
+ .bss           0x00140588        0x0 gui/button.o
+ .bss           0x00140588        0x4 gui/desktop.o
+                0x00140588                Desktop::activeInstance
+ .bss           0x0014058c        0x0 gui/elements/window_action_button.o
+ .bss           0x0014058c        0x0 gui/elements/window_action_button_round.o
+ .bss           0x0014058c        0x4 gui/fonts/font.o
+                0x0014058c                FontManager::activeInstance
+ .bss           0x00140590        0x4 gui/Hgui.o
+                0x00140590                HguiHandler::activeInstance
+ .bss           0x00140594        0x0 gui/label.o
+ .bss           0x00140594        0x4 gui/renderer/nina.o
+                0x00140594                NINA::activeInstance
+ .bss           0x00140598        0x0 gui/widget.o
+ .bss           0x00140598        0x0 gui/window.o
+ *fill*         0x00140598        0x8 
+ .bss           0x001405a0       0x4c kernel.o
+                0x001405a0                g_kmap
+ .bss           0x001405ec        0x0 stdlib.o
+ .bss           0x001405ec        0x0 stdlib/math.o
+ .bss           0x001405ec        0x0 utils/string.o
+ *(COMMON)
+                0x00141000                        . = ALIGN (0x1000)
+ *fill*         0x001405ec      0xa14 
+                0x00141000                        __kernel_bss_section_end = .
+
+/DISCARD/
+ *(.fini_array*)
+ *(.comment)
+                0x00141000                        end = .
+                0x00141000                        _end = .
+                0x00141000                        __end = .
+                0x00141000                        __kernel_section_end = .
+LOAD asm/common_handler.o
+LOAD asm/load_gdt.o
+LOAD asm/load_tss.o
+LOAD asm/loader.o
+LOAD audio/wav.o
+LOAD core/driver.o
+LOAD core/drivers/ata.o
+LOAD core/drivers/AudioMixer.o
+LOAD core/drivers/GraphicsDriver.o
+LOAD core/drivers/keyboard.o
+LOAD core/drivers/ModuleLoader.o
+LOAD core/drivers/mouse.o
+LOAD core/drivers/SymbolTable.o
+LOAD core/drivers/vbe.o
+LOAD core/elf.o
+LOAD core/filesystem/FAT32.o
+LOAD core/filesystem/File.o
+LOAD core/filesystem/msdospart.o
+LOAD core/gdt.o
+LOAD core/globals.o
+LOAD core/interrupts.o
+LOAD core/KernelSymbolResolver.o
+LOAD core/memory.o
+LOAD core/paging.o
+LOAD core/pci.o
+LOAD core/pmm.o
+LOAD core/ports.o
+LOAD core/scheduler.o
+LOAD core/syscalls.o
+LOAD debug.o
+LOAD gui/bmp.o
+LOAD gui/button.o
+LOAD gui/desktop.o
+LOAD gui/elements/window_action_button.o
+LOAD gui/elements/window_action_button_round.o
+LOAD gui/fonts/font.o
+LOAD gui/Hgui.o
+LOAD gui/label.o
+LOAD gui/renderer/nina.o
+LOAD gui/widget.o
+LOAD gui/window.o
+LOAD kernel.o
+LOAD stdlib.o
+LOAD stdlib/math.o
+LOAD utils/string.o
+OUTPUT(kernel.bin elf32-i386)
+
+.debug_info     0x00000000    0x2df61
+ .debug_info    0x00000000     0x1415 audio/wav.o
+ .debug_info    0x00001415      0xd31 core/driver.o
+ .debug_info    0x00002146      0x95e core/drivers/ata.o
+ .debug_info    0x00002aa4      0x884 core/drivers/AudioMixer.o
+ .debug_info    0x00003328     0x1b63 core/drivers/GraphicsDriver.o
+ .debug_info    0x00004e8b     0x1db1 core/drivers/keyboard.o
+ .debug_info    0x00006c3c      0x9ad core/drivers/ModuleLoader.o
+ .debug_info    0x000075e9     0x1d2b core/drivers/mouse.o
+ .debug_info    0x00009314      0x1f8 core/drivers/SymbolTable.o
+ .debug_info    0x0000950c      0x40e core/drivers/vbe.o
+ .debug_info    0x0000991a     0x10c7 core/elf.o
+ .debug_info    0x0000a9e1     0x1fa5 core/filesystem/FAT32.o
+ .debug_info    0x0000c986      0xcca core/filesystem/File.o
+ .debug_info    0x0000d650      0xf9e core/filesystem/msdospart.o
+ .debug_info    0x0000e5ee      0x1ec core/gdt.o
+ .debug_info    0x0000e7da      0x12f core/globals.o
+ .debug_info    0x0000e909     0x2d2e core/interrupts.o
+ .debug_info    0x00011637      0xe18 core/KernelSymbolResolver.o
+ .debug_info    0x0001244f      0xb6c core/memory.o
+ .debug_info    0x00012fbb      0x53c core/paging.o
+ .debug_info    0x000134f7      0xa93 core/pci.o
+ .debug_info    0x00013f8a      0x4e0 core/pmm.o
+ .debug_info    0x0001446a      0x883 core/ports.o
+ .debug_info    0x00014ced     0x150d core/scheduler.o
+ .debug_info    0x000161fa     0x18c0 core/syscalls.o
+ .debug_info    0x00017aba      0x686 debug.o
+ .debug_info    0x00018140     0x1141 gui/bmp.o
+ .debug_info    0x00019281     0x1bf1 gui/button.o
+ .debug_info    0x0001ae72     0x261d gui/desktop.o
+ .debug_info    0x0001d48f      0x958 gui/elements/window_action_button.o
+ .debug_info    0x0001dde7     0x1187 gui/elements/window_action_button_round.o
+ .debug_info    0x0001ef6e      0xf43 gui/fonts/font.o
+ .debug_info    0x0001feb1     0x26d2 gui/Hgui.o
+ .debug_info    0x00022583     0x1279 gui/label.o
+ .debug_info    0x000237fc     0x19bd gui/renderer/nina.o
+ .debug_info    0x000251b9     0x22fe gui/widget.o
+ .debug_info    0x000274b7     0x22db gui/window.o
+ .debug_info    0x00029792     0x4084 kernel.o
+ .debug_info    0x0002d816      0x13f stdlib.o
+ .debug_info    0x0002d955      0x1fa stdlib/math.o
+ .debug_info    0x0002db4f      0x412 utils/string.o
+
+.debug_abbrev   0x00000000     0x8cf5
+ .debug_abbrev  0x00000000      0x461 audio/wav.o
+ .debug_abbrev  0x00000461      0x3ef core/driver.o
+ .debug_abbrev  0x00000850      0x2de core/drivers/ata.o
+ .debug_abbrev  0x00000b2e      0x31b core/drivers/AudioMixer.o
+ .debug_abbrev  0x00000e49      0x41b core/drivers/GraphicsDriver.o
+ .debug_abbrev  0x00001264      0x52b core/drivers/keyboard.o
+ .debug_abbrev  0x0000178f      0x263 core/drivers/ModuleLoader.o
+ .debug_abbrev  0x000019f2      0x503 core/drivers/mouse.o
+ .debug_abbrev  0x00001ef5      0x175 core/drivers/SymbolTable.o
+ .debug_abbrev  0x0000206a      0x209 core/drivers/vbe.o
+ .debug_abbrev  0x00002273      0x36f core/elf.o
+ .debug_abbrev  0x000025e2      0x428 core/filesystem/FAT32.o
+ .debug_abbrev  0x00002a0a      0x2ef core/filesystem/File.o
+ .debug_abbrev  0x00002cf9      0x397 core/filesystem/msdospart.o
+ .debug_abbrev  0x00003090      0x10e core/gdt.o
+ .debug_abbrev  0x0000319e       0x7e core/globals.o
+ .debug_abbrev  0x0000321c      0x740 core/interrupts.o
+ .debug_abbrev  0x0000395c      0x310 core/KernelSymbolResolver.o
+ .debug_abbrev  0x00003c6c      0x396 core/memory.o
+ .debug_abbrev  0x00004002      0x205 core/paging.o
+ .debug_abbrev  0x00004207      0x33c core/pci.o
+ .debug_abbrev  0x00004543      0x1a6 core/pmm.o
+ .debug_abbrev  0x000046e9      0x248 core/ports.o
+ .debug_abbrev  0x00004931      0x4b7 core/scheduler.o
+ .debug_abbrev  0x00004de8      0x4e6 core/syscalls.o
+ .debug_abbrev  0x000052ce      0x234 debug.o
+ .debug_abbrev  0x00005502      0x349 gui/bmp.o
+ .debug_abbrev  0x0000584b      0x431 gui/button.o
+ .debug_abbrev  0x00005c7c      0x5f0 gui/desktop.o
+ .debug_abbrev  0x0000626c      0x2f7 gui/elements/window_action_button.o
+ .debug_abbrev  0x00006563      0x3c2 gui/elements/window_action_button_round.o
+ .debug_abbrev  0x00006925      0x368 gui/fonts/font.o
+ .debug_abbrev  0x00006c8d      0x574 gui/Hgui.o
+ .debug_abbrev  0x00007201      0x388 gui/label.o
+ .debug_abbrev  0x00007589      0x386 gui/renderer/nina.o
+ .debug_abbrev  0x0000790f      0x4de gui/widget.o
+ .debug_abbrev  0x00007ded      0x55f gui/window.o
+ .debug_abbrev  0x0000834c      0x6e0 kernel.o
+ .debug_abbrev  0x00008a2c       0xbb stdlib.o
+ .debug_abbrev  0x00008ae7       0xd1 stdlib/math.o
+ .debug_abbrev  0x00008bb8      0x13d utils/string.o
+
+.debug_aranges  0x00000000      0x830
+ .debug_aranges
+                0x00000000       0x20 audio/wav.o
+ .debug_aranges
+                0x00000020       0x20 core/driver.o
+ .debug_aranges
+                0x00000040       0x28 core/drivers/ata.o
+ .debug_aranges
+                0x00000068       0x28 core/drivers/AudioMixer.o
+ .debug_aranges
+                0x00000090       0x20 core/drivers/GraphicsDriver.o
+ .debug_aranges
+                0x000000b0       0x60 core/drivers/keyboard.o
+ .debug_aranges
+                0x00000110       0x20 core/drivers/ModuleLoader.o
+ .debug_aranges
+                0x00000130       0x60 core/drivers/mouse.o
+ .debug_aranges
+                0x00000190       0x20 core/drivers/SymbolTable.o
+ .debug_aranges
+                0x000001b0       0x20 core/drivers/vbe.o
+ .debug_aranges
+                0x000001d0       0x20 core/elf.o
+ .debug_aranges
+                0x000001f0       0x20 core/filesystem/FAT32.o
+ .debug_aranges
+                0x00000210       0x20 core/filesystem/File.o
+ .debug_aranges
+                0x00000230       0x28 core/filesystem/msdospart.o
+ .debug_aranges
+                0x00000258       0x20 core/gdt.o
+ .debug_aranges
+                0x00000278       0x18 core/globals.o
+ .debug_aranges
+                0x00000290       0x50 core/interrupts.o
+ .debug_aranges
+                0x000002e0       0x20 core/KernelSymbolResolver.o
+ .debug_aranges
+                0x00000300       0x30 core/memory.o
+ .debug_aranges
+                0x00000330       0x20 core/paging.o
+ .debug_aranges
+                0x00000350       0x20 core/pci.o
+ .debug_aranges
+                0x00000370       0x20 core/pmm.o
+ .debug_aranges
+                0x00000390       0x20 core/ports.o
+ .debug_aranges
+                0x000003b0       0x88 core/scheduler.o
+ .debug_aranges
+                0x00000438       0x40 core/syscalls.o
+ .debug_aranges
+                0x00000478       0x30 debug.o
+ .debug_aranges
+                0x000004a8       0x20 gui/bmp.o
+ .debug_aranges
+                0x000004c8       0x30 gui/button.o
+ .debug_aranges
+                0x000004f8       0xa0 gui/desktop.o
+ .debug_aranges
+                0x00000598       0x20 gui/elements/window_action_button.o
+ .debug_aranges
+                0x000005b8       0x20 gui/elements/window_action_button_round.o
+ .debug_aranges
+                0x000005d8       0x48 gui/fonts/font.o
+ .debug_aranges
+                0x00000620       0x60 gui/Hgui.o
+ .debug_aranges
+                0x00000680       0x20 gui/label.o
+ .debug_aranges
+                0x000006a0       0x20 gui/renderer/nina.o
+ .debug_aranges
+                0x000006c0       0x50 gui/widget.o
+ .debug_aranges
+                0x00000710       0x60 gui/window.o
+ .debug_aranges
+                0x00000770       0x60 kernel.o
+ .debug_aranges
+                0x000007d0       0x20 stdlib.o
+ .debug_aranges
+                0x000007f0       0x20 stdlib/math.o
+ .debug_aranges
+                0x00000810       0x20 utils/string.o
+
+.debug_rnglists
+                0x00000000      0x4c1
+ .debug_rnglists
+                0x00000000       0x17 audio/wav.o
+ .debug_rnglists
+                0x00000017       0x1a core/drivers/ata.o
+ .debug_rnglists
+                0x00000031       0x1a core/drivers/AudioMixer.o
+ .debug_rnglists
+                0x0000004b       0x44 core/drivers/keyboard.o
+ .debug_rnglists
+                0x0000008f       0x17 core/drivers/ModuleLoader.o
+ .debug_rnglists
+                0x000000a6       0x44 core/drivers/mouse.o
+ .debug_rnglists
+                0x000000ea       0x85 core/filesystem/FAT32.o
+ .debug_rnglists
+                0x0000016f       0x1a core/filesystem/msdospart.o
+ .debug_rnglists
+                0x00000189       0x38 core/interrupts.o
+ .debug_rnglists
+                0x000001c1       0x37 core/KernelSymbolResolver.o
+ .debug_rnglists
+                0x000001f8       0x20 core/memory.o
+ .debug_rnglists
+                0x00000218       0x70 core/scheduler.o
+ .debug_rnglists
+                0x00000288       0x2c core/syscalls.o
+ .debug_rnglists
+                0x000002b4       0x20 debug.o
+ .debug_rnglists
+                0x000002d4       0x20 gui/button.o
+ .debug_rnglists
+                0x000002f4       0x74 gui/desktop.o
+ .debug_rnglists
+                0x00000368       0x32 gui/fonts/font.o
+ .debug_rnglists
+                0x0000039a       0x45 gui/Hgui.o
+ .debug_rnglists
+                0x000003df       0x22 gui/renderer/nina.o
+ .debug_rnglists
+                0x00000401       0x38 gui/widget.o
+ .debug_rnglists
+                0x00000439       0x44 gui/window.o
+ .debug_rnglists
+                0x0000047d       0x44 kernel.o
+
+.debug_line     0x00000000     0xaff7
+ .debug_line    0x00000000      0x331 audio/wav.o
+ .debug_line    0x00000331      0x168 core/driver.o
+ .debug_line    0x00000499      0x469 core/drivers/ata.o
+ .debug_line    0x00000902      0x2a3 core/drivers/AudioMixer.o
+ .debug_line    0x00000ba5      0x9f6 core/drivers/GraphicsDriver.o
+ .debug_line    0x0000159b      0x66f core/drivers/keyboard.o
+ .debug_line    0x00001c0a      0x522 core/drivers/ModuleLoader.o
+ .debug_line    0x0000212c      0x33f core/drivers/mouse.o
+ .debug_line    0x0000246b       0xc7 core/drivers/SymbolTable.o
+ .debug_line    0x00002532       0xaf core/drivers/vbe.o
+ .debug_line    0x000025e1      0x266 core/elf.o
+ .debug_line    0x00002847     0x1072 core/filesystem/FAT32.o
+ .debug_line    0x000038b9      0x157 core/filesystem/File.o
+ .debug_line    0x00003a10      0x22b core/filesystem/msdospart.o
+ .debug_line    0x00003c3b       0xac core/gdt.o
+ .debug_line    0x00003ce7       0x4c core/globals.o
+ .debug_line    0x00003d33      0x66e core/interrupts.o
+ .debug_line    0x000043a1      0x38a core/KernelSymbolResolver.o
+ .debug_line    0x0000472b      0x57c core/memory.o
+ .debug_line    0x00004ca7      0x27a core/paging.o
+ .debug_line    0x00004f21      0x33e core/pci.o
+ .debug_line    0x0000525f      0x3a7 core/pmm.o
+ .debug_line    0x00005606      0x131 core/ports.o
+ .debug_line    0x00005737      0x77f core/scheduler.o
+ .debug_line    0x00005eb6      0x2a7 core/syscalls.o
+ .debug_line    0x0000615d      0x3a8 debug.o
+ .debug_line    0x00006505      0x336 gui/bmp.o
+ .debug_line    0x0000683b      0x491 gui/button.o
+ .debug_line    0x00006ccc      0x7fe gui/desktop.o
+ .debug_line    0x000074ca      0x136 gui/elements/window_action_button.o
+ .debug_line    0x00007600      0x22f gui/elements/window_action_button_round.o
+ .debug_line    0x0000782f      0x521 gui/fonts/font.o
+ .debug_line    0x00007d50      0x6cd gui/Hgui.o
+ .debug_line    0x0000841d      0x19d gui/label.o
+ .debug_line    0x000085ba      0xcc3 gui/renderer/nina.o
+ .debug_line    0x0000927d      0x8b7 gui/widget.o
+ .debug_line    0x00009b34      0x506 gui/window.o
+ .debug_line    0x0000a03a      0xa21 kernel.o
+ .debug_line    0x0000aa5b       0xf6 stdlib.o
+ .debug_line    0x0000ab51       0xe1 stdlib/math.o
+ .debug_line    0x0000ac32      0x3c5 utils/string.o
+
+.debug_str      0x00000000     0x9a3d
+ .debug_str     0x00000000     0x9a3d audio/wav.o
+                               0x11b7 (size before relaxing)
+ .debug_str     0x00009a3d      0x944 core/driver.o
+ .debug_str     0x00009a3d      0x6b2 core/drivers/ata.o
+ .debug_str     0x00009a3d      0x767 core/drivers/AudioMixer.o
+ .debug_str     0x00009a3d      0xead core/drivers/GraphicsDriver.o
+ .debug_str     0x00009a3d     0x269a core/drivers/keyboard.o
+ .debug_str     0x00009a3d      0x5b8 core/drivers/ModuleLoader.o
+ .debug_str     0x00009a3d     0x2591 core/drivers/mouse.o
+ .debug_str     0x00009a3d      0x257 core/drivers/SymbolTable.o
+ .debug_str     0x00009a3d      0x3ea core/drivers/vbe.o
+ .debug_str     0x00009a3d     0x105a core/elf.o
+ .debug_str     0x00009a3d      0xe7f core/filesystem/FAT32.o
+ .debug_str     0x00009a3d      0xb94 core/filesystem/File.o
+ .debug_str     0x00009a3d      0xe90 core/filesystem/msdospart.o
+ .debug_str     0x00009a3d      0x245 core/gdt.o
+ .debug_str     0x00009a3d      0x1d4 core/globals.o
+ .debug_str     0x00009a3d     0x33e6 core/interrupts.o
+ .debug_str     0x00009a3d      0xd03 core/KernelSymbolResolver.o
+ .debug_str     0x00009a3d      0x68a core/memory.o
+ .debug_str     0x00009a3d      0x398 core/paging.o
+ .debug_str     0x00009a3d      0x8cf core/pci.o
+ .debug_str     0x00009a3d      0x467 core/pmm.o
+ .debug_str     0x00009a3d      0x4bd core/ports.o
+ .debug_str     0x00009a3d     0x1112 core/scheduler.o
+ .debug_str     0x00009a3d     0x22c6 core/syscalls.o
+ .debug_str     0x00009a3d      0x3e5 debug.o
+ .debug_str     0x00009a3d      0xe27 gui/bmp.o
+ .debug_str     0x00009a3d     0x164c gui/button.o
+ .debug_str     0x00009a3d     0x1c2f gui/desktop.o
+ .debug_str     0x00009a3d      0x770 gui/elements/window_action_button.o
+ .debug_str     0x00009a3d      0xded gui/elements/window_action_button_round.o
+ .debug_str     0x00009a3d      0xa57 gui/fonts/font.o
+ .debug_str     0x00009a3d     0x29d4 gui/Hgui.o
+ .debug_str     0x00009a3d      0xe51 gui/label.o
+ .debug_str     0x00009a3d      0xa11 gui/renderer/nina.o
+ .debug_str     0x00009a3d     0x1245 gui/widget.o
+ .debug_str     0x00009a3d     0x1b88 gui/window.o
+ .debug_str     0x00009a3d     0x47b9 kernel.o
+ .debug_str     0x00009a3d      0x197 stdlib.o
+ .debug_str     0x00009a3d      0x141 stdlib/math.o
+ .debug_str     0x00009a3d      0x28f utils/string.o
+
+.debug_line_str
+                0x00000000      0x63e
+ .debug_line_str
+                0x00000000      0x63e audio/wav.o
+                                0x183 (size before relaxing)
+ .debug_line_str
+                0x0000063e      0x141 core/driver.o
+ .debug_line_str
+                0x0000063e       0xe7 core/drivers/ata.o
+ .debug_line_str
+                0x0000063e      0x13c core/drivers/AudioMixer.o
+ .debug_line_str
+                0x0000063e      0x14b core/drivers/GraphicsDriver.o
+ .debug_line_str
+                0x0000063e      0x1b7 core/drivers/keyboard.o
+ .debug_line_str
+                0x0000063e      0x143 core/drivers/ModuleLoader.o
+ .debug_line_str
+                0x0000063e      0x1ab core/drivers/mouse.o
+ .debug_line_str
+                0x0000063e       0xff core/drivers/SymbolTable.o
+ .debug_line_str
+                0x0000063e      0x114 core/drivers/vbe.o
+ .debug_line_str
+                0x0000063e      0x11e core/elf.o
+ .debug_line_str
+                0x0000063e      0x164 core/filesystem/FAT32.o
+ .debug_line_str
+                0x0000063e      0x107 core/filesystem/File.o
+ .debug_line_str
+                0x0000063e      0x165 core/filesystem/msdospart.o
+ .debug_line_str
+                0x0000063e       0x76 core/gdt.o
+ .debug_line_str
+                0x0000063e       0x86 core/globals.o
+ .debug_line_str
+                0x0000063e      0x200 core/interrupts.o
+ .debug_line_str
+                0x0000063e      0x192 core/KernelSymbolResolver.o
+ .debug_line_str
+                0x0000063e       0xda core/memory.o
+ .debug_line_str
+                0x0000063e       0xcb core/paging.o
+ .debug_line_str
+                0x0000063e       0xef core/pci.o
+ .debug_line_str
+                0x0000063e       0xb1 core/pmm.o
+ .debug_line_str
+                0x0000063e       0x7e core/ports.o
+ .debug_line_str
+                0x0000063e      0x11e core/scheduler.o
+ .debug_line_str
+                0x0000063e      0x15a core/syscalls.o
+ .debug_line_str
+                0x0000063e       0xb8 debug.o
+ .debug_line_str
+                0x0000063e      0x135 gui/bmp.o
+ .debug_line_str
+                0x0000063e      0x188 gui/button.o
+ .debug_line_str
+                0x0000063e      0x1ad gui/desktop.o
+ .debug_line_str
+                0x0000063e      0x168 gui/elements/window_action_button.o
+ .debug_line_str
+                0x0000063e      0x1c9 gui/elements/window_action_button_round.o
+ .debug_line_str
+                0x0000063e      0x113 gui/fonts/font.o
+ .debug_line_str
+                0x0000063e      0x194 gui/Hgui.o
+ .debug_line_str
+                0x0000063e      0x14e gui/label.o
+ .debug_line_str
+                0x0000063e      0x107 gui/renderer/nina.o
+ .debug_line_str
+                0x0000063e      0x112 gui/widget.o
+ .debug_line_str
+                0x0000063e      0x1f7 gui/window.o
+ .debug_line_str
+                0x0000063e      0x293 kernel.o
+ .debug_line_str
+                0x0000063e       0x62 stdlib.o
+ .debug_line_str
+                0x0000063e       0x59 stdlib/math.o
+ .debug_line_str
+                0x0000063e       0xb6 utils/string.o
+
+.note.GNU-stack
+                0x00000000        0x0
+ .note.GNU-stack
+                0x00000000        0x0 audio/wav.o
+ .note.GNU-stack
+                0x00000000        0x0 core/driver.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/ata.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/AudioMixer.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/GraphicsDriver.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/keyboard.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/ModuleLoader.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/mouse.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/SymbolTable.o
+ .note.GNU-stack
+                0x00000000        0x0 core/drivers/vbe.o
+ .note.GNU-stack
+                0x00000000        0x0 core/elf.o
+ .note.GNU-stack
+                0x00000000        0x0 core/filesystem/FAT32.o
+ .note.GNU-stack
+                0x00000000        0x0 core/filesystem/File.o
+ .note.GNU-stack
+                0x00000000        0x0 core/filesystem/msdospart.o
+ .note.GNU-stack
+                0x00000000        0x0 core/gdt.o
+ .note.GNU-stack
+                0x00000000        0x0 core/globals.o
+ .note.GNU-stack
+                0x00000000        0x0 core/interrupts.o
+ .note.GNU-stack
+                0x00000000        0x0 core/KernelSymbolResolver.o
+ .note.GNU-stack
+                0x00000000        0x0 core/memory.o
+ .note.GNU-stack
+                0x00000000        0x0 core/paging.o
+ .note.GNU-stack
+                0x00000000        0x0 core/pci.o
+ .note.GNU-stack
+                0x00000000        0x0 core/pmm.o
+ .note.GNU-stack
+                0x00000000        0x0 core/ports.o
+ .note.GNU-stack
+                0x00000000        0x0 core/scheduler.o
+ .note.GNU-stack
+                0x00000000        0x0 core/syscalls.o
+ .note.GNU-stack
+                0x00000000        0x0 debug.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/bmp.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/button.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/desktop.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/elements/window_action_button.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/elements/window_action_button_round.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/fonts/font.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/Hgui.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/label.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/renderer/nina.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/widget.o
+ .note.GNU-stack
+                0x00000000        0x0 gui/window.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel.o
+ .note.GNU-stack
+                0x00000000        0x0 stdlib.o
+ .note.GNU-stack
+                0x00000000        0x0 stdlib/math.o
+ .note.GNU-stack
+                0x00000000        0x0 utils/string.o

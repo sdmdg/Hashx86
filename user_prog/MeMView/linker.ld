@@ -3,7 +3,8 @@ OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
-    . = 0x1900F37C;
+    /* Start at 256MB + 4KB (Guard Page) */
+    . = 0x10001000;
 
     .text : ALIGN(4)
     {

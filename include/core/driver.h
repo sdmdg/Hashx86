@@ -1,51 +1,59 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include <types.h>
-#include <debug.h>
 #include <core/drivers/ModuleLoader.h>
+#include <core/pci.h>
+#include <debug.h>
+#include <types.h>
 
+class AudioDriver;
 
 /**
  * @brief Base class for hardware drivers.
- * 
+ *
  * This class provides a generic interface for drivers, including methods
  * for activation, deactivation and resetting. It also holds the name
  * of the driver.
  */
 class Driver {
     friend class DriverManager;
+
 public:
     const char* driverName;
-    
-    inline Driver() { 
-        driverName = "Unknown"; 
+
+    inline Driver() {
+        driverName = "Unknown";
     }
 
-    inline virtual ~Driver() {
+    inline virtual ~Driver() {}
+
+    inline virtual void Activate() {}
+
+    inline virtual int Reset() {
+        return 0;
     }
 
-    inline virtual void Activate() {
+    inline virtual void Deactivate() {}
+
+    inline void SetName(const char* name) {
+        driverName = name;
     }
 
-    inline virtual int Reset() { 
-        return 0; 
+    virtual AudioDriver* AsAudioDriver() {
+        return 0;
+    }
+    virtual GraphicsDriver* AsGraphicsDriver() {
+        return 0;
     }
 
-    inline virtual void Deactivate() {
-    }
-    
-    inline void SetName(const char* name) { 
-        driverName = name; 
-    }
-protected: 
+protected:
     bool is_Active = false;
 };
 
 class DriverManager {
 private:
-    Driver* drivers[255]; ///< Array to store up to 255 drivers.
-    int numDrivers;       ///< Number of currently added drivers.
+    Driver* drivers[255];  ///< Array to store up to 255 drivers.
+    int numDrivers;        ///< Number of currently added drivers.
 
 public:
     /**
@@ -65,13 +73,12 @@ public:
     void ActivateAll();
 };
 
-
 // --- DYNAMIC LINKING EXTENSION ---
 typedef Driver* (*GetDriverInstancePtr)();
 
-#define DYNAMIC_DRIVER(ClassName) \
+#define DYNAMIC_DRIVER(ClassName)               \
     extern "C" Driver* CreateDriverInstance() { \
-        return new ClassName(); \
+        return new ClassName();                 \
     }
 
 #endif

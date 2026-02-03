@@ -8,6 +8,5 @@ load_tss:
     ret
 
 get_eip:
-	pop eax
-	jmp eax
-
+    pop eax
+    jmp eax

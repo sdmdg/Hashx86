@@ -1,16 +1,16 @@
- 
+
 #ifndef ATA_H
 #define ATA_H
 
-#include <types.h>
 #include <core/interrupts.h>
 #include <core/ports.h>
 #include <debug.h>
+#include <types.h>
 
-class AdvancedTechnologyAttachment
-{
+class AdvancedTechnologyAttachment {
 private:
     uint32_t ata_size;
+
 protected:
     bool master;
     Port16Bit dataPort;
@@ -22,6 +22,7 @@ protected:
     Port8Bit devicePort;
     Port8Bit commandPort;
     Port8Bit controlPort;
+
 public:
     AdvancedTechnologyAttachment(bool master, uint16_t portBase);
     ~AdvancedTechnologyAttachment();
@@ -32,8 +33,9 @@ public:
     void Write28(uint32_t sectorNum, uint8_t* data, uint32_t count);
     void Flush();
 
-    uint32_t GetSizeInSectors() { return ata_size; }
+    uint32_t GetSizeInSectors() {
+        return ata_size;
+    }
 };
 
-
-#endif // ATA_H
+#endif  // ATA_H

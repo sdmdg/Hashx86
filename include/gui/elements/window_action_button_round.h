@@ -9,8 +9,6 @@ public:
     ~ACRButton();
 
     void RedrawToCache() override;
-private:
-
 };
 
-#endif // ACR_BUTTON_H
+#endif  // ACR_BUTTON_H
