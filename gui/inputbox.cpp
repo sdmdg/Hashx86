@@ -1,49 +1,49 @@
+/**
+ * @file        inputbox.cpp
+ * @brief       InputBox (part of #x86 GUI Framework)
+ *
+ * @date        10/01/2026
+ * @version     1.0.0
+ */
+
 #include <gui/inputbox.h>
 #include <utils/string.h>
 
 // --- Minimal helpers since standard C library is not available ---
 static void memmove_local(char* dst, const char* src, uint32_t n) {
     if (dst < src) {
-        for (uint32_t i = 0; i < n; i++)
-            dst[i] = src[i];
+        for (uint32_t i = 0; i < n; i++) dst[i] = src[i];
     } else {
-        for (uint32_t i = n; i > 0; i--)
-            dst[i - 1] = src[i - 1];
+        for (uint32_t i = n; i > 0; i--) dst[i - 1] = src[i - 1];
     }
 }
 
 static int isprint_local(char c) {
-    return (c >= 32 && c <= 126); // printable ASCII
+    return (c >= 32 && c <= 126);  // printable ASCII
 }
 // ----------------------------------------------------------------
 
 InputBox::InputBox(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t capacity)
-    : Widget(parent, x, y, w, h), capacity(capacity), length(0), cursorPos(0)
-{
+    : Widget(parent, x, y, w, h), capacity(capacity), length(0), cursorPos(0) {
     this->font = FontManager::activeInstance->getNewFont();
     text = new char[capacity];
-    text[0] = '\0'; // start empty
+    text[0] = '\0';  // start empty
 }
 
-InputBox::~InputBox()
-{
+InputBox::~InputBox() {
     delete[] text;
 }
 
-void InputBox::update()
-{
-    for (uint32_t i = 0; i < w * h; i++)
-        cache[i] = 0; // clear
+void InputBox::update() {
+    for (uint32_t i = 0; i < w * h; i++) cache[i] = 0;  // clear
     isDirty = true;
 }
 
-void InputBox::setText(const char* newText)
-{
+void InputBox::setText(const char* newText) {
     uint32_t newLen = strlen(newText);
     if (newLen >= capacity) newLen = capacity - 1;
 
-    for (uint32_t i = 0; i < newLen; i++)
-        text[i] = newText[i];
+    for (uint32_t i = 0; i < newLen; i++) text[i] = newText[i];
 
     text[newLen] = '\0';
     length = newLen;
@@ -51,40 +51,40 @@ void InputBox::setText(const char* newText)
     update();
 }
 
-void InputBox::setSize(FontSize size)
-{
+void InputBox::setSize(FontSize size) {
     this->font->setSize(size);
     update();
 }
 
-void InputBox::setType(FontType type)
-{
+void InputBox::setType(FontType type) {
     // Future: allow bold/italic variations
     // this->font->setType(type);
     // update();
 }
 
-void InputBox::RedrawToCache()
-{
-    //DEBUG_LOG("Widget %d: Updating", this->ID);
-    NINA::activeInstance->FillRoundedRectangle(cache, w, h, 0, 0, w, h, 3, isFocussed ? INPUT_BACKGROUND_COLOR_ACTIVE : INPUT_BACKGROUND_COLOR_NORMAL);
-    NINA::activeInstance->DrawRoundedRectangle(cache, w, h, 0, 0, w, h, 3, isFocussed ? INPUT_BORDER_COLOR_ACTIVE : INPUT_BORDER_COLOR_NORMAL);
-    NINA::activeInstance->DrawString(cache, w, h+2, 2, 2, text, font, isFocussed ? INPUT_TEXT_COLOR_ACTIVE : INPUT_TEXT_COLOR_NORMAL);
+void InputBox::RedrawToCache() {
+    // DEBUG_LOG("Widget %d: Updating", this->ID);
+    NINA::activeInstance->FillRoundedRectangle(
+        cache, w, h, 0, 0, w, h, 3,
+        isFocused ? INPUT_BACKGROUND_COLOR_ACTIVE : INPUT_BACKGROUND_COLOR_NORMAL);
+    NINA::activeInstance->DrawRoundedRectangle(
+        cache, w, h, 0, 0, w, h, 3,
+        isFocused ? INPUT_BORDER_COLOR_ACTIVE : INPUT_BORDER_COLOR_NORMAL);
+    NINA::activeInstance->DrawString(cache, w, h + 2, 2, 2, text, font,
+                                     isFocused ? INPUT_TEXT_COLOR_ACTIVE : INPUT_TEXT_COLOR_NORMAL);
 
     // Draw cursor at cursorPos
-    //int cursorX = font->GetTextWidth(text, cursorPos);
-    //NINA::activeInstance->DrawLine(cache, w, h, 2 + cursorX, 2, 2 + cursorX, h - 2, 0xFFFFFFFF);
+    // int cursorX = font->GetTextWidth(text, cursorPos);
+    // NINA::activeInstance->DrawLine(cache, w, h, 2 + cursorX, 2, 2 + cursorX, h - 2, 0xFFFFFFFF);
 
     isDirty = false;
 }
 
-void InputBox::Draw(GraphicsDriver* gc)
-{
+void InputBox::Draw(GraphicsDriver* gc) {
     Widget::Draw(gc);
 }
 
-void InputBox::OnKeyDown(const char* key)
-{
+void InputBox::OnKeyDown(const char* key) {
     if (!key || !*key) return;
 
     // Backspace
@@ -109,8 +109,7 @@ void InputBox::OnKeyDown(const char* key)
     }
 }
 
-void InputBox::OnKeyUp(const char* key)
-{
+void InputBox::OnKeyUp(const char* key) {
     // Usually not needed for text input
     (void)key;
 }

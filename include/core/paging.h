@@ -1,47 +1,52 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include "types.h"
+#include <core/memory.h>
+#include <core/pmm.h>
+#include <debug.h>
+#include <stdint.h>
+
+// Standard x86 Paging Flags
+#define PAGE_PRESENT 0x1
+#define PAGE_RW 0x2
+#define PAGE_USER 0x4
+#define PAGE_WRITE_THRU 0x8
+#define PAGE_NO_CACHE 0x10
 
 #define PAGE_SIZE 4096
 
 class Paging {
-private:
-    bool IS_PAGING_ENABLED;
-    void* KernalMappingEnd;
-    uint32_t KernelPageTables[1024][1024] __attribute__((aligned(4096)));
-    
 public:
     Paging();
     ~Paging();
 
-    uint32_t KernelPageDirectory[1024] __attribute__((aligned(4096)));
-
-    // Activate paging
+    // 1. Initialization
     void Activate();
 
-    // Deactivate paging
-    void Deactivate();
+    // 2. Process Management (The Fix)
+    // Creates a directory with Empty User Space + Shared Kernel Space
+    uint32_t* CreateProcessDirectory();
 
-    // Retrieves the physical address corresponding to a virtual address
-    void* get_physical_address(uint32_t* PageDirectory, void* virtual_addr);
+    // 3. Context Switching
+    void SwitchDirectory(uint32_t* new_dir);
 
-    // Creates a new page directory for a process
-    uint32_t* create_page_directory();
+    // 4. Mapping Primitive
+    // Maps a Physical Address to a Virtual Address in a specific directory
+    void MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physical_addr,
+                 uint32_t flags);
 
-    // Switches the active page directory
-    void switch_page_directory(uint32_t* page_directory);
+    // 5. Query
+    uint32_t GetPhysicalAddress(uint32_t* directory, uint32_t virtual_addr);
 
-    // Maps kernel space into a process page directory
-    void map_kernel(uint32_t* new_page_directory);
+    // The Master Directory (Template for all processes)
+    uint32_t* KernelPageDirectory;  // Master Directory
 
-    // Allocates a page in a process-specific page table
-    void allocate_page(uint32_t* page_directory, void* virtual_addr);
+    // We store the tables for the Master Directory here
+    // (In a real OS, these are dynamically allocated, but for now this is fine)
+    uint32_t KernelPageTables[1024][1024];
 
-    void map_page(uint32_t* page_directory, void* phys_addr, void* virt_addr);
-
-    // Frees a page from a process-specific page table
-    void free_page(uint32_t* page_directory, void* virtual_addr);
+private:
+    bool is_paging_active;
 };
 
 #endif

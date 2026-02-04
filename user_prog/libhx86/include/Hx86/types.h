@@ -1,0 +1,12 @@
+// include/types.h
+#ifndef TYPES_H
+#define TYPES_H
+
+#include <Hx86/stdint.h>  // For standard fixed-width integer types
+#include <stddef.h>       // For size_t, NULL, etc.
+
+typedef uint8_t byte;
+typedef uint16_t word;
+typedef uint32_t dword;
+
+#endif  // TYPES_H

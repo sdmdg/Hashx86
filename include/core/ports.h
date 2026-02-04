@@ -8,17 +8,14 @@
  * @param portNumber The I/O port number.
  * @return Data.
  */
-static inline uint8_t inb(uint16_t portNumber)
-{
+static inline uint8_t inb(uint16_t portNumber) {
     uint8_t result;
-    asm volatile ("inb %1, %0" : "=a"(result) : "Nd"(portNumber));
+    asm volatile("inb %1, %0" : "=a"(result) : "Nd"(portNumber));
     return result;
 }
-static inline void outb(uint16_t portNumber, uint8_t value)
-{
-    asm volatile ("outb %0, %1" : : "a"(value), "Nd"(portNumber));
+static inline void outb(uint16_t portNumber, uint8_t value) {
+    asm volatile("outb %0, %1" : : "a"(value), "Nd"(portNumber));
 }
-
 
 /**
  * @brief Functions representing a generic I/O. For direct acces without port constructor.
@@ -27,13 +24,12 @@ static inline void outb(uint16_t portNumber, uint8_t value)
  */
 static inline uint16_t inw(uint16_t port) {
     uint16_t ret;
-    asm volatile ( "inw %1, %0" : "=a"(ret) : "Nd"(port) );
+    asm volatile("inw %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
 static inline void outw(uint16_t port, uint16_t val) {
-    asm volatile ( "outw %0, %1" : : "a"(val), "Nd"(port) );
+    asm volatile("outw %0, %1" : : "a"(val), "Nd"(port));
 }
-
 
 /**
  * @brief Functions representing a generic I/O. For direct acces without port constructor.
@@ -48,7 +44,15 @@ static inline void outsw(uint16_t portNumber, void* buffer, uint32_t count) {
     asm volatile("rep outsw" : "+S"(buffer), "+c"(count) : "d"(portNumber) : "memory");
 }
 
+static inline void outl(uint16_t port, uint32_t val) {
+    asm volatile("outl %0, %1" : : "a"(val), "Nd"(port));
+}
 
+static inline uint32_t inl(uint16_t port) {
+    uint32_t ret;
+    asm volatile("inl %1, %0" : "=a"(ret) : "Nd"(port));
+    return ret;
+}
 
 /**
  * Base class representing a generic I/O port.
@@ -72,7 +76,9 @@ protected:
     ~Port();
 
 public:
-    uint16_t getPortNumber() {return portNumber;}
+    uint16_t getPortNumber() {
+        return portNumber;
+    }
 };
 
 /**

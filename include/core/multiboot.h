@@ -35,10 +35,10 @@ struct MultibootInfo {
 };
 
 struct multiboot_module {
-    uint32_t mod_start; // Start address of the module
-    uint32_t mod_end;   // End address of the module
-    uint32_t cmdline;   // Command line string (if any)
-    uint32_t pad;       // Padding
+    uint32_t mod_start;  // Start address of the module
+    uint32_t mod_end;    // End address of the module
+    uint32_t cmdline;    // Command line string (if any)
+    uint32_t pad;        // Padding
 };
 
 typedef enum {
@@ -58,5 +58,4 @@ typedef struct {
     MULTIBOOT_MEMORY_TYPE type;
 } MULTIBOOT_MEMORY_MAP;
 
-
-#endif // MULTIBOOT_H
+#endif  // MULTIBOOT_H

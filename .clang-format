@@ -1,0 +1,38 @@
+---
+Language:        Cpp
+BasedOnStyle:    Google
+
+# Indentation & Spacing
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+ColumnLimit:     100
+
+# Pointers & References
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# Line Endings
+LineEnding:      LF
+
+# Class Structure
+AccessModifierOffset: -4
+
+# Control Structures
+IndentCaseLabels: true
+SpaceBeforeParens: ControlStatements
+
+# Braces & Wrapping
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: Empty
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Alignment & Sorting
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+SortIncludes:    true
+IncludeBlocks:   Preserve
+
+# Namespaces
+FixNamespaceComments: true

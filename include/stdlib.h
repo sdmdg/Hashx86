@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <types.h>
 
-
 char* itoa(uint32_t num, char* str, uint32_t base);
 
-
-#endif // STDLIB_H
+#endif  // STDLIB_H

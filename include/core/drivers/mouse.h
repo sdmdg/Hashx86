@@ -1,14 +1,14 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
-#include <types.h>
+#include <core/driver.h>
 #include <core/interrupts.h>
 #include <core/ports.h>
-#include <core/driver.h>
+#include <types.h>
 
 /**
  * @brief Base class for handling mouse events.
- * 
+ *
  * This class provides a set of virtual methods that can be overridden
  * to handle various mouse events such as movement, button presses and scrolling.
  */
@@ -35,13 +35,13 @@ public:
      */
     virtual void OnMouseUp(uint8_t button);
 
-    //virtual void OnScrollUp(int x, int y);
-    //virtual void OnScrollDown(int x, int y);
+    // virtual void OnScrollUp(int x, int y);
+    // virtual void OnScrollDown(int x, int y);
 };
 
 /**
  * @brief Mouse driver class for handling mouse hardware and events.
- * 
+ *
  * This class interfaces with the mouse hardware through ports, processes
  * interrupts and notifies the event handler of mouse events.
  */
@@ -80,4 +80,4 @@ public:
     virtual uint32_t HandleInterrupt(uint32_t esp);
 };
 
-#endif // MOUSE_H
+#endif  // MOUSE_H

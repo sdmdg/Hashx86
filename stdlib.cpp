@@ -1,3 +1,11 @@
+/**
+ * @file        stdlib.cpp
+ * @brief       Standard Library Implementation
+ *
+ * @date        01/02/2026
+ * @version     1.0.0
+ */
+
 #include <stdlib.h>
 
 char* itoa(uint32_t num, char* str, uint32_t base) {

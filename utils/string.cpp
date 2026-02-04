@@ -1,26 +1,37 @@
+/**
+ * @file        string.cpp
+ * @brief       String Utility Functions
+ *
+ * @date        01/02/2026
+ * @version     1.0.0
+ */
+
 #include <utils/string.h>
 
 int strlen(const char *s) {
     int len = 0;
-    while (*s++)
-        len++;
+    while (*s++) len++;
     return len;
 }
 
-int strcmp(const char *s1, char *s2) {
-    int i = 0;
-
-    while ((s1[i] == s2[i])) {
-        if (s2[i++] == 0)
+int strncmp(const char *s1, const char *s2, size_t n) {
+    while (n > 0) {
+        unsigned char c1 = (unsigned char)*s1++;
+        unsigned char c2 = (unsigned char)*s2++;
+        if (c1 != c2) {
+            return c1 - c2;
+        }
+        if (c1 == '\0') {
             return 0;
+        }
+        n--;
     }
-    return 1;
+    return 0;
 }
 
 int strcpy(char *dst, const char *src) {
     int i = 0;
-    while ((*dst++ = *src++) != 0)
-        i++;
+    while ((*dst++ = *src++) != 0) i++;
     return i;
 }
 
@@ -40,14 +51,12 @@ int isalpha(char c) {
 }
 
 char upper(char c) {
-    if ((c >= 'a') && (c <= 'z'))
-        return (c - 32);
+    if ((c >= 'a') && (c <= 'z')) return (c - 32);
     return c;
 }
 
 char lower(char c) {
-    if ((c >= 'A') && (c <= 'Z'))
-        return (c + 32);
+    if ((c >= 'A') && (c <= 'Z')) return (c + 32);
     return c;
 }
 
@@ -69,8 +78,7 @@ void itoa(char *buf, int base, int d) {
         *p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
     } while (ud /= divisor);
 
-    if (is_negative)
-        *p++ = '-';
+    if (is_negative) *p++ = '-';
 
     *p = 0;
 
@@ -86,3 +94,62 @@ void itoa(char *buf, int base, int d) {
     }
 }
 
+// Standard ASCII to Integer (Base 10)
+int atoi(const char *str) {
+    int res = 0;
+    int sign = 1;
+    int i = 0;
+
+    // Skip whitespace
+    while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n' || str[i] == '\r') i++;
+
+    // Handle sign
+    if (str[i] == '-') {
+        sign = -1;
+        i++;
+    } else if (str[i] == '+') {
+        i++;
+    }
+
+    // Convert digits
+    while (str[i] >= '0' && str[i] <= '9') {
+        res = res * 10 + (str[i] - '0');
+        i++;
+    }
+
+    return sign * res;
+}
+
+// Hex String to Unsigned Integer (Base 16)
+uint32_t HexStrToInt(const char *str) {
+    uint32_t result = 0;
+
+    // Skip leading whitespace
+    while (*str == ' ' || *str == '\t') str++;
+
+    // Skip optional "0x" prefix
+    if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X')) {
+        str += 2;
+    }
+
+    // Process characters
+    while (*str) {
+        char c = *str;
+        uint32_t val = 0;
+
+        if (c >= '0' && c <= '9') {
+            val = c - '0';
+        } else if (c >= 'a' && c <= 'f') {
+            val = c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'F') {
+            val = c - 'A' + 10;
+        } else {
+            // Stop at first non-hex character (like space or null)
+            break;
+        }
+
+        result = (result << 4) | val;  // Equivalent to: result * 16 + val
+        str++;
+    }
+    return result;
+}

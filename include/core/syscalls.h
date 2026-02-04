@@ -1,12 +1,12 @@
- 
+
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
-#include <types.h>
 #include <core/interrupts.h>
 #include <debug.h>
-#include <gui/gui.h>
 #include <gui/Hgui.h>
+#include <gui/gui.h>
+#include <types.h>
 
 typedef enum {
     sys_restart = 0,
@@ -16,37 +16,38 @@ typedef enum {
     sys_write = 4,
     sys_open = 5,
     sys_close = 6,
+    sys_sleep = 7,
     sys_clone = 41,
     sys_Hcall = 199,
     sys_debug = 200,
 } SYSCALL;
 
-typedef enum {
-    Hsys_getHeap = 0
-} HSYSCALL;
+typedef enum { Hsys_getHeap = 0, Hsys_regEventH = 1 } HSYSCALL;
 
-class SyscallHandler : public InterruptHandler
-{
-    
+struct multi_para_model {
+    uint32_t param0;
+    uint32_t param1;
+    uint32_t param2;
+    uint32_t param3;
+    uint32_t param4;
+};
+
+class SyscallHandler : public InterruptHandler {
 public:
     SyscallHandler(uint8_t InterruptNumber, InterruptManager* interruptManager);
     ~SyscallHandler();
-    
-    virtual uint32_t HandleInterrupt(uint32_t esp);
 
+    virtual uint32_t HandleInterrupt(uint32_t esp);
 };
 
-
-class SyscallHandlers
-{
-    
+class SyscallHandlers {
 public:
     static void Handle_sys_restart(uint32_t esp);
     static void Handle_sys_exit(uint32_t esp);
     static void Handle_sys_clone(uint32_t esp);
+    static void Handle_sys_sleep(uint32_t esp);
     static void Handle_sys_debug(uint32_t esp);
     static void Handle_sys_Hcall(uint32_t esp);
-    
 };
 
-#endif // SYSCALLS_H
+#endif  // SYSCALLS_H

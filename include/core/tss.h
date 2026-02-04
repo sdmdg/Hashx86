@@ -1,10 +1,10 @@
 #ifndef TSS_H
 #define TSS_H
 
-#include <types.h>
-#include <core/gdt.h>
-#include <utils/string.h>
 #include <console.h>
+#include <core/gdt.h>
+#include <types.h>
+#include <utils/string.h>
 
 typedef struct {
     uint32_t previous;
@@ -35,8 +35,6 @@ typedef struct {
     uint16_t trap;
     uint16_t iomap_base;
 } __attribute__((packed)) TSS;
-
-
 
 void tss_init();
 

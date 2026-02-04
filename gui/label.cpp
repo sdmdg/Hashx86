@@ -1,69 +1,45 @@
 /**
  * @file        label.cpp
- * @brief       Label (part of #x86 GUI Framework)
- * 
- * @date        10/02/2025
- * @version     1.0.0-beta
+ * @brief       Label Component (part of #x86 GUI Framework)
+ *
+ * @date        01/02/2026
+ * @version     1.0.0
  */
 
 #include <gui/label.h>
 
 Label::Label(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, const char* text)
-    : Widget(parent, x, y, w, h)
-{
+    : Widget(parent, x, y, w, h) {
     this->font = FontManager::activeInstance->getNewFont();
-    
-    //char* formattedText[512]; // Adjust size as needed
-    //font->FormatString(text, *formattedText, w);
-    //DEBUG_LOG(*formattedText);
     this->text = new char[strlen(text) + 1];
     strcpy(this->text, text);
 }
 
-Label::~Label()
-{
-    delete[] cache;
+Label::~Label() {
     delete[] text;
+    // cache deleted by ~Widget
 }
 
-void Label::update()
-{
-    // Clear the cache
+void Label::setText(const char* newText) {
+    if (this->text) delete[] this->text;
+    this->text = new char[strlen(newText) + 1];
+    strcpy(this->text, newText);
+    MarkDirty();
+}
+
+void Label::setSize(FontSize size) {
+    this->font->setSize(size);
+    MarkDirty();
+}
+
+void Label::RedrawToCache() {
+    // Clear background to transparent (0)
     memset(cache, 0, sizeof(uint32_t) * w * h);
 
-    isDirty = true;
-}
-
-void Label::setText(const char* text)
-{
-    delete[] this->text;
-    this->text = new char[strlen(text) + 1];
-    strcpy(this->text, text);
-    update();
-}
-
-void Label::setSize(FontSize size)
-{
-    this->font->setSize(size);
-    DEBUG_LOG("updating size %x", size);
-    update();
-}
-
-void Label::setType(FontType type)
-{
-/*     this->font->setType(type);
-    update(); */
-}
-
-void Label::RedrawToCache()
-{
-    //DEBUG_LOG("Widget %d: Updating", this->ID);
     NINA::activeInstance->DrawString(cache, w, h, 2, 2, text, font, LABEL_TEXT_COLOR_NORMAL);
     isDirty = false;
 }
 
-
-void Label::Draw(GraphicsDriver* gc)
-{
-    Widget::Draw(gc);
+void Label::update() {
+    MarkDirty();
 }

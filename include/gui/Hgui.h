@@ -1,15 +1,15 @@
- 
+
 #ifndef HGUI_SYSCALLS_H
 #define HGUI_SYSCALLS_H
 
-#include <types.h>
 #include <core/interrupts.h>
-#include <core/process.h>
-#include <debug.h>
-#include <gui/gui.h>
 #include <core/memory.h>
-#include <utils/linkedList.h>
+#include <core/scheduler.h>
+#include <debug.h>
 #include <gui/eventHandler.h>
+#include <gui/gui.h>
+#include <types.h>
+#include <utils/linkedList.h>
 
 typedef enum {
     WIDGET = 0x0,
@@ -41,8 +41,7 @@ struct WidgetData {
     char* param7;
 };
 
-class HguiHandler : public InterruptHandler
-{
+class HguiHandler : public InterruptHandler {
 private:
     LinkedList<Widget*> HguiWidgets;
     uint32_t widgetIDCounter = 1000;
@@ -51,9 +50,9 @@ public:
     static HguiHandler* activeInstance;
     HguiHandler(uint8_t InterruptNumber, InterruptManager* interruptManager);
     ~HguiHandler();
-    
-    virtual uint32_t HandleWidget(uint32_t esp);
+
     virtual uint32_t HandleInterrupt(uint32_t esp);
+    virtual uint32_t HandleWidget(uint32_t esp);
     virtual uint32_t HandleWindow(uint32_t esp);
     virtual uint32_t HandleButton(uint32_t esp);
     virtual uint32_t HandleLabel(uint32_t esp);
@@ -63,4 +62,4 @@ public:
     uint32_t getNewID();
 };
 
-#endif // HGUI_SYSCALLS_H
+#endif  // HGUI_SYSCALLS_H

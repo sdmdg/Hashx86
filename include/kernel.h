@@ -1,36 +1,40 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#include <core/globals.h>
-#include <debug.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <core/gdt.h>
-#include <core/tss.h>
-#include <core/interrupts.h>
-#include <core/syscalls.h>
-#include <gui/Hgui.h>
-#include <core/elf.h>
+#include <audio/wav.h>
+#include <core/KernelSymbolResolver.h>
+#include <core/driver.h>
+#include <core/drivers/AudioDriver.h>
+#include <core/drivers/GraphicsDriver.h>
+#include <core/drivers/ata.h>
 #include <core/drivers/keyboard.h>
 #include <core/drivers/mouse.h>
-#include <core/drivers/ata.h>
-#include <core/driver.h>
+#include <core/drivers/vbe.h>
+#include <core/drivers/vga.h>
+#include <core/elf.h>
+#include <core/filesystem/msdospart.h>
+#include <core/gdt.h>
+#include <core/globals.h>
+#include <core/interrupts.h>
+#include <core/memory.h>
+#include <core/multiboot.h>
+#include <core/paging.h>
 #include <core/pci.h>
 #include <core/pmm.h>
-#include <core/memory.h>
-#include <core/paging.h>
-#include <gui/bmp.h>
-#include <gui/renderer/nina.h>
-#include <core/drivers/vga.h>
-#include <core/filesystem/msdospart.h>
-#include <gui/gui.h>
-#include <core/multiboot.h>
-#include <core/drivers/vbe.h>
-#include <core/process.h>
+#include <core/scheduler.h>
+#include <core/syscalls.h>
 #include <core/timing.h>
-#include <core/drivers/GraphicsDriver.h>
-
-
+#include <core/tss.h>
+#include <debug.h>
+#include <gui/Hgui.h>
+#include <gui/bmp.h>
+#include <gui/gameSDK.h>
+#include <gui/gui.h>
+#include <gui/renderer/nina.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdlib/Renderer3D.h>
+#include <stdlib/math.h>
 
 // symbols from linker.ld for section addresses
 extern uint8_t __kernel_section_start;
@@ -76,70 +80,70 @@ typedef struct {
 
 extern KERNEL_MEMORY_MAP g_kmap;
 
-int get_kernel_memory_map(KERNEL_MEMORY_MAP *kmap, MultibootInfo *mboot_info);
-void display_kernel_memory_map(KERNEL_MEMORY_MAP *kmap);
-
-
+int get_kernel_memory_map(KERNEL_MEMORY_MAP* kmap, MultibootInfo* mboot_info);
+void display_kernel_memory_map(KERNEL_MEMORY_MAP* kmap);
 
 /**
  * @typedef constructor
  * @brief Defines a pointer to a function with no arguments and no return value.
- * 
+ *
  * This is used to reference global constructors during initialization.
  */
 typedef void (*constructor)();
 
 /**
  * @brief External declaration for the start and end of the constructors section.
- * 
- * These symbols are defined by the linker and mark the range of global constructors to call during initialization.
+ *
+ * These symbols are defined by the linker and mark the range of global constructors to call during
+ * initialization.
  */
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 
 /**
  * @brief Calls all global constructors in the range defined by `start_ctors` and `end_ctors`.
- * 
- * This function is called during kernel initialization to ensure all static/global objects are properly constructed.
+ *
+ * This function is called during kernel initialization to ensure all static/global objects are
+ * properly constructed.
  */
 extern "C" void callConstructors() {
     for (constructor* i = &start_ctors; i != &end_ctors; i++) {
-        (*i) (); // Call each constructor in the range.
+        (*i)();  // Call each constructor in the range.
     }
 }
 
 /**
  * @class ConsoleKeyboardEventHandler
  * @brief Handles keyboard events and processes them for the console.
- * 
+ *
  * A derived class from `KeyboardEventHandler` that implements custom event handling
  * for key presses and releases specific to the console.
  */
 class ConsoleKeyboardEventHandler : public KeyboardEventHandler {
     /**
      * @brief Called when a key is pressed down.
-     * 
+     *
      * @param key The ASCII representation of the key pressed.
      */
     void OnKeyDown(const char* key);
 
     /**
      * @brief Called when a key is released.
-     * 
+     *
      * @param key The ASCII representation of the key released.
      */
     void OnKeyUp(const char* key);
 
     /**
      * @brief Called when a special key (e.g., function keys, arrow keys) is pressed down.
-     * 
+     *
      * @param key The key code of the special key pressed.
      */
     void OnSpecialKeyDown(uint8_t key);
 
     /**
      * @brief Called when a special key is released.
-     * 
+     *
      * @param key The key code of the special key released.
      */
     void OnSpecialKeyUp(uint8_t key);
@@ -148,7 +152,7 @@ class ConsoleKeyboardEventHandler : public KeyboardEventHandler {
 /**
  * @class ConsoleMouseEventHandler
  * @brief Handles mouse events and processes them for the console.
- * 
+ *
  * A derived class from `MouseEventHandler` that implements custom event handling
  * for mouse movement and button actions specific to the console.
  */
@@ -156,7 +160,7 @@ class ConsoleMouseEventHandler : public MouseEventHandler {
 public:
     /**
      * @brief Called when the mouse moves.
-     * 
+     *
      * @param x The new x-coordinate of the mouse pointer.
      * @param y The new y-coordinate of the mouse pointer.
      */
@@ -164,7 +168,7 @@ public:
 
     /**
      * @brief Called when the left mouse button is pressed.
-     * 
+     *
      * @param x The x-coordinate of the mouse pointer at the time of the event.
      * @param y The y-coordinate of the mouse pointer at the time of the event.
      */
@@ -172,7 +176,7 @@ public:
 
     /**
      * @brief Called when the left mouse button is released.
-     * 
+     *
      * @param x The x-coordinate of the mouse pointer at the time of the event.
      * @param y The y-coordinate of the mouse pointer at the time of the event.
      */
@@ -180,7 +184,7 @@ public:
 
     /**
      * @brief Called when the right mouse button is pressed.
-     * 
+     *
      * @param x The x-coordinate of the mouse pointer at the time of the event.
      * @param y The y-coordinate of the mouse pointer at the time of the event.
      */
@@ -188,16 +192,15 @@ public:
 
     /**
      * @brief Called when the right mouse button is released.
-     * 
+     *
      * @param x The x-coordinate of the mouse pointer at the time of the event.
      * @param y The y-coordinate of the mouse pointer at the time of the event.
      */
     virtual void OnRightMouseUp(int x, int y);
 
 private:
-    int X = 80; ///< Previous x-coordinate of the mouse pointer.
-    int Y = 24; ///< Previous y-coordinate of the mouse pointer.
+    int X = 80;  ///< Previous x-coordinate of the mouse pointer.
+    int Y = 24;  ///< Previous y-coordinate of the mouse pointer.
 };
 
-
-#endif // KERNEL_H
+#endif  // KERNEL_H

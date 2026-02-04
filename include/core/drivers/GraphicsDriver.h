@@ -1,10 +1,10 @@
 #ifndef GRAPHICS_DRIVER_H
 #define GRAPHICS_DRIVER_H
 
-#include <types.h>
+#include <core/memory.h>
 #include <gui/fonts/font.h>
 #include <gui/renderer/nina.h>
-#include <core/memory.h>
+#include <types.h>
 
 class GraphicsDriver {
 protected:
@@ -12,10 +12,10 @@ protected:
     uint32_t height;
     uint32_t bpp;
     NINA nina;
-    
+
     // The Video Memory (Hardware)
     uint32_t* videoMemory;
-    
+
     // Back Buffer
     uint32_t* backBuffer;
 
@@ -23,36 +23,50 @@ protected:
     uint8_t alphaTable[256][256];
 
     void PrecomputeAlphaTable();
+
 public:
     GraphicsDriver(uint32_t w, uint32_t h, uint32_t bpp, uint32_t* vram);
     virtual ~GraphicsDriver();
 
     // The Hardware Interface
-    virtual void Flush(); 
-    
+    virtual void Flush();
+
     // Getters
-    uint32_t GetWidth() { return width; }
-    uint32_t GetHeight() { return height; }
-    uint32_t* GetVideoMemory() { return videoMemory; }
-    uint32_t* GetBackBuffer() { return backBuffer; }
+    uint32_t GetWidth() {
+        return width;
+    }
+    uint32_t GetHeight() {
+        return height;
+    }
+    uint32_t* GetVideoMemory() {
+        return videoMemory;
+    }
+    uint32_t* GetBackBuffer() {
+        return backBuffer;
+    }
 
     // Drawing Primitives
     virtual void PutPixel(int32_t x, int32_t y, uint32_t color);
     void PutPixel(int32_t x, int32_t y, uint8_t a, uint8_t r, uint8_t g, uint8_t b);
 
-    // Shapes   
+    // Shapes
     void FillRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color);
     void DrawRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color);
 
     void FillCircle(int32_t cx, int32_t cy, uint32_t r, uint32_t color);
     void DrawCircle(int32_t cx, int32_t cy, uint32_t r, uint32_t color);
-    
-    void FillRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t r, uint32_t color);
-    void DrawRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t r, uint32_t color);
 
-    void DrawRoundedRectangleShadow(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t size, uint32_t r, uint32_t color);
-    void BlurRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t r, uint32_t blur);
+    void FillRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t r,
+                              uint32_t color);
+    void DrawRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t r,
+                              uint32_t color);
 
+    void DrawRoundedRectangleShadow(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t size,
+                                    uint32_t r, uint32_t color);
+    void BlurRoundedRectangle(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t r,
+                              uint32_t blur);
+
+    void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color);
     void DrawHorizontalLine(int32_t x, int32_t y, int32_t length, uint32_t colorIndex);
     void DrawVerticalLine(int32_t x, int32_t y, int32_t length, uint32_t colorIndex);
 

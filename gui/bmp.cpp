@@ -1,7 +1,15 @@
-#include <gui/bmp.h>
+/**
+ * @file        bmp.cpp
+ * @brief       Bitmap Handler (part of #x86 GUI Framework)
+ *
+ * @date        10/01/2026
+ * @version     1.0.0
+ */
+
+#include <console.h>
 #include <core/filesystem/FAT32.h>
 #include <core/filesystem/msdospart.h>
-#include <console.h>
+#include <gui/bmp.h>
 
 Bitmap::Bitmap(File* file) {
     // Initialize defaults
@@ -22,7 +30,7 @@ Bitmap::Bitmap(char* path) {
     if (!fs) return;
 
     File* file = fs->Open(path);
-    
+
     if (file == 0) {
         printf("BMP Error: File not found %s\n", path);
         return;
@@ -44,10 +52,10 @@ Bitmap::Bitmap(int width, int height, uint32_t color) {
     this->valid = true;
     this->width = width;
     this->height = height;
-    
+
     // Allocate buffer
     this->buffer = new uint32_t[width * height];
-    
+
     // Fill with color
     for (int i = 0; i < width * height; i++) {
         this->buffer[i] = color;
@@ -66,11 +74,11 @@ void Bitmap::Load(File* file) {
 
     // Allocate Buffer for the raw file
     uint8_t* rawFile = new uint8_t[file->size];
-    
+
     // Read entire file into RAM
-    file->Seek(0); 
+    file->Seek(0);
     int bytesRead = file->Read(rawFile, file->size);
-    
+
     if (bytesRead != file->size) {
         printf("BMP Warning: Read %d bytes, expected %d\n", bytesRead, file->size);
     }
@@ -80,7 +88,7 @@ void Bitmap::Load(File* file) {
     BitmapInfoHeader* infoHeader = (BitmapInfoHeader*)(rawFile + sizeof(BitmapFileHeader));
 
     // Validate
-    if (fileHeader->type != 0x4D42) { // 'BM'
+    if (fileHeader->type != 0x4D42) {  // 'BM'
         printf("BMP Error: Invalid signature 0x%x\n", fileHeader->type);
         delete[] rawFile;
         return;
@@ -94,7 +102,7 @@ void Bitmap::Load(File* file) {
 
     this->width = infoHeader->width;
     this->height = infoHeader->height;
-    
+
     bool isTopDown = false;
     if (this->height < 0) {
         this->height = -this->height;
@@ -111,7 +119,7 @@ void Bitmap::Load(File* file) {
 
     for (int y = 0; y < height; y++) {
         int targetY = isTopDown ? y : (height - 1 - y);
-        
+
         for (int x = 0; x < width; x++) {
             uint8_t b = *pixelData++;
             uint8_t g = *pixelData++;
