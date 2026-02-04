@@ -41,6 +41,7 @@ This project focuses on low-level system development, implementing core operatin
 ## 🖼 Demonstrations
 
 - 📺 **Dynamic BGA Graphics (High Resolution) and Sound Support**
+
   The kernel detects BGA and audio hardware via PCI, loads the drivers from the FAT32 disk and instantly switches to high resolution.
 
   <p align="center">
@@ -49,12 +50,14 @@ This project focuses on low-level system development, implementing core operatin
 
   https://github.com/user-attachments/assets/b311645f-1579-457b-8377-fcf03f9cf0b6
 
-- 📺 **GUI Framework Evolution**  
-  From early VGA Mode 320×200 implementation to high-resolution 1152×864 (32-bit VESA). Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
+- 🧪 **Early GUI (VGA Mode 320×200)**
 
-  https://github.com/user-attachments/assets/b311645f-1579-457b-8377-fcf03f9cf0b6
+  Initial implementation of the graphical interface using legacy VGA mode.
 
-- 🧩 **Interrupt Service Routines**  
+  https://github.com/user-attachments/assets/581ec179-5460-439f-b05c-82d525cdecea
+
+- 🧩 **Interrupt Service Routines**
+
   Custom ISRs tested for hardware event response and system stability.
 
   https://github.com/user-attachments/assets/604a1b2d-f935-476e-954c-c0c363d7e380
