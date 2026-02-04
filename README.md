@@ -34,26 +34,25 @@ This project focuses on low-level system development, implementing core operatin
 - Support for dynamic resolution switching via dynamic drivers
 - HDD driver implementation
 - FAT32 filesystem support
+- DMA / PCI driver framework
+- Audio driver support
 ---
 
 ## 🖼 Demonstrations
 
-- 📺 **NEW : Dynamic BGA Graphics (High Resolution)**
-  The kernel detects BGA hardware via PCI, loads the driver from the FAT32 disk and instantly switches to high resolution.
+- 📺 **Dynamic BGA Graphics (High Resolution) and Sound Support**
+  The kernel detects BGA and audio hardware via PCI, loads the drivers from the FAT32 disk and instantly switches to high resolution.
 
-<p align="center">
-  <img alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
-</p>
-
-- 📺 **GUI Framework at 1152×864 (32-bit VESA)**  
-  Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
+  <p align="center">
+    <img alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
+  </p>
 
   https://github.com/user-attachments/assets/b311645f-1579-457b-8377-fcf03f9cf0b6
 
-- 🧪 **Early GUI (VGA Mode 320×200)**  
-  Initial implementation of the graphical interface using legacy VGA mode.
+- 📺 **GUI Framework Evolution**  
+  From early VGA Mode 320×200 implementation to high-resolution 1152×864 (32-bit VESA). Showcases ELF binary execution, system call support, event handling and multitasking capabilities with threads and processes.
 
-  https://github.com/user-attachments/assets/581ec179-5460-439f-b05c-82d525cdecea
+  https://github.com/user-attachments/assets/b311645f-1579-457b-8377-fcf03f9cf0b6
 
 - 🧩 **Interrupt Service Routines**  
   Custom ISRs tested for hardware event response and system stability.
@@ -81,8 +80,6 @@ Hashx86 is currently under active development. Upcoming improvements include:
 - Thread-safe process management
 - Networking support
 - Task State Segment (TSS) integration
-- DMA / PCI driver framework
-- Audio driver support
 - USB driver support
 
 **Stay tuned for future updates!**
@@ -107,26 +104,39 @@ cd hashx86
 You need a `HDD.vdi` file to store drivers and files. Choose one of the methods below:
 
 **Option A: Quick Start (Recommended)**
-Download the pre-formatted `HDD.vdi` from the **Releases** page and place it in the project folder.
+
+- Download the pre-formatted `HDD.vdi` from the **Releases** page and place it in the project folder.
 
 **Option B: Manual Setup**
 If you prefer to create a fresh disk:
 1. Create a 1GB VirtualBox Disk Image (VDI):
-```bash
-qemu-img create -f vdi HDD.vdi 1G
-```
+    ```bash
+    qemu-img create -f vdi HDD.vdi 1G
+    ```
 
-2. Run the OS for the first time. The kernel will detect the empty disk and automatically format it to **FAT32**.
-```bash
-make run
-```
-*Wait for the OS to boot and confirm formatting is complete, then close the QEMU window.*
+2. Run the OS for the first time.
 
-3. Install Drivers & Assets
-Now that the disk is formatted, mount it and copy the required system files (Drivers, Fonts, Bitmaps).
-```bash
-make hdd
-```
+      The kernel will detect the empty disk and automatically format it to **FAT32**.
+      ```bash
+      make run
+      ```
+    *Wait for the OS to boot and confirm formatting is complete, then close the QEMU window.*
+
+3. Build Drivers & User Programs
+
+    ```bash
+    cd drivers/
+    make
+    cd ../user_prog/
+    make
+    cd ..
+    ```
+4. Install Drivers & Assets
+
+      Now that the disk is formatted, mount it and copy the required system files (Drivers, Fonts, Bitmaps).
+    ```bash
+    make hdd
+    ```
 
 ### 3. Final Boot
 Run the OS again. It will now boot with full graphics and file support!
@@ -161,5 +171,7 @@ This project wouldn’t have been possible without the help, guidance and inspir
 ## 🎨 Credits
 
 * **Desktop Wallpaper:** "Iceland, Beach, Ice image" by **Elisabetta_Miele** on [Pixabay](https://pixabay.com/photos/iceland-beach-ice-frost-sunset-9056229/)
+
+* **BootUp Sound:** "New Notification 09" by **Universfield** on [Pixabay](https://pixabay.com/sound-effects/film-special-effects-new-notification-09-352705/)
 
 ---

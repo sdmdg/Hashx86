@@ -96,9 +96,10 @@ build:
 	make runq
 
 runq:
-	qemu-system-i386 -cdrom kernel.iso -boot d -vga std -serial stdio -m 1G -hda HDD.vdi -d int,cpu_reset -D ./log.txt \
-    -audiodev wav,id=snd0,path=debug_audio.wav \
-    -device es1370,audiodev=snd0
+	qemu-system-i386 -cdrom kernel.iso -boot d -vga std -serial stdio -m 1G \
+    -drive file=HDD.vdi,format=vdi \
+    -audiodev pa,id=snd0 \
+    -device ac97,audiodev=snd0
 
 run:
 	make clean
