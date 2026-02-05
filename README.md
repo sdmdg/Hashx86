@@ -48,19 +48,19 @@ This project focuses on low-level system development, implementing core operatin
     <img alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
   </p>
 
-  https://github.com/user-attachments/assets/b311645f-1579-457b-8377-fcf03f9cf0b6
+  https://github.com/user-attachments/assets/63dbf463-cb2d-4e7b-83dc-c5fb6a2dcb69
 
 - 🧪 **Early GUI (VGA Mode 320×200)**
 
   Initial implementation of the graphical interface using legacy VGA mode.
 
-  https://github.com/user-attachments/assets/581ec179-5460-439f-b05c-82d525cdecea
+  https://github.com/user-attachments/assets/e4f244ec-4996-43c0-a84d-7cb74f135137
 
 - 🧩 **Interrupt Service Routines**
 
   Custom ISRs tested for hardware event response and system stability.
 
-  https://github.com/user-attachments/assets/604a1b2d-f935-476e-954c-c0c363d7e380
+  https://github.com/user-attachments/assets/859b1a6b-4d5c-47d7-a7fc-679594a35b53
 
 ---
 
