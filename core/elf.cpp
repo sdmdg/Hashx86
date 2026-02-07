@@ -39,6 +39,9 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
     // Read ELF Headers
     uint32_t ph_size = sizeof(elf_program_header) * header.ph_entry_count;
     elf_program_header* ph_table = new elf_program_header[header.ph_entry_count];
+    if (!ph_table) {
+        HALT("CRITICAL: Failed to allocate ELF program header table!\n");
+    }
 
     elf->Seek(header.ph_offset);
     if (elf->Read((uint8_t*)ph_table, ph_size) != ph_size) {

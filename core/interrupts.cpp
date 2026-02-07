@@ -271,6 +271,9 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     g_systemcGraphicsDriver->FillRectangle(0, 0, GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);
     char* panicImageName = (char*)"BITMAPS/PANIC.BMP";
     Bitmap* panicImg = new Bitmap(panicImageName);
+    if (!panicImg) {
+        HALT("CRITICAL: Failed to allocate panic bitmap!\n");
+    }
     if (panicImg->IsValid()) {
         g_systemcGraphicsDriver->DrawBitmap(100, 200, panicImg->GetBuffer(), panicImg->GetWidth(),
                                             panicImg->GetHeight());

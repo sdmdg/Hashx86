@@ -96,6 +96,9 @@ uint32_t HguiHandler::HandleWindow(uint32_t esp) {
         uint32_t _newID = this->getNewID();
         Widget* _widget =
             new Window(parentWidget, _data->param1, _data->param2, _data->param3, _data->param4);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate Window widget!\n");
+        }
         _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
         _widget->SetID(_newID);
 
@@ -134,6 +137,9 @@ uint32_t HguiHandler::HandleButton(uint32_t esp) {
         uint32_t _newID = this->getNewID();
         Widget* _widget = new Button(parentWidget, _data->param1, _data->param2, _data->param3,
                                      _data->param4, _data->param5);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate Button widget!\n");
+        }
         _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
         _widget->SetID(_newID);
 
@@ -161,6 +167,9 @@ uint32_t HguiHandler::HandleLabel(uint32_t esp) {
         uint32_t _newID = this->getNewID();
         Widget* _widget = new Label(parentWidget, _data->param1, _data->param2, _data->param3,
                                     _data->param4, _data->param5);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate Label widget!\n");
+        }
         _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
         _widget->SetID(_newID);
 

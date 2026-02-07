@@ -12,10 +12,16 @@ Window::Window(CompositeWidget* parent, int32_t x, int32_t y, int32_t w, int32_t
     : CompositeWidget(parent, x, y, w, h) {
     this->isDragging = false;
     this->windowTitle = new char[10];
+    if (!this->windowTitle) {
+        HALT("CRITICAL: Failed to allocate window title!\n");
+    }
     strcpy(this->windowTitle, "Untitled");
     this->font = FontManager::activeInstance->getNewFont();
 
     closeButton = new ACRButton(this, w - 22, 4, "x");
+    if (!closeButton) {
+        HALT("CRITICAL: Failed to allocate window close button!\n");
+    }
     closeButton->OnClick(this, [](void* instance) { static_cast<Window*>(instance)->OnClose(); });
 
     this->AddChild(closeButton);
@@ -31,12 +37,18 @@ void Window::OnClose() {
     if (this->parent) this->parent->MarkDirty();
 
     Event* new_event = new Event{this->ID, ON_WINDOW_CLOSE};
+    if (!new_event) {
+        HALT("CRITICAL: Failed to allocate window close event!\n");
+    }
     Desktop::activeInstance->getHandler(this->PID)->eventQueue.Add(new_event);
 }
 
 void Window::setWindowTitle(const char* title) {
     if (windowTitle) delete[] windowTitle;
     windowTitle = new char[strlen(title) + 1];
+    if (!windowTitle) {
+        HALT("CRITICAL: Failed to allocate window title!\n");
+    }
     strcpy(windowTitle, title);
     MarkDirty();
 }

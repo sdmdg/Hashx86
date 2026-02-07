@@ -46,6 +46,9 @@ Scheduler::Scheduler(Paging* pager) {
 
 ProcessControlBlock* Scheduler::CreateProcess(bool isKernel, void (*entrypoint)(void*), void* arg) {
     ProcessControlBlock* pcb = new ProcessControlBlock();
+    if (!pcb) {
+        HALT("CRITICAL: Failed to allocate ProcessControlBlock!\n");
+    }
     pcb->pid = _pidCounter++;
     pcb->isKernelProcess = isKernel;
 
@@ -68,6 +71,9 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
                                             void* arg) {
     InterruptGuard guard;
     ThreadControlBlock* tcb = new ThreadControlBlock();
+    if (!tcb) {
+        HALT("CRITICAL: Failed to allocate ThreadControlBlock!\n");
+    }
     tcb->tid = _tidCounter++;
     tcb->stack = (uint8_t*)pmm_alloc_block();
 

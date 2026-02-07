@@ -27,7 +27,12 @@ ACRButton::ACRButton(Widget* parent, int32_t x, int32_t y, const char* label)
 
     // Allocate proper cache immediately
     if (cache) delete[] cache;
-    cache = new uint32_t[w * h]();
+    if (w > 0 && h > 0) {
+        cache = new uint32_t[w * h]();
+        if (!cache) {
+            HALT("CRITICAL: Failed to allocate action button cache!\n");
+        }
+    }
 }
 
 ACRButton::~ACRButton() {}

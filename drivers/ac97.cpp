@@ -108,6 +108,9 @@ private:
                        0xFFFC);
 
         irqHandler = new AC97IRQ(dev->interrupt + 0x20, this);
+        if (!irqHandler) {
+            HALT("CRITICAL: [AC97] Failed to allocate AC97 IRQ handler!\n");
+        }
         printf("[AC97] Found device IRQ=%d\n", dev->interrupt);
         return true;
     }
@@ -260,5 +263,9 @@ uint32_t AC97IRQ::HandleInterrupt(uint32_t esp) {
 }
 
 extern "C" Driver* CreateDriverInstance() {
-    return new DynamicAC97Driver();
+    DynamicAC97Driver* drv = new DynamicAC97Driver();
+    if (!drv) {
+        HALT("CRITICAL: [AC97] Failed to allocate DynamicAC97Driver!\n");
+    }
+    return drv;
 }

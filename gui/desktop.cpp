@@ -21,12 +21,18 @@ Desktop::Desktop(int32_t w, int32_t h)
     // Initialize Wallpaper
     char* wallpaperName = (char*)"BITMAPS/DESKTOP.BMP";
     Bitmap* wallpaperImg = new Bitmap(wallpaperName);
+    if (!wallpaperImg) {
+        HALT("CRITICAL: Failed to allocate desktop wallpaper bitmap!\n");
+    }
 
     if (wallpaperImg->IsValid()) {
         this->Wallpaper = wallpaperImg;
     } else {
         // Fallback: Solid Color (Blue-ish)
         this->Wallpaper = new Bitmap(w, h, 0xFF0000FF);
+        if (!this->Wallpaper) {
+            HALT("CRITICAL: Failed to allocate fallback wallpaper bitmap!\n");
+        }
         delete wallpaperImg;
     }
 
@@ -39,6 +45,9 @@ Desktop::~Desktop() {
 
 void Desktop::createNewHandler(uint32_t pid, ThreadControlBlock* thread) {
     EventHandler* handler = new EventHandler{};
+    if (!handler) {
+        HALT("CRITICAL: Failed to allocate event handler!\n");
+    }
     handler->pid = pid;
     handler->thread = thread;
     HguiEventHandlers.Add(handler);

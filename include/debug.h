@@ -53,4 +53,10 @@ void DebugPrintf(const char* tag, const char* format, ...);
 // Simple Printf Wrapper Function
 void Printf(const char* tag, const char* format, ...);
 
+#define HALT(msg)            \
+    printf(msg);             \
+    do {                     \
+        asm volatile("hlt"); \
+    } while (1)
+
 #endif  // DEBUG_H

@@ -13,10 +13,18 @@ Button::Button(Widget* parent, int32_t x, int32_t y, uint32_t w, uint32_t h, con
     this->font = FontManager::activeInstance->getNewFont();
 
     this->label = new char[strlen(label) + 1];
+    if (!this->label) {
+        HALT("CRITICAL: Failed to allocate button label!\n");
+    }
     strcpy(this->label, label);
 
     if (this->cache) delete[] this->cache;
-    this->cache = new uint32_t[this->w * this->h]();
+    if (w > 0 && h > 0) {
+        this->cache = new uint32_t[this->w * this->h]();
+        if (!this->cache) {
+            HALT("CRITICAL: Failed to allocate button cache!\n");
+        }
+    }
 }
 
 Button::~Button() {
@@ -30,6 +38,9 @@ void Button::update() {
 void Button::SetLabel(const char* newLabel) {
     if (this->label) delete[] this->label;
     this->label = new char[strlen(newLabel) + 1];
+    if (!this->label) {
+        HALT("CRITICAL: Failed to allocate button label!\n");
+    }
     strcpy(this->label, newLabel);
     MarkDirty();
 }
@@ -39,7 +50,12 @@ void Button::SetWidth(int32_t reqW) {
     this->w = (reqW < minW) ? minW : reqW;
 
     if (cache) delete[] cache;
-    cache = new uint32_t[this->w * this->h]();
+    if (w > 0 && h > 0) {
+        cache = new uint32_t[this->w * this->h]();
+        if (!cache) {
+            HALT("CRITICAL: Failed to allocate button cache!\n");
+        }
+    }
     MarkDirty();
 }
 
@@ -48,7 +64,12 @@ void Button::SetHeight(int32_t reqH) {
     this->h = (reqH < minH) ? minH : reqH;
 
     if (cache) delete[] cache;
-    cache = new uint32_t[this->w * this->h]();
+    if (w > 0 && h > 0) {
+        cache = new uint32_t[this->w * this->h]();
+        if (!cache) {
+            HALT("CRITICAL: Failed to allocate button cache!\n");
+        }
+    }
     MarkDirty();
 }
 
@@ -82,6 +103,9 @@ void Button::OnMouseUp(int32_t x, int32_t y, uint8_t) {
         MarkDirty();
 
         Event* new_event = new Event{this->ID, ON_CLICK};
+        if (!new_event) {
+            HALT("CRITICAL: Failed to allocate button click event!\n");
+        }
         Desktop::activeInstance->getHandler(this->PID)->eventQueue.Add(new_event);
     }
 }

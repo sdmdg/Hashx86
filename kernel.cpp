@@ -125,12 +125,12 @@ void init_memory(MultibootInfo* mbinfo) {
 
     // initialize PMM
     pmm_init(heap_start_addr, g_kmap.available.end_addr);
-    // Calculate how big the bitmap is (same logic as in pmm_init)
+    // Calculate how big the bitmap
     uint32_t bitmap_size = (g_kmap.available.end_addr / PMM_BLOCK_SIZE) / 8;
     // Mark FREE Region, but SKIP the bitmap!
     pmm_init_region(heap_start_addr + bitmap_size, g_kmap.available.end_addr);
 
-    // --- HEAP ALLOCATION ---
+    // HEAP ALLOCATION
     uint32_t actual_heap_start = heap_start_addr + bitmap_size;
     if ((actual_heap_start & 0xFFF) != 0) {
         actual_heap_start = (actual_heap_start & 0xFFFFF000) + 0x1000;
@@ -149,8 +149,7 @@ void init_memory(MultibootInfo* mbinfo) {
 
     // Calculate Exact Size Needed
     if (safe_limit <= actual_heap_start) {
-        printf("CRITICAL: No memory left for Heap! (Kernel + PMM > Limit)\n");
-        while (1) asm volatile("hlt");
+        HALT("CRITICAL: No memory left for Heap! (Kernel + PMM > Limit)\n");
     }
 
     uint32_t heap_size_bytes = safe_limit - actual_heap_start;
@@ -163,8 +162,7 @@ void init_memory(MultibootInfo* mbinfo) {
     void* heap_start = pmm_alloc_blocks(blocks_needed);
 
     if (heap_start == NULL) {
-        printf("CRITICAL: Failed to allocate calculated heap!\n");
-        while (1) asm volatile("hlt");
+        HALT("CRITICAL: Failed to allocate calculated heap!\n");
     }
 
     // Force Heap Alignment (Crucial for Paging)
@@ -220,7 +218,11 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
     // Check if BGA Hardware Exists via PCI
     PeripheralComponentInterconnectController* pciCheck =
         new PeripheralComponentInterconnectController();
+    if (!pciCheck) {
+        HALT("CRITICAL: Failed to allocate PCI controller!\n");
+    }
     PeripheralComponentInterconnectDeviceDescriptor* dev = nullptr;
+
     if (dev == nullptr) dev = pciCheck->FindHardwareDevice(0x1234, 0x1111);
     if (dev->vendor_id == 0) dev = pciCheck->FindHardwareDevice(0x80EE, 0xBEEF);
     if (dev->vendor_id == 0) dev = pciCheck->FindHardwareDevice(0x15AD, 0x0405);
@@ -321,6 +323,9 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
                         printf("[Kernel] Initializing Mixer...\n");
                         // Create the Mixer and link it to the driver
                         g_systemMixer = new AudioMixer(audio);
+                        if (!g_systemMixer) {
+                            HALT("CRITICAL: Failed to allocate AudioMixer!\n");
+                        }
 
                         // Set Master Volume
                         audio->SetVolume(90);
@@ -340,16 +345,13 @@ void pDesktop(void* arg) {
 #ifdef DEBUG_ENABLED
     DEBUG_LOG("GUI task started");
     if (!args) {
-        DEBUG_LOG("Error: args is null");
-        while (1) asm volatile("hlt");
+        HALT("Error: args is null");
     }
     if (!args->screen) {
-        DEBUG_LOG("Error: args->vga is null");
-        while (1) asm volatile("hlt");
+        HALT("Error: args->vga is null");
     }
     if (!args->desktop) {
-        DEBUG_LOG("Error: args->desktop is null");
-        while (1) asm volatile("hlt");
+        HALT("Error: args->desktop is null");
     }
 
 #endif
@@ -421,6 +423,9 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
 #endif
 
     Paging* paging = new Paging();
+    if (!paging) {
+        HALT("CRITICAL: Failed to allocate Paging object!\n");
+    }
     paging->Activate();
 
     // Initialize ATA
@@ -431,6 +436,11 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         new AdvancedTechnologyAttachment(true, 0x170),   // Secondary Master
         new AdvancedTechnologyAttachment(false, 0x170),  // Secondary Slave
         0};
+    for (int i = 0; i < 4; i++) {
+        if (!SATAList[i]) {
+            HALT("CRITICAL: Failed to allocate ATA object!\n");
+        }
+    }
 
     for (int i = 0; SATAList[i] != 0; i++) {
         printf("Checking Drive %d...\n", i);
@@ -445,22 +455,20 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     }
 
     if (ata == nullptr) {
-        printf(
+        HALT(
             "Error: No ATA drive detected!\nPlease connect an ATA drive and restart the system.\n");
-        while (1) asm volatile("hlt");
     }
 
     // Initialize MBR and Partitions
     MSDOSPartitionTable* MSDOS = new MSDOSPartitionTable(ata);
+    if (!MSDOS) {
+        HALT("CRITICAL: Failed to allocate MSDOSPartitionTable!\n");
+    }
     MSDOS->ReadPartitions();
     // Get Boot Partition
     FAT32* boot_partition = MSDOS->partitions[0];
     if (!boot_partition) {
-        printf(
-            "Error: No valid boot partition found!\nPlease reinstall the OS using 'make hdd'.\n");
-        while (1) {
-            asm volatile("hlt");
-        }
+        HALT("Error: No valid boot partition found!\nPlease reinstall the OS using 'make hdd'.\n");
     }
     boot_partition->ListRoot();
     KernelSymbolTable::Load(boot_partition, "kernel.map");
@@ -468,10 +476,16 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     g_systemcGraphicsDriver =
         new VESA_BIOS_Extensions(mbinfo->framebuffer_width, mbinfo->framebuffer_height, 32,
                                  (uint32_t*)mbinfo->framebuffer_addr);
+    if (!g_systemcGraphicsDriver) {
+        HALT("CRITICAL: Failed to allocate VESA_BIOS_Extensions!\n");
+    }
 
     // Load Boot Image
     char* bootImageName = (char*)"BITMAPS/BOOT.BMP";
     Bitmap* bootImg = new Bitmap(bootImageName);
+    if (!bootImg) {
+        HALT("CRITICAL: Failed to allocate Bitmap for boot image!\n");
+    }
     if (bootImg->IsValid()) {
         int32_t x, y;
         g_systemcGraphicsDriver->GetScreenCenter(bootImg->GetWidth(), bootImg->GetHeight(), x, y);
@@ -485,6 +499,9 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
 
     // Load Font File
     FontManager* fManager = new FontManager();
+    if (!fManager) {
+        HALT("CRITICAL: Failed to allocate FontManager!\n");
+    }
     char* fontFileName = (char*)"FONTS/SEGOEUI.BIN";
     File* fontFile = boot_partition->Open(fontFileName);
     if (fontFile->size == 0) {
@@ -512,23 +529,50 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
 
     // Load Desktop //
     Desktop* desktop = new Desktop(GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT);
+    if (!desktop) {
+        HALT("CRITICAL: Failed to allocate Desktop!\n");
+    }
     // gameSDK* desktop = new gameSDK(GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, boot_partition);
 
     Scheduler* scheduler = new Scheduler(paging);
+    if (!scheduler) {
+        HALT("CRITICAL: Failed to allocate Scheduler!\n");
+    }
     InterruptManager* interrupts = new InterruptManager(scheduler, paging);
+    if (!interrupts) {
+        HALT("CRITICAL: Failed to allocate InterruptManager!\n");
+    }
     SyscallHandler* sysCalls = new SyscallHandler(0x80, interrupts);
+    if (!sysCalls) {
+        HALT("CRITICAL: Failed to allocate SyscallHandler!\n");
+    }
     HguiHandler* guiCalls = new HguiHandler(0x81, interrupts);  // Needs desktop initialized
+    if (!guiCalls) {
+        HALT("CRITICAL: Failed to allocate HguiHandler!\n");
+    }
 
     DriverManager* driverManager = new DriverManager();
+    if (!driverManager) {
+        HALT("CRITICAL: Failed to allocate DriverManager!\n");
+    }
     init_pci(boot_partition, driverManager);
 
     MouseDriver* mouse = new MouseDriver(interrupts, desktop);
+    if (!mouse) {
+        HALT("CRITICAL: Failed to allocate MouseDriver!\n");
+    }
     driverManager->AddDriver(mouse);
     KeyboardDriver* keyboard = new KeyboardDriver(interrupts, desktop);
+    if (!keyboard) {
+        HALT("CRITICAL: Failed to allocate KeyboardDriver!\n");
+    }
     driverManager->AddDriver(keyboard);
 
     // PROCESS MAIN //
     DesktopArgs* desktopArgs = new DesktopArgs{g_systemcGraphicsDriver, desktop, boot_partition};
+    if (!desktopArgs) {
+        HALT("CRITICAL: Failed to allocate DesktopArgs!\n");
+    }
     ProcessControlBlock* process1 = scheduler->CreateProcess(true, pDesktop, desktopArgs);
     // gameSDKArgs* gameSDKargs = new gameSDKArgs{ screen, desktop, boot_partition};
     // ProcessControlBlock* process2 = scheduler->CreateProcess(true, pGame, gameSDKargs);
@@ -543,7 +587,13 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
 
     // Load and start sample programs
     ELFLoader* elfLoader = new ELFLoader(paging, scheduler);
+    if (!elfLoader) {
+        HALT("CRITICAL: Failed to allocate ELFLoader!\n");
+    }
     ProgramArguments* ProcessArgs = new ProgramArguments{"ARG1", "ARG2", "ARG3", "ARG4", "ARG5"};
+    if (!ProcessArgs) {
+        HALT("CRITICAL: Failed to allocate ProgramArguments!\n");
+    }
 
     const char* binList[] = {"BIN/MEMVIEW.BIN", "BIN/TEST.BIN", 0};
 
@@ -569,6 +619,9 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
 
     if (g_systemMixer) {
         Wav* sound = new Wav("audio/boot.wav");
+        if (!sound) {
+            HALT("CRITICAL: Failed to allocate Wav object for boot sound!\n");
+        }
         sound->Play();
     }
 
