@@ -1,5 +1,8 @@
 *.o
 /.vscode
 *.sys
+*.bin
+*.vdi
+kernel.map
 kernel.iso
 kernel.bin

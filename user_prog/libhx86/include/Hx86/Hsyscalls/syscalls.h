@@ -12,6 +12,7 @@ typedef enum {
     sys_open = 5,
     sys_close = 6,
     sys_sleep = 7,
+    sys_peek_memory = 9,
     sys_clone = 41,
     sys_Hcall = 199,
     sys_debug = 200,
@@ -40,6 +41,7 @@ uint32_t syscall_register_event_handler(void (*entrypoint)(void*), void* arg);
 uint32_t syscall_clone(void (*entrypoint)(void*), void* arg);
 void syscall_sleep(uint32_t ms);
 void syscall_debug(const char* str);
+uint32_t syscall_peek_memory(uint32_t address, uint32_t size);
 uint32_t syscall_Hgui(uint32_t element, uint32_t mode, void* data);
 
 #endif  // SYSCALLS_H

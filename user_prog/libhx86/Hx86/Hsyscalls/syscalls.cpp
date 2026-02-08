@@ -56,6 +56,15 @@ void syscall_debug(const char* str) {
     asm volatile("int $0x80" : : "a"(sys_debug), "b"(str));
 }
 
+uint32_t syscall_peek_memory(uint32_t address, uint32_t size) {
+    int32_t return_data = 0;
+    asm volatile("int $0x80"
+                 :
+                 : "a"(sys_peek_memory), "b"(address), "c"(size), "d"((void*)&return_data)
+                 : "memory");
+    return (uint32_t)return_data;
+}
+
 uint32_t syscall_Hgui(uint32_t element, uint32_t mode, void* data) {
     int32_t retun_data;
     asm volatile("int $0x81" : : "a"(element), "b"(mode), "c"(data), "d"((void*)&retun_data));

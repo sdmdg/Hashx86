@@ -122,6 +122,8 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
 
     for (uint32_t addr = heap_start; addr < heap_end; addr += PAGE_SIZE) {
         uint32_t phys_frame = (uint32_t)pmm_alloc_block();
+        memset((void*)phys_frame, 0,
+               PAGE_SIZE);  // Zero heap pages to prevent uninitialized memory bugs
         this->pager->MapPage(pELF->page_directory, addr, phys_frame,
                              PAGE_PRESENT | PAGE_RW | PAGE_USER);
     }

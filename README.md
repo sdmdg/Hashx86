@@ -36,6 +36,7 @@ This project focuses on low-level system development, implementing core operatin
 - FAT32 filesystem support
 - DMA / PCI driver framework
 - Audio driver support
+- Task State Segment (TSS) integration
 ---
 
 ## 🖼 Demonstrations
@@ -82,7 +83,6 @@ Hashx86 is currently under active development. Upcoming improvements include:
 - Expanded system call library
 - Thread-safe process management
 - Networking support
-- Task State Segment (TSS) integration
 - USB driver support
 
 **Stay tuned for future updates!**

@@ -7,6 +7,12 @@
 class AudioMixer;
 class GraphicsDriver;
 class AudioDriver;
+class Paging;
+class FontManager;
+class InterruptManager;
+class Scheduler;
+class SyscallHandler;
+class DriverManager;
 
 // Kernel Utils
 extern char Buffer[32];
@@ -18,6 +24,12 @@ extern uint64_t timerTicks;
 extern bool g_sse_active;
 
 // Modules
+extern Paging* paging;
+extern FontManager* fManager;
+extern InterruptManager* interrupts;
+extern Scheduler* scheduler;
+extern SyscallHandler* sysCalls;
+extern DriverManager* driverManager;
 extern AudioMixer* g_systemMixer;
 extern GraphicsDriver* g_systemcGraphicsDriver;
 extern AudioDriver* g_systemcAudioDriver;

@@ -422,7 +422,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     DEBUG_LOG("Initializing paging...\n");
 #endif
 
-    Paging* paging = new Paging();
+    paging = new Paging();
     if (!paging) {
         HALT("CRITICAL: Failed to allocate Paging object!\n");
     }
@@ -498,7 +498,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     delete bootImg;
 
     // Load Font File
-    FontManager* fManager = new FontManager();
+    fManager = new FontManager();
     if (!fManager) {
         HALT("CRITICAL: Failed to allocate FontManager!\n");
     }
@@ -534,15 +534,15 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     }
     // gameSDK* desktop = new gameSDK(GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, boot_partition);
 
-    Scheduler* scheduler = new Scheduler(paging);
+    scheduler = new Scheduler(paging);
     if (!scheduler) {
         HALT("CRITICAL: Failed to allocate Scheduler!\n");
     }
-    InterruptManager* interrupts = new InterruptManager(scheduler, paging);
+    interrupts = new InterruptManager(scheduler, paging);
     if (!interrupts) {
         HALT("CRITICAL: Failed to allocate InterruptManager!\n");
     }
-    SyscallHandler* sysCalls = new SyscallHandler(0x80, interrupts);
+    sysCalls = new SyscallHandler(0x80, interrupts);
     if (!sysCalls) {
         HALT("CRITICAL: Failed to allocate SyscallHandler!\n");
     }
@@ -551,10 +551,11 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         HALT("CRITICAL: Failed to allocate HguiHandler!\n");
     }
 
-    DriverManager* driverManager = new DriverManager();
+    driverManager = new DriverManager();
     if (!driverManager) {
         HALT("CRITICAL: Failed to allocate DriverManager!\n");
     }
+
     init_pci(boot_partition, driverManager);
 
     MouseDriver* mouse = new MouseDriver(interrupts, desktop);

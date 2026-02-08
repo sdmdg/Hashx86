@@ -91,6 +91,8 @@ clean:
 build:
 	make clean
 	make
+	make -C user_prog clean
+	make -C user_prog
 	make iso
 	make hdd
 	make runq

@@ -26,6 +26,10 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
             SyscallHandlers::Handle_sys_exit(esp);
             break;
 
+        case sys_peek_memory:
+            SyscallHandlers::Handle_sys_peek_memory(esp);
+            break;
+
         case sys_clone:
             SyscallHandlers::Handle_sys_clone(esp);
             break;
@@ -62,14 +66,49 @@ void SyscallHandlers::Handle_sys_restart(uint32_t esp) {
 }
 
 void SyscallHandlers::Handle_sys_exit(uint32_t esp) {
+    Scheduler* sched = Scheduler::activeInstance;
+    if (!sched) return;
+
+    // Save PID before ExitCurrentThread potentially destroys the process
+    ProcessControlBlock* process = sched->GetCurrentProcess();
+    uint32_t pid = process ? process->pid : 0;
+
+    bool processKilled = sched->ExitCurrentThread();
+
+    // Clean up GUI resources only if the entire process was terminated
+    if (processKilled && pid) {
+        Desktop::activeInstance->RemoveAppByPID(pid);
+        HguiHandler::activeInstance->RemoveAppByPID(pid);
+        DEBUG_LOG("sys_exit: Process PID %d terminated\n", pid);
+    }
+}
+
+void SyscallHandlers::Handle_sys_peek_memory(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
-    uint32_t currentPID = Scheduler::activeInstance->GetCurrentProcess()->pid;
-    Desktop::activeInstance->RemoveAppByPID(currentPID);
-    HguiHandler::activeInstance->RemoveAppByPID(currentPID);
+    uint32_t address = cpu->ebx;
+    uint32_t size = cpu->ecx;
+    int32_t* return_data = (int32_t*)cpu->edx;
 
-    Scheduler::activeInstance->KillProcess(currentPID);
+    // Only allow reading from identity-mapped kernel range (0 - 256MB)
+    uint32_t limit = 256 * 1024 * 1024;
+    if (address + size > limit || size == 0 || size > 4) {
+        *return_data = 0;
+        return;
+    }
 
-    DEBUG_LOG("sys_exit: Exit status: %u, PID: %d\n", cpu->ebx, currentPID);
+    uint32_t value = 0;
+    switch (size) {
+        case 1:
+            value = *(uint8_t*)address;
+            break;
+        case 2:
+            value = *(uint16_t*)address;
+            break;
+        case 4:
+            value = *(uint32_t*)address;
+            break;
+    }
+    *return_data = (int32_t)value;
 }
 
 void SyscallHandlers::Handle_sys_clone(uint32_t esp) {

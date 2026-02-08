@@ -136,9 +136,9 @@ InterruptManager::InterruptManager(Scheduler* scheduler, Paging* pager)
     SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0F, CodeSegment,
                                      &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
 
-    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 0,
+    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 3,
                                      IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x81, CodeSegment, &HandleInterruptRequest0x81, 0,
+    SetInterruptDescriptorTableEntry(0x81, CodeSegment, &HandleInterruptRequest0x81, 3,
                                      IDT_INTERRUPT_GATE);
 
     picMasterCommand.Write(0x11);
@@ -227,7 +227,15 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printf("UNHANDLED INTERRUPT: 0x%x\n", interruptNumber);
     }
 
-    if (interruptNumber == 0x80) return esp;
+    // After a syscall (int 0x80 arrives as 0xA0 because ASM adds IRQ_BASE=0x20),
+    // check if the current thread was terminated
+    if (interruptNumber == HWInterruptOffset + 0x80) {
+        if (scheduler->currentThread &&
+            scheduler->currentThread->state == THREAD_STATE_TERMINATED) {
+            return (uint32_t)scheduler->Schedule((CPUState*)esp);
+        }
+        return esp;
+    }
 
     // Timer Interrupt
     if (interruptNumber == HWInterruptOffset) {
@@ -263,9 +271,48 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     // Print exception details
     DEBUG_LOG("Exception 0x%x occurred. Error Code: 0x%x", interruptNumber, state->error);
     DEBUG_LOG("EIP: 0x%x, CS: 0x%x, EFLAGS: 0x%x", state->eip, state->cs, state->eflags);
+    DEBUG_LOG("EAX: 0x%x, EBX: 0x%x, ECX: 0x%x, EDX: 0x%x", state->eax, state->ebx, state->ecx,
+              state->edx);
+    DEBUG_LOG("ESP: 0x%x, EBP: 0x%x, ESI: 0x%x, EDI: 0x%x", state->esp, state->ebp, state->esi,
+              state->edi);
+    DEBUG_LOG("DS: 0x%x, SS: 0x%x", state->ds, state->ss);
 
-    // StackTrace
+    bool isUserFault = (state->cs & 0x3) == 3;
+    if (isUserFault) {
+        DEBUG_LOG(">> FAULT IN USER MODE (Ring 3)");
+        if (scheduler && scheduler->currentThread) {
+            DEBUG_LOG(">> Faulting Thread: TID=%d, PID=%d", scheduler->currentThread->tid,
+                      scheduler->currentThread->pid);
+        }
+    }
+
+    // Kernel stack trace (stops at kernel/user boundary)
     KernelSymbolTable::PrintStackTrace(100);
+
+    // User-mode stack trace: walk EBP chain via physical address translation
+    if (isUserFault && scheduler && scheduler->currentThread && scheduler->currentThread->parent) {
+        uint32_t* userPD = scheduler->currentThread->parent->page_directory;
+        printf("\n[ User Stack Trace (EBP chain) ]\n");
+        printf(" 0x%x  <-- faulting EIP\n", state->eip);
+
+        uint32_t userEBP = state->ebp;
+        for (int i = 0; i < 32 && userEBP >= 0x1000; i++) {
+            uint32_t physAddr = pager->GetPhysicalAddress(userPD, userEBP);
+            if (!physAddr) {
+                printf(" (EBP 0x%x not mapped)\n", userEBP);
+                break;
+            }
+
+            uint32_t* frame = (uint32_t*)physAddr;
+            uint32_t nextEBP = frame[0];  // saved EBP at [EBP+0]
+            uint32_t retAddr = frame[1];  // return address at [EBP+4]
+
+            if (retAddr == 0) break;
+            printf(" 0x%x\n", retAddr);
+
+            userEBP = nextEBP;
+        }
+    }
 
     // PANIC
     g_systemcGraphicsDriver->FillRectangle(0, 0, GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);

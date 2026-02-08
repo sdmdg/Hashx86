@@ -316,13 +316,11 @@ void MemoryViewer::onPressRead() {
     uint32_t address = hextoi(addressInput);
     char valueStr[64];
 
-    // Direct memory read - no exception handling
-    uint32_t value = 0;
-    uint8_t* memPtr = (uint8_t*)address;
+    // Read memory via kernel syscall (user mode can't access arbitrary addresses)
+    uint32_t value = syscall_peek_memory(address, readSize);
 
     switch (readSize) {
         case 1:  // Byte
-            value = *memPtr;
             valueStr[0] = 'B';
             valueStr[1] = 'y';
             valueStr[2] = 't';
@@ -336,7 +334,6 @@ void MemoryViewer::onPressRead() {
             break;
 
         case 2:  // Word
-            value = *(uint16_t*)memPtr;
             valueStr[0] = 'W';
             valueStr[1] = 'o';
             valueStr[2] = 'r';
@@ -350,7 +347,6 @@ void MemoryViewer::onPressRead() {
             break;
 
         case 4:  // Dword
-            value = *(uint32_t*)memPtr;
             valueStr[0] = 'D';
             valueStr[1] = 'w';
             valueStr[2] = 'o';

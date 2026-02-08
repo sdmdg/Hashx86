@@ -335,5 +335,10 @@ extern "C" void _start(void* arg) {
 
     printf("[Calculator]\n");
 
+    // Test: try to read a hardware port from Ring 3 (should make GP)
+    /*     printf("[Calculator] Attempting inb(0x3F8) from user mode...\n");
+        uint8_t val = inb(0x3F8);
+        printf("[Calculator] inb(0x3F8) = 0x%x\n", (uint32_t)val); */
+
     Calculator* cl = new Calculator();
 }

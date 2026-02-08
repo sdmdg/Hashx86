@@ -88,9 +88,16 @@ HandleInterruptRequest 0x81
 
 
 ;------------------------
-; Common exception handler
+; Common interrupt handler
 ;------------------------
-exc_common_handler:
+intr_common_handler:
+    ; Save Segment Registers
+    push gs
+    push fs
+    push es
+    push ds
+
+    ; Save General Purpose Registers
     push ebp
     push edi
     push esi
@@ -99,11 +106,57 @@ exc_common_handler:
     push ebx
     push eax
 
+    ; Call C++ Handler
+    push esp                       ; Pass pointer to CPUState (Stack Top)
+    push dword [interruptnumber]   ; Pass Interrupt Number
+    call _ZN16InterruptManager15handleInterruptEhj
+    mov esp, eax                   ; Switch Stack (if Schedule() returned a new one)
+
+    ; Restore General Purpose Registers
+    pop eax
+    pop ebx
+    pop ecx
+    pop edx
+    pop esi
+    pop edi
+    pop ebp
+
+    ; Restore Segment Registers
+    pop ds
+    pop es
+    pop fs
+    pop gs
+
+    ; Cleanup and Return
+    add esp, 4
+    iret
+
+;------------------------
+; Common exception handler
+;------------------------
+exc_common_handler:
+    ; Save Segment Registers
+    push gs
+    push fs
+    push es
+    push ds
+
+    ; Save General Purpose Registers
+    push ebp
+    push edi
+    push esi
+    push edx
+    push ecx
+    push ebx
+    push eax
+
+    ; Call C++ Handler
     push esp
     push dword [interruptnumber]
     call _ZN16InterruptManager15handleExceptionEhj
     mov esp, eax
 
+    ; Restore General Purpose Registers
     pop eax
     pop ebx
     pop ecx
@@ -111,34 +164,14 @@ exc_common_handler:
     pop esi
     pop edi
     pop ebp
-    add esp, 4
-    iret
 
+    ; Restore Segment Registers
+    pop ds
+    pop es
+    pop fs
+    pop gs
 
-;------------------------
-; Common interrupt handler
-;------------------------
-intr_common_handler:
-    push ebp
-    push edi
-    push esi
-    push edx
-    push ecx
-    push ebx
-    push eax
-
-    push esp
-    push dword [interruptnumber]
-    call _ZN16InterruptManager15handleInterruptEhj
-    mov esp, eax
-
-    pop eax
-    pop ebx
-    pop ecx
-    pop edx
-    pop esi
-    pop edi
-    pop ebp
+    ; Cleanup and Return
     add esp, 4
     iret
 

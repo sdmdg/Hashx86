@@ -1,12 +1,5 @@
-section .text
-    global load_tss
-    global get_eip
-
-load_tss:
-    mov ax, 0x2B
-    ltr ax
+global tss_flush
+tss_flush:
+    mov ax, 0x28      ; 0x28 is the offset in GDT (Index 5 * 8)
+    ltr ax            ; Load Task Register
     ret
-
-get_eip:
-    pop eax
-    jmp eax
