@@ -2,7 +2,7 @@
  * @file        globals.cpp
  * @brief       Global Variables for Kernel
  *
- * @date        01/02/2026
+ * @date        11/02/2026
  * @version     1.0.0
  */
 
@@ -12,12 +12,14 @@ char Buffer[32];
 uint64_t timerTicks = 0;
 bool g_sse_active = false;
 
-Paging* paging = nullptr;
-FontManager* fManager = nullptr;
-InterruptManager* interrupts = nullptr;
-Scheduler* scheduler = nullptr;
-SyscallHandler* sysCalls = nullptr;
-DriverManager* driverManager = nullptr;
-AudioMixer* g_systemMixer = nullptr;
-GraphicsDriver* g_systemcGraphicsDriver = nullptr;
-AudioDriver* g_systemcAudioDriver = nullptr;
+Paging* g_paging = nullptr;
+FontManager* g_fManager = nullptr;
+InterruptManager* g_interrupts = nullptr;
+Scheduler* g_scheduler = nullptr;
+SyscallHandler* g_sysCalls = nullptr;
+DriverManager* g_driverManager = nullptr;
+AudioMixer* g_AudioMixer = nullptr;
+GraphicsDriver* g_GraphicsDriver = nullptr;
+AudioDriver* g_AudioDriver = nullptr;
+FAT32* g_bootPartition = nullptr;
+ELFLoader* g_elfLoader = nullptr;

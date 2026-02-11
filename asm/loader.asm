@@ -2,8 +2,8 @@
 ;  @file        loader.asm
 ;  @brief       Main loader of #x86
 ;
-;  @date        24/04/2025
-;  @version     1.0.0-beta
+;  @date        11/02/2026
+;  @version     1.0.0
 ;
 ;
 ; Refer to https://www.gnu.org/software/grub/manual/multiboot/multiboot.html;Header-layout for more info.
@@ -88,6 +88,6 @@ _stop:
 
 ; Define the BSS section where uninitialized data
 section .bss
-resb 1024 * 16                ; 16 KB Stack
+resb 1024 * 64                ; 64 KB Stack
 
 kernel_stack:                 ; Label for the start of the kernel stack

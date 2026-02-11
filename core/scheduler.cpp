@@ -2,8 +2,8 @@
  * @file        scheduler.cpp
  * @brief       Standard Round-Robin Scheduler with State Queues for #x86
  *
- * @date        25/01/2026
- * @version     1.0.0-beta
+ * @date        11/02/2026
+ * @version     1.0.0
  */
 
 #include <core/scheduler.h>
@@ -15,6 +15,8 @@ extern TaskStateSegment g_tss;
 
 // Virtual address for the user-mode thread exit trampoline (1GB mark, in user space)
 #define USER_EXIT_TRAMPOLINE_VIRT 0x40000000
+
+#define KERNEL_STACK_SIZE (64 * 1024)
 
 Scheduler* Scheduler::activeInstance = nullptr;
 void FlushSerial();
@@ -113,11 +115,11 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
     tcb->parent = parent;
     tcb->pid = parent ? parent->pid : 0;
 
-    // Allocate Physical Memory for the stack
-    tcb->stack = (uint8_t*)pmm_alloc_block();
+    // Allocate 64KB kernel stack
+    tcb->stack = (uint8_t*)kmalloc(KERNEL_STACK_SIZE);
 
     // Calculate the TOP of the stack
-    uint32_t* stackTop = (uint32_t*)(tcb->stack + 4096);
+    uint32_t* stackTop = (uint32_t*)(tcb->stack + KERNEL_STACK_SIZE);
 
     // Map the context struct to the top of the kernel stack
     tcb->context = (CPUState*)((uint8_t*)stackTop - sizeof(CPUState));
@@ -267,6 +269,16 @@ void Scheduler::Sleep(uint32_t milliseconds) {
     currentThread->state = THREAD_STATE_BLOCKED;
 }
 
+void Scheduler::WakeThread(ThreadControlBlock* thread) {
+    InterruptGuard guard;
+    if (!thread) return;
+    if (thread->state != THREAD_STATE_BLOCKED) return;
+    thread->state = THREAD_STATE_READY;
+    thread->wakeTime = 0;
+    blockedQueue.Remove([thread](ThreadControlBlock* t) { return t == thread; });
+    readyQueue.PushBack(thread);
+}
+
 CPUState* Scheduler::Schedule(CPUState* context) {
     if (currentThread) {
         currentThread->context = context;
@@ -310,7 +322,7 @@ CPUState* Scheduler::Schedule(CPUState* context) {
     // DEBUG_LOG("Switching to TID=%d, PID=%d, EIP=0x%x, ESP=0x%x", currentThread->tid,
     // currentThread->pid, currentThread->context->eip, currentThread->context->esp);
 
-    g_tss.esp0 = (uint32_t)(currentThread->stack + 4096);
+    g_tss.esp0 = (uint32_t)(currentThread->stack + KERNEL_STACK_SIZE);
 
     if (currentThread->parent) {
         _pager->SwitchDirectory((currentThread->parent->page_directory));

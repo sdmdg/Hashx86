@@ -2,8 +2,8 @@
  * @file        interrupts.cpp
  * @brief       Interrupts Manager
  *
- * @date        20/01/2025
- * @version     1.0.0-beta
+ * @date        11/02/2026
+ * @version     1.0.0
  */
 
 #include <core/Iguard.h>
@@ -243,7 +243,7 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
         audioTickCounter++;
         if (audioTickCounter >= 10) {
             audioTickCounter = 0;
-            if (g_systemMixer) g_systemMixer->Update();
+            if (g_AudioMixer) g_AudioMixer->Update();
         }
 
         return (uint32_t)scheduler->Schedule((CPUState*)esp);
@@ -263,7 +263,7 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     Deactivate();
     this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
     // this->pager->Deactivate();
-    Font* g_systemcGraphicsDriver_font = FontManager::activeInstance->getNewFont();
+    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
     uint32_t faulting_addr;
     asm volatile("mov %%cr2, %0" : "=r"(faulting_addr));
     DEBUG_LOG("Page fault at address: 0x%x", faulting_addr);
@@ -315,29 +315,27 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     }
 
     // PANIC
-    g_systemcGraphicsDriver->FillRectangle(0, 0, GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);
+    g_GraphicsDriver->FillRectangle(0, 0, GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);
     char* panicImageName = (char*)"BITMAPS/PANIC.BMP";
     Bitmap* panicImg = new Bitmap(panicImageName);
     if (!panicImg) {
         HALT("CRITICAL: Failed to allocate panic bitmap!\n");
     }
     if (panicImg->IsValid()) {
-        g_systemcGraphicsDriver->DrawBitmap(100, 200, panicImg->GetBuffer(), panicImg->GetWidth(),
-                                            panicImg->GetHeight());
+        g_GraphicsDriver->DrawBitmap(100, 200, panicImg->GetBuffer(), panicImg->GetWidth(),
+                                     panicImg->GetHeight());
     }
     delete panicImg;
 
-    g_systemcGraphicsDriver_font->setSize(XLARGE);
-    g_systemcGraphicsDriver->DrawString(
+    g_GraphicsDriver_font->setSize(XLARGE);
+    g_GraphicsDriver->DrawString(
         120, 400, "Your PC ran into a problem and needs to restart.\nWe'll restart it for you.",
-        g_systemcGraphicsDriver_font, 0xFFFFFFFF);
-    g_systemcGraphicsDriver_font->setSize(MEDIUM);
-    g_systemcGraphicsDriver->DrawString(120, 600, "Stop code : 0x", g_systemcGraphicsDriver_font,
-                                        0xFFFFFFFF);
+        g_GraphicsDriver_font, 0xFFFFFFFF);
+    g_GraphicsDriver_font->setSize(MEDIUM);
+    g_GraphicsDriver->DrawString(120, 600, "Stop code : 0x", g_GraphicsDriver_font, 0xFFFFFFFF);
     itoa(Buffer, 16, interruptNumber);
-    g_systemcGraphicsDriver->DrawString(
-        120 + g_systemcGraphicsDriver_font->getStringLength("Stop code : 0x"), 600,
-        (const char*)Buffer, g_systemcGraphicsDriver_font, 0xFFFFFFFF);
+    g_GraphicsDriver->DrawString(120 + g_GraphicsDriver_font->getStringLength("Stop code : 0x"),
+                                 600, (const char*)Buffer, g_GraphicsDriver_font, 0xFFFFFFFF);
 
     const char* massage;
     switch (interruptNumber) {
@@ -440,24 +438,20 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
         default:
             break;
     }
-    g_systemcGraphicsDriver->DrawString(120, 620, massage, g_systemcGraphicsDriver_font,
-                                        0xFFFFFFFF);
+    g_GraphicsDriver->DrawString(120, 620, massage, g_GraphicsDriver_font, 0xFFFFFFFF);
 
     // Show register dump
     int x = 450;
     int y = 540;
-    g_systemcGraphicsDriver->DrawString(x, y, "Registers:", g_systemcGraphicsDriver_font,
-                                        0xFFFFFFFF);
+    g_GraphicsDriver->DrawString(x, y, "Registers:", g_GraphicsDriver_font, 0xFFFFFFFF);
     y += 20;
 
     auto print_reg = [&](const char* name, uint32_t value) {
         char buf[32];
-        g_systemcGraphicsDriver->DrawString(x, y, name, g_systemcGraphicsDriver_font, 0xFFFFFFFF);
-        g_systemcGraphicsDriver->DrawString(x + 60, y, "0x", g_systemcGraphicsDriver_font,
-                                            0xFFFFFFFF);
+        g_GraphicsDriver->DrawString(x, y, name, g_GraphicsDriver_font, 0xFFFFFFFF);
+        g_GraphicsDriver->DrawString(x + 60, y, "0x", g_GraphicsDriver_font, 0xFFFFFFFF);
         itoa(buf, 16, value);
-        g_systemcGraphicsDriver->DrawString(x + 77, y, buf, g_systemcGraphicsDriver_font,
-                                            0xFFFFFFFF);
+        g_GraphicsDriver->DrawString(x + 77, y, buf, g_GraphicsDriver_font, 0xFFFFFFFF);
         y += 20;
     };
 
@@ -472,7 +466,7 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     print_reg("CS", state->cs);
     print_reg("EFLAGS", state->eflags);
 
-    g_systemcGraphicsDriver->Flush();
+    g_GraphicsDriver->Flush();
     wait(10000);
     // END OF PANIC
 

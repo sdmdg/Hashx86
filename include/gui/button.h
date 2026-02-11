@@ -1,6 +1,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
+#include <core/scheduler.h>
 #include <gui/desktop.h>
 #include <gui/widget.h>
 

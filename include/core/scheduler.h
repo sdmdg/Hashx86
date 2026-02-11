@@ -38,6 +38,7 @@ public:
     void TerminateThread(ThreadControlBlock* thread);
     bool ExitCurrentThread();
     void Sleep(uint32_t milliseconds);
+    void WakeThread(ThreadControlBlock* thread);
 
     // CORE SCHEDULING (Called by Interrupt Handler)
     CPUState* Schedule(CPUState* context);

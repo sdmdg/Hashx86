@@ -7,6 +7,7 @@
 #include <gui/inputbox.h>
 #include <gui/label.h>
 #include <gui/messagebox.h>
+#include <gui/taskbar.h>
 #include <gui/widget.h>
 #include <gui/window.h>
 

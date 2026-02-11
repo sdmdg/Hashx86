@@ -40,6 +40,7 @@ objects = asm/common_handler.o \
           gui/Hgui.o \
           gui/label.o \
           gui/renderer/nina.o \
+          gui/taskbar.o \
           gui/widget.o \
           gui/window.o \
           kernel.o \

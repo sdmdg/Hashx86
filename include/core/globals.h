@@ -13,6 +13,8 @@ class InterruptManager;
 class Scheduler;
 class SyscallHandler;
 class DriverManager;
+class FAT32;
+class ELFLoader;
 
 // Kernel Utils
 extern char Buffer[32];
@@ -24,14 +26,16 @@ extern uint64_t timerTicks;
 extern bool g_sse_active;
 
 // Modules
-extern Paging* paging;
-extern FontManager* fManager;
-extern InterruptManager* interrupts;
-extern Scheduler* scheduler;
-extern SyscallHandler* sysCalls;
-extern DriverManager* driverManager;
-extern AudioMixer* g_systemMixer;
-extern GraphicsDriver* g_systemcGraphicsDriver;
-extern AudioDriver* g_systemcAudioDriver;
+extern Paging* g_paging;
+extern FontManager* g_fManager;
+extern InterruptManager* g_interrupts;
+extern Scheduler* g_scheduler;
+extern SyscallHandler* g_sysCalls;
+extern DriverManager* g_driverManager;
+extern AudioMixer* g_AudioMixer;
+extern GraphicsDriver* g_GraphicsDriver;
+extern AudioDriver* g_AudioDriver;
+extern FAT32* g_bootPartition;
+extern ELFLoader* g_elfLoader;
 
 #endif  // GLOBALS_H

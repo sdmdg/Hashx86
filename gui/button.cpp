@@ -2,7 +2,7 @@
  * @file        button.cpp
  * @brief       Button (part of #x86 GUI Framework)
  *
- * @date        10/01/2026
+ * @date        11/02/2026
  * @version     1.0.0-beta
  */
 
@@ -106,7 +106,9 @@ void Button::OnMouseUp(int32_t x, int32_t y, uint8_t) {
         if (!new_event) {
             HALT("CRITICAL: Failed to allocate button click event!\n");
         }
-        Desktop::activeInstance->getHandler(this->PID)->eventQueue.Add(new_event);
+        EventHandler* handler = Desktop::activeInstance->getHandler(this->PID);
+        handler->eventQueue.Add(new_event);
+        g_scheduler->WakeThread(handler->thread);
     }
 }
 
