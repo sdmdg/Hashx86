@@ -388,22 +388,6 @@ void pDesktop(void* arg) {
     }
 }
 
-void pGame(void* arg) {
-    gameSDKArgs* args = (gameSDKArgs*)arg;
-
-    // ... (debug checks) ...
-
-    GraphicsDriver* screen = args->screen;
-    gameSDK* game = args->gamesdk;
-
-    while (true) {
-        // ... (Render Loop) ...
-        game->Draw(screen);
-        screen->Flush();
-        // ...
-    }
-}
-
 extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     initSerial();
     if (magicnumber != 0x2BADB002) {
@@ -581,8 +565,6 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         HALT("CRITICAL: Failed to allocate DesktopArgs!\n");
     }
     ProcessControlBlock* process1 = g_scheduler->CreateProcess(true, pDesktop, desktopArgs);
-    // gameSDKArgs* gameSDKargs = new gameSDKArgs{ screen, desktop, g_bootPartition};
-    // ProcessControlBlock* process2 = scheduler->CreateProcess(true, pGame, gameSDKargs);
 
     if (mbinfo->mods_count > 0) {
         DEBUG_LOG("Found %d Modules", mbinfo->mods_count);
