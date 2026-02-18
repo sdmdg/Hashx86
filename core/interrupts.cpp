@@ -12,6 +12,7 @@
 #include <core/interrupts.h>
 
 static uint16_t HWInterruptOffset = 0x20;
+extern void FlushSerial();
 uint32_t audioTickCounter = 0;
 
 InterruptHandler::InterruptHandler(uint8_t InterruptNumber, InterruptManager* interruptManager) {
@@ -136,8 +137,12 @@ InterruptManager::InterruptManager(Scheduler* scheduler, Paging* pager)
     SetInterruptDescriptorTableEntry(HWInterruptOffset + 0x0F, CodeSegment,
                                      &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
 
+    // Use TRAP GATE (0xF) for syscalls so interrupts remain enabled.
+    // This prevents long syscalls (e.g. 2MB disk reads) from blocking
+    // the timer, mouse, keyboard, and scheduler for seconds at a time.
+    const uint8_t IDT_TRAP_GATE = 0xF;
     SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 3,
-                                     IDT_INTERRUPT_GATE);
+                                     IDT_TRAP_GATE);
     SetInterruptDescriptorTableEntry(0x81, CodeSegment, &HandleInterruptRequest0x81, 3,
                                      IDT_INTERRUPT_GATE);
 
@@ -201,6 +206,21 @@ uint32_t InterruptManager::handleException(uint8_t interruptNumber, uint32_t esp
     if (activeInstance != 0) {
         return activeInstance->DohandleException(interruptNumber, esp);
     } else {
+        // CRITICAL: If activeInstance is 0, we are in a NESTED FAULT.
+        // The first exception handler already called Deactivate() + cli.
+        // Returning esp would iret back to the faulting instruction → infinite loop!
+
+        printf("DOUBLE FAULT: Nested exception 0x%x while handling previous exception. HALTING.\n",
+               interruptNumber);
+        // MUST hard-flush serial before halting, otherwise exception info is lost!
+        // Keep calling FlushSerial (it drains while hardware is ready)
+        // Loop until the hardware has had time to accept all bytes
+        for (int i = 0; i < 100000; i++) {
+            FlushSerial();
+        }
+        asm volatile("cli; hlt");
+        while (1) {
+        }  // unreachable
         return esp;
     }
 }
@@ -228,10 +248,12 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
     }
 
     // After a syscall (int 0x80 arrives as 0xA0 because ASM adds IRQ_BASE=0x20),
-    // check if the current thread was terminated
+    // check if the current thread was terminated or killed
     if (interruptNumber == HWInterruptOffset + 0x80) {
-        if (scheduler->currentThread &&
+        if (!scheduler->currentThread ||
             scheduler->currentThread->state == THREAD_STATE_TERMINATED) {
+            // Thread was killed (currentThread == null) or terminated.
+            // Must call Schedule to switch to a living thread.
             return (uint32_t)scheduler->Schedule((CPUState*)esp);
         }
         return esp;
@@ -260,34 +282,28 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
 
 uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t esp) {
     CPUState* state = (CPUState*)esp;
-    Deactivate();
-    this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
-    // this->pager->Deactivate();
-    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
+
+    // EARLY SERIAL OUTPUT - Print BEFORE Deactivate/BSOD to ensure we see the fault
+    // even if the BSOD drawing code itself faults.
     uint32_t faulting_addr;
     asm volatile("mov %%cr2, %0" : "=r"(faulting_addr));
-    DEBUG_LOG("Page fault at address: 0x%x", faulting_addr);
-
-    // Print exception details
-    DEBUG_LOG("Exception 0x%x occurred. Error Code: 0x%x", interruptNumber, state->error);
-    DEBUG_LOG("EIP: 0x%x, CS: 0x%x, EFLAGS: 0x%x", state->eip, state->cs, state->eflags);
-    DEBUG_LOG("EAX: 0x%x, EBX: 0x%x, ECX: 0x%x, EDX: 0x%x", state->eax, state->ebx, state->ecx,
-              state->edx);
-    DEBUG_LOG("ESP: 0x%x, EBP: 0x%x, ESI: 0x%x, EDI: 0x%x", state->esp, state->ebp, state->esi,
-              state->edi);
-    DEBUG_LOG("DS: 0x%x, SS: 0x%x", state->ds, state->ss);
-
+    printf("\n=== EXCEPTION 0x%x === Error: 0x%x\n", interruptNumber, state->error);
+    printf("EIP: 0x%x  CS: 0x%x  EFLAGS: 0x%x\n", state->eip, state->cs, state->eflags);
+    printf("EAX: 0x%x  EBX: 0x%x  ECX: 0x%x  EDX: 0x%x\n", state->eax, state->ebx, state->ecx,
+           state->edx);
+    printf("ESP: 0x%x  EBP: 0x%x  CR2: 0x%x\n", state->esp, state->ebp, faulting_addr);
     bool isUserFault = (state->cs & 0x3) == 3;
-    if (isUserFault) {
-        DEBUG_LOG(">> FAULT IN USER MODE (Ring 3)");
-        if (scheduler && scheduler->currentThread) {
-            DEBUG_LOG(">> Faulting Thread: TID=%d, PID=%d", scheduler->currentThread->tid,
-                      scheduler->currentThread->pid);
-        }
+    if (isUserFault && scheduler && scheduler->currentThread) {
+        printf("FAULT IN USER MODE: TID=%d PID=%d\n", scheduler->currentThread->tid,
+               scheduler->currentThread->pid);
     }
+    KernelSymbolTable::PrintStackTrace(20);
+    // FLUSH serial NOW before Deactivate/BSOD, because BSOD code may fault
+    FlushSerial();
 
-    // Kernel stack trace (stops at kernel/user boundary)
-    KernelSymbolTable::PrintStackTrace(100);
+    Deactivate();
+    this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
+    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
 
     // User-mode stack trace: walk EBP chain via physical address translation
     if (isUserFault && scheduler && scheduler->currentThread && scheduler->currentThread->parent) {
@@ -478,14 +494,21 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     asm volatile("cli");
 
     // Wait for the keyboard controller to be ready (input buffer empty)
-    // Bit 1 (0x2) of status register (port 0x64) indicates input buffer status.
-    // Loop while input buffer is full.
-    while ((keyboard_command_port.Read() & 0x02) != 0);
+    // Timeout after ~1M iterations to prevent infinite spin in some VMs
+    for (volatile int i = 0; i < 1000000; i++) {
+        if ((keyboard_command_port.Read() & 0x02) == 0) break;
+    }
 
     // Send the "CPU reset" command (0xFE) to the keyboard controller
     keyboard_command_port.Write(0xFE);
 
-    // Halt the CPU
+    // If keyboard reset didn't work, try triple-fault as fallback
+    // Load a null IDT and trigger an interrupt → guaranteed triple fault → CPU reset
+    asm volatile(
+        "lidt (%0)\n\t"
+        "int3\n\t" ::"r"(0));
+
+    // Halt the CPU (should be unreachable)
     while (1) {
         asm volatile("hlt");
     }

@@ -66,10 +66,17 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
         uint32_t page_end = (end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
         // Allocate Pages
+        // Must be in identity-mapped range (<256MB) because kernel reads ELF data
+        // and zeroes BSS via physical addresses during loading
         for (uint32_t addr = page_start; addr < page_end; addr += PAGE_SIZE) {
-            uint32_t phys_frame = (uint32_t)pmm_alloc_block();
+            uint32_t phys_frame = (uint32_t)pmm_alloc_block_low(256 * 1024 * 1024);
+            if (!phys_frame) {
+                DEBUG_LOG("ELF Load: Out of low memory for segment pages!");
+                delete[] ph_table;
+                return nullptr;
+            }
             this->pager->MapPage(pELF->page_directory, addr, phys_frame,
-                                 PAGE_PRESENT | PAGE_RW | PAGE_USER  // Allow User Mode Access!
+                                 PAGE_PRESENT | PAGE_RW | PAGE_USER  // Allow User Mode Access
             );
         }
 
@@ -116,14 +123,13 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
     // Allocate User Heap (Simple)
     max_virt_end = (max_virt_end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
-    const int HEAP_PAGE_COUNT = 64;  // 256KB Initial Heap
+    const int HEAP_PAGE_COUNT = 64;  // 256KB Initial Heap (will grow via sys_sbrk)
     uint32_t heap_start = max_virt_end;
     uint32_t heap_end = heap_start + HEAP_PAGE_COUNT * PAGE_SIZE;
 
     for (uint32_t addr = heap_start; addr < heap_end; addr += PAGE_SIZE) {
         uint32_t phys_frame = (uint32_t)pmm_alloc_block();
-        memset((void*)phys_frame, 0,
-               PAGE_SIZE);  // Zero heap pages to prevent uninitialized memory bugs
+        // The heap allocator doesn't require zeroed pages
         this->pager->MapPage(pELF->page_directory, addr, phys_frame,
                              PAGE_PRESENT | PAGE_RW | PAGE_USER);
     }

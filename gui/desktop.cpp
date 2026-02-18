@@ -47,8 +47,9 @@ Desktop::Desktop(int32_t w, int32_t h)
     taskbar->SetID(0);   // System widget
 
     // Add application launchers
-    taskbar->AddApp("MemViewer", "Memory inspector", "BIN/MEMVIEW.BIN");
-    taskbar->AddApp("Calculator", "Calculator GUI", "BIN/TEST.BIN");
+    taskbar->AddApp("MemViewer", "Memory inspector", "SYS32/MEMVIEW.BIN");
+    taskbar->AddApp("Calculator", "Calculator GUI", "SYS32/TEST.BIN");
+    taskbar->AddApp("Game3D", "3D Game Engine", "PROGFILE/GAME3D/GAME3D.BIN");
 
     // NOTE: Taskbar is NOT added to childrenList.
 }

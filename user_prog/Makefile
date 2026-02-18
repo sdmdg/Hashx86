@@ -1,5 +1,6 @@
 SUBDIRS = MeMView\
-		  test
+		  test\
+		  Game3D
 
 .PHONY: all libhx86 $(SUBDIRS) clean
 

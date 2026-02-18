@@ -14,10 +14,10 @@ Paging::~Paging() {}
 
 void Paging::Activate() {
     // Allocate the Master Page Directory
-    // pmm_alloc_block guarantee 4096-byte alignment
-    KernelPageDirectory = (uint32_t*)pmm_alloc_block();
+    // Must be in identity-mapped range (<256MB) so kernel can access it after paging
+    KernelPageDirectory = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
 
-    if ((uint32_t)KernelPageDirectory & 0xFFF) {
+    if (!KernelPageDirectory || ((uint32_t)KernelPageDirectory & 0xFFF)) {
         DEBUG_LOG("CRITICAL ERROR: Page Directory NOT Aligned! Addr: 0x%x", KernelPageDirectory);
         while (1);  // Halt
     }
@@ -30,7 +30,12 @@ void Paging::Activate() {
     // 256MB / 4MB per table = 64 Tables
     for (uint32_t i = 0; i < 64; i++) {
         // Allocate a Page Table (Holds 1024 pages)
-        uint32_t* page_table = (uint32_t*)pmm_alloc_block();
+        // Must be in identity-mapped range (<256MB)
+        uint32_t* page_table = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
+        if (!page_table) {
+            DEBUG_LOG("CRITICAL: Failed to allocate page table for index %d!", i);
+            while (1);
+        }
         memset(page_table, 0, 4096);
 
         // Fill the table (Identity Map: Virtual X = Physical X)
@@ -48,7 +53,12 @@ void Paging::Activate() {
     // Map High Memory (3GB - 4GB) | VRAM / MMIO
     // Indices 768 to 1024. Covers 0xC0000000 to 0xFFFFFFFF.
     for (uint32_t i = 768; i < 1024; i++) {
-        uint32_t* page_table = (uint32_t*)pmm_alloc_block();
+        // Must be in identity-mapped range (<256MB)
+        uint32_t* page_table = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
+        if (!page_table) {
+            DEBUG_LOG("CRITICAL: Failed to allocate high-mem page table for index %d!", i);
+            while (1);
+        }
         memset(page_table, 0, 4096);
 
         // Identity map high memory address
@@ -77,7 +87,8 @@ void Paging::Activate() {
 
 uint32_t* Paging::CreateProcessDirectory() {
     // Allocate a new Directory with pmm_alloc for 4kb alignment
-    uint32_t* new_dir = (uint32_t*)pmm_alloc_block();
+    // Must be in identity-mapped range (<256MB) so kernel can read/write entries
+    uint32_t* new_dir = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
     if (!new_dir) return 0;
 
     // Clear user space
@@ -101,15 +112,21 @@ void Paging::SwitchDirectory(uint32_t* new_dir) {
     asm volatile("mov %0, %%cr3" : : "r"(new_dir));
 }
 
-void Paging::MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physical_addr,
+bool Paging::MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physical_addr,
                      uint32_t flags) {
     uint32_t pd_idx = virtual_addr >> 22;
     uint32_t pt_idx = (virtual_addr >> 12) & 0x03FF;
 
     // Check if Page Table exists
     if (!(directory[pd_idx] & PAGE_PRESENT)) {
-        // Allocate new table via PMM
-        uint32_t* new_table = (uint32_t*)pmm_alloc_block();
+        // Allocate new table via PMM (LOW MEMORY < 256MB)
+        uint32_t* new_table = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
+
+        if (!new_table) {
+            DEBUG_LOG("MapPage: Failed to allocate Page Table! Low Memory Exhausted?");
+            return false;
+        }
+
         memset(new_table, 0, 4096);
 
         // Link it
@@ -117,13 +134,13 @@ void Paging::MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physic
     }
 
     uint32_t* table = (uint32_t*)(directory[pd_idx] & 0xFFFFF000);
-
-    // Map the frame
     table[pt_idx] = (physical_addr & 0xFFFFF000) | flags;
 
-    if (is_paging_active) {
-        asm volatile("invlpg (%0)" ::"r"(virtual_addr) : "memory");
-    }
+    // Invalidate TLB entry for this virtual address.
+    // Without this, stale TLB entries can cause phantom page faults
+    // when pages are newly mapped or permissions are changed.
+    asm volatile("invlpg (%0)" ::"r"(virtual_addr) : "memory");
+    return true;
 }
 
 uint32_t Paging::GetPhysicalAddress(uint32_t* directory, uint32_t virtual_addr) {

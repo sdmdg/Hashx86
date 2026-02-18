@@ -24,6 +24,8 @@ extern uint64_t timerTicks;
 
 // Config
 extern bool g_sse_active;
+extern bool g_stop_gui_rendering;
+extern int g_gui_owner_pid;
 
 // Modules
 extern Paging* g_paging;

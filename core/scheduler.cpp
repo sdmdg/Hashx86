@@ -18,6 +18,9 @@ extern TaskStateSegment g_tss;
 
 #define KERNEL_STACK_SIZE (64 * 1024)
 
+// Number of pages per User-Mode stack (16KB)
+#define USER_STACK_PAGES 4
+
 Scheduler* Scheduler::activeInstance = nullptr;
 void FlushSerial();
 
@@ -50,7 +53,11 @@ Scheduler::Scheduler(Paging* pager) {
     activeInstance = this;
 
     // Allocate and write a user-mode exit trampoline
-    _trampolinePhys = (uint32_t)pmm_alloc_block();
+    // Must be in identity-mapped range (<256MB)
+    _trampolinePhys = (uint32_t)pmm_alloc_block_low(256 * 1024 * 1024);
+    if (!_trampolinePhys) {
+        HALT("CRITICAL: Failed to allocate trampoline page!");
+    }
     memset((void*)_trampolinePhys, 0, 4096);
 
     // Position-Independent Code
@@ -153,23 +160,53 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
         tcb->context->fs = 0x23;
         tcb->context->gs = 0x23;
 
-        // Allocate a separate USER-MODE stack page
-        uint32_t user_stack_phys = (uint32_t)pmm_alloc_block();
+        // Allocate USER-MODE stack (USER_STACK_PAGES pages)
+        // Must be in identity-mapped range (<256MB) because kernel writes arg/retaddr to it
+        uint32_t user_stack_size = USER_STACK_PAGES * PAGE_SIZE;
+        uint32_t user_stack_base =
+            USER_STACK_VIRT_TOP - (tcb->tid * user_stack_size) - user_stack_size;
+        uint32_t top_page_phys = 0;
 
-        // Pick a user-space virtual address for this stack
-        uint32_t user_stack_virt = USER_STACK_VIRT_TOP - (tcb->tid * PAGE_SIZE) - PAGE_SIZE;
+        for (uint32_t p = 0; p < USER_STACK_PAGES; p++) {
+            uint32_t phys = (uint32_t)pmm_alloc_block_low(256 * 1024 * 1024);
+            if (!phys) {
+                DEBUG_LOG(
+                    "CreateThread: Failed to allocate user stack page %d! Low Memory Exhausted?",
+                    p);
+                // Free previously allocated pages
+                for (uint32_t q = 0; q < p; q++) {
+                    uint32_t va = user_stack_base + q * PAGE_SIZE;
+                    uint32_t pf = _pager->GetPhysicalAddress(parent->page_directory, va);
+                    if (pf) pmm_free_block((void*)pf);
+                }
+                kfree(tcb->stack);
+                delete tcb;
+                return nullptr;
+            }
+            uint32_t vaddr = user_stack_base + p * PAGE_SIZE;
+            if (!_pager->MapPage(parent->page_directory, vaddr, phys,
+                                 PAGE_PRESENT | PAGE_RW | PAGE_USER)) {
+                DEBUG_LOG("CreateThread: Failed to map user stack page %d!", p);
+                pmm_free_block((void*)phys);
+                for (uint32_t q = 0; q < p; q++) {
+                    uint32_t va = user_stack_base + q * PAGE_SIZE;
+                    uint32_t pf = _pager->GetPhysicalAddress(parent->page_directory, va);
+                    if (pf) pmm_free_block((void*)pf);
+                }
+                kfree(tcb->stack);
+                delete tcb;
+                return nullptr;
+            }
+            if (p == USER_STACK_PAGES - 1) top_page_phys = phys;
+        }
 
-        // Map it in the process's page directory with USER permissions
-        _pager->MapPage(parent->page_directory, user_stack_virt, user_stack_phys,
-                        PAGE_PRESENT | PAGE_RW | PAGE_USER);
-
-        // Write arg and return address to the user stack
-        uint32_t* user_stack_top_phys = (uint32_t*)(user_stack_phys + PAGE_SIZE);
+        // Write arg and return address to the TOP of the stack (highest page, last 8 bytes)
+        uint32_t* user_stack_top_phys = (uint32_t*)(top_page_phys + PAGE_SIZE);
         user_stack_top_phys[-1] = (uint32_t)arg;              // Argument
         user_stack_top_phys[-2] = USER_EXIT_TRAMPOLINE_VIRT;  // Return to exit trampoline
 
         // IRET will pop SS:ESP for Ring 0 -> Ring 3 transition
-        tcb->context->esp = user_stack_virt + PAGE_SIZE - 8;
+        tcb->context->esp = user_stack_base + user_stack_size - 8;
         tcb->context->ss = 0x23;
     }
 
@@ -197,30 +234,92 @@ bool Scheduler::KillProcess(uint32_t pid) {
     }
     if (!target) return false;
 
+    // RESOURCE CLEANUP START
+    uint32_t currentCR3;
+    asm volatile("mov %%cr3, %0" : "=r"(currentCR3));
+    if ((uint32_t)target->page_directory == currentCR3) {
+        // Switch to Kernel Page Directory to safely free resources
+        _pager->SwitchDirectory(_pager->KernelPageDirectory);
+    }
+
+    // Free User Stacks (USER_STACK_PAGES pages per thread)
     int tCount = target->threads.GetSize();
     for (int i = 0; i < tCount; i++) {
         ThreadControlBlock* t = target->threads.PopFront();
+
+        // Calculate user stack base addr (matches CreateThread layout)
+        uint32_t user_stack_size = USER_STACK_PAGES * PAGE_SIZE;
+        uint32_t user_stack_base =
+            USER_STACK_VIRT_TOP - (t->tid * user_stack_size) - user_stack_size;
+        for (uint32_t p = 0; p < USER_STACK_PAGES; p++) {
+            uint32_t vaddr = user_stack_base + p * PAGE_SIZE;
+            uint32_t phys = _pager->GetPhysicalAddress(target->page_directory, vaddr);
+            if (phys > 0) {
+                pmm_free_block((void*)phys);
+            }
+        }
+
         TerminateThread(t);
-        target->threads.PushBack(t);
     }
+
+    // Free Heap Pages
+    if (target->heap.startAddress > 0 && target->heap.endAddress > target->heap.startAddress) {
+        for (uint32_t addr = target->heap.startAddress; addr < target->heap.endAddress;
+             addr += PAGE_SIZE) {
+            uint32_t phys = _pager->GetPhysicalAddress(target->page_directory, addr);
+            if (phys > 0) {
+                pmm_free_block((void*)phys);
+            }
+        }
+    }
+
+    // Free Page Tables and Page Directory (if not Kernel)
+    if (!target->isKernelProcess) {
+        // Free User Page Tables (Indices 64 to 768)
+        // Kernel tables (0-63) and High Mem (768-1023) are shared, CANNOT FREE
+        for (int i = 64; i < 768; i++) {
+            if (target->page_directory[i] & PAGE_PRESENT) {
+                uint32_t tablePhys = target->page_directory[i] & 0xFFFFF000;
+                pmm_free_block((void*)tablePhys);
+                target->page_directory[i] = 0;
+            }
+        }
+        // Free the Directory itself
+        pmm_free_block(target->page_directory);
+    }
+
+    // RESOURCE CLEANUP END
+
+    // Remove from Global List
     globalProcessList.Remove([target](ProcessControlBlock* p) { return p == target; });
 
-    if (currentThread && currentThread->parent == target) {
-        // Let next Schedule() handle switch
-    }
+    delete target;
+
     return true;
 }
 
 void Scheduler::TerminateThread(ThreadControlBlock* thread) {
     if (!thread) return;
     if (thread->state == THREAD_STATE_TERMINATED) return;
+
+    // Null out currentThread BEFORE freeing/deleting.
+    // Otherwise Schedule() will dereference dangling pointer.
+    if (thread == currentThread) {
+        currentThread = nullptr;
+    }
+
     thread->state = THREAD_STATE_TERMINATED;
     readyQueue.Remove([thread](ThreadControlBlock* t) { return t == thread; });
     blockedQueue.Remove([thread](ThreadControlBlock* t) { return t == thread; });
-    terminatedQueue.PushBack(thread);
+
+    // Remove from parent's thread list to prevent KillProcess from
+    // iterating over a dangling pointer later.
+    if (thread->parent) {
+        thread->parent->threads.Remove([thread](ThreadControlBlock* t) { return t == thread; });
+    }
 
     if (thread->stack) {
-        pmm_free_block((void*)thread->stack);
+        kfree((void*)thread->stack);
         thread->stack = nullptr;
     }
     delete thread;

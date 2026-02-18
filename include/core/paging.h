@@ -32,7 +32,7 @@ public:
 
     // 4. Mapping Primitive
     // Maps a Physical Address to a Virtual Address in a specific directory
-    void MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physical_addr,
+    bool MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physical_addr,
                  uint32_t flags);
 
     // 5. Query

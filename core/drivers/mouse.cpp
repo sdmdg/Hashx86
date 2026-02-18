@@ -8,6 +8,8 @@
 
 #include <core/drivers/mouse.h>
 
+MouseDriver* MouseDriver::activeInstance = nullptr;
+
 /**
  * MouseEventHandler constructor
  */
@@ -42,6 +44,9 @@ MouseDriver::MouseDriver(InterruptManager* manager, MouseEventHandler* handler)
     this->driverName = "Generic Mouse Driver     ";
     this->offset = 0;
     this->buttons = 0;
+    this->accumDX = 0;
+    this->accumDY = 0;
+    activeInstance = this;
 }
 
 /**
@@ -87,7 +92,11 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp) {
 
     if (offset == 0) {
         if (buffer[1] != 0 || buffer[2] != 0) {
-            eventHandler->OnMouseMove((int8_t)buffer[1], -((int8_t)buffer[2]));
+            int32_t dx = (int8_t)buffer[1];
+            int32_t dy = -((int8_t)buffer[2]);
+            accumDX += dx;
+            accumDY += dy;
+            eventHandler->OnMouseMove(dx, dy);
         }
 
         for (uint8_t i = 0; i < 3; i++) {

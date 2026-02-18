@@ -50,6 +50,12 @@ void pmm_deinit_region(PMM_PHYSICAL_ADDRESS base, uint32_t region_size);
 void* pmm_alloc_block();
 
 /**
+ * request to allocate a single block from LOW MEMORY (< limit_addr)
+ * critical for Page Tables which must be identity mapped.
+ */
+void* pmm_alloc_block_low(uint32_t limit_addr);
+
+/**
  * free given requested single block of memory from pmm
  */
 void pmm_free_block(void* p);

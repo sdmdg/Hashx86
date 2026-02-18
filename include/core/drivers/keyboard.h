@@ -58,8 +58,19 @@ class KeyboardDriver : public InterruptHandler, public Driver {
     Port8Bit dataPort;                   ///< Port for reading keyboard data.
     Port8Bit commandPort;                ///< Port for sending commands to the keyboard.
     KeyboardEventHandler* eventHandler;  ///< Event handler for keyboard events.
+    uint8_t keyStates[128];              ///< Scancode-indexed key state (1=pressed, 0=released)
 
 public:
+    static KeyboardDriver* activeInstance;
+
+    /// Returns 1 if the key with the given scancode is currently pressed
+    uint8_t GetKeyState(uint8_t scancode) {
+        return (scancode < 128) ? keyStates[scancode] : 0;
+    }
+    /// Returns pointer to the full key state array (128 bytes)
+    uint8_t* GetKeyStates() {
+        return keyStates;
+    }
     /**
      * @brief Constructor for the KeyboardDriver.
      *

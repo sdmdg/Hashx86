@@ -136,8 +136,12 @@ void init_memory(MultibootInfo* mbinfo) {
         actual_heap_start = (actual_heap_start & 0xFFFFF000) + 0x1000;
     }
 
-    // Define the Hard Ceiling (240 MB)
-    uint32_t paging_limit = 240 * 1024 * 1024;
+    // Define the Hard Ceiling (224 MB)
+    // Reserve 32MB (224-256MB) of identity-mapped space for PMM allocations
+    // (page tables, user stacks, process directories, ELF loading pages).
+    // These MUST stay below 256MB because the kernel accesses them via
+    // identity-mapped physical addresses after paging is activated.
+    uint32_t paging_limit = 224 * 1024 * 1024;
     // Define the Physical Ceiling
     uint32_t physical_limit = g_kmap.available.end_addr;
 
@@ -364,6 +368,13 @@ void pDesktop(void* arg) {
     while (true) {
         // Only swap buffers if something actually changed
         uint32_t start = timerTicks;
+
+        // If a fullscreen app is running, skip desktop drawing
+        if (g_stop_gui_rendering) {
+            screen->Flush();
+            Scheduler::activeInstance->Sleep(16);
+            continue;
+        }
 
         // Periodic clock update check for taskbar
         static uint32_t lastClockTick = 0;
