@@ -12,6 +12,9 @@ Label::Label(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, const c
     : Widget(parent, x, y, w, h) {
     this->font = FontManager::activeInstance->getNewFont();
     this->text = new char[strlen(text) + 1];
+    if (!this->text) {
+        HALT("CRITICAL: Failed to allocate label text!\n");
+    }
     strcpy(this->text, text);
 }
 
@@ -23,6 +26,9 @@ Label::~Label() {
 void Label::setText(const char* newText) {
     if (this->text) delete[] this->text;
     this->text = new char[strlen(newText) + 1];
+    if (!this->text) {
+        HALT("CRITICAL: Failed to allocate label text!\n");
+    }
     strcpy(this->text, newText);
     MarkDirty();
 }

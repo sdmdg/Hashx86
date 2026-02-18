@@ -1,13 +1,10 @@
 #ifndef TSS_H
 #define TSS_H
 
-#include <console.h>
-#include <core/gdt.h>
 #include <types.h>
-#include <utils/string.h>
 
-typedef struct {
-    uint32_t previous;
+struct TaskStateSegment {
+    uint32_t prev_tss;
     uint32_t esp0;
     uint32_t ss0;
     uint32_t esp1;
@@ -34,12 +31,6 @@ typedef struct {
     uint32_t ldt;
     uint16_t trap;
     uint16_t iomap_base;
-} __attribute__((packed)) TSS;
-
-void tss_init();
-
-void tss_set_stack(uint32_t esp0);
-
-void tss_print();
+} __attribute__((packed));
 
 #endif

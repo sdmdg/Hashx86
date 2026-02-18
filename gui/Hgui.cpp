@@ -2,7 +2,7 @@
  * @file        Hgui.cpp
  * @brief       Hgui Handler (part of #x86 GUI Framework)
  *
- * @date        01/02/2026
+ * @date        11/02/2026
  * @version     1.0.0
  */
 
@@ -67,6 +67,20 @@ uint32_t HguiHandler::HandleWidget(uint32_t esp) {
         // TODO: Add checks for widgets before add to desktop
         parentWidget->AddChild(childWidget);
 
+        // If adding a window to the Desktop, create a taskbar tab
+        if (parentWidget->ID == 0) {
+            Desktop* desktop = Desktop::activeInstance;
+            if (desktop && desktop->GetTaskbar()) {
+                // Get the window title using the public accessor
+                const char* tabTitle = "App";
+                Window* win = (Window*)childWidget;
+                if (win && win->getWindowTitle()) {
+                    tabTitle = win->getWindowTitle();
+                }
+                desktop->GetTaskbar()->AddTab(childWidget->PID, tabTitle, childWidget);
+            }
+        }
+
         *return_data = 1;
         return esp;
     } else if ((uint32_t)cpu->ebx == DELETE) {
@@ -96,6 +110,9 @@ uint32_t HguiHandler::HandleWindow(uint32_t esp) {
         uint32_t _newID = this->getNewID();
         Widget* _widget =
             new Window(parentWidget, _data->param1, _data->param2, _data->param3, _data->param4);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate Window widget!\n");
+        }
         _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
         _widget->SetID(_newID);
 
@@ -134,6 +151,9 @@ uint32_t HguiHandler::HandleButton(uint32_t esp) {
         uint32_t _newID = this->getNewID();
         Widget* _widget = new Button(parentWidget, _data->param1, _data->param2, _data->param3,
                                      _data->param4, _data->param5);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate Button widget!\n");
+        }
         _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
         _widget->SetID(_newID);
 
@@ -161,6 +181,9 @@ uint32_t HguiHandler::HandleLabel(uint32_t esp) {
         uint32_t _newID = this->getNewID();
         Widget* _widget = new Label(parentWidget, _data->param1, _data->param2, _data->param3,
                                     _data->param4, _data->param5);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate Label widget!\n");
+        }
         _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
         _widget->SetID(_newID);
 
@@ -207,7 +230,9 @@ uint32_t HguiHandler::HandleEvent(uint32_t esp) {
             Event* tmp = process_eventHandler->eventQueue.PopFront();
             *return_data = (tmp->widgetID << 16) | tmp->eventType;
         } else {
+            // No events, sleep until an event arrives
             *return_data = -1;
+            Scheduler::activeInstance->Sleep(1000);
         }
         return esp;
     }

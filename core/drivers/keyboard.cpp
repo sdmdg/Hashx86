@@ -7,6 +7,9 @@
  */
 
 #include <core/drivers/keyboard.h>
+#include <core/memory.h>
+
+KeyboardDriver* KeyboardDriver::activeInstance = nullptr;
 
 // Modifier key states
 bool leftShiftPressed = false;
@@ -51,6 +54,8 @@ KeyboardDriver::KeyboardDriver(InterruptManager* manager, KeyboardEventHandler* 
     : InterruptHandler(0x21, manager), dataPort(0x60), commandPort(0x64) {
     this->eventHandler = handler;
     this->driverName = "Generic Keyboard Driver  ";
+    memset(this->keyStates, 0, sizeof(this->keyStates));
+    activeInstance = this;
 }
 
 /**
@@ -191,6 +196,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     // Normal scancodes
     // Key down event
     if (key < 0x80) {
+        keyStates[key] = 1;  // Track key down
         switch (key) {
             case 0x1C:  // Enter Pressed
                 eventHandler->OnSpecialKeyDown(key);
@@ -300,6 +306,8 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
         }
         // Key up event
     } else {
+        uint8_t releaseScancode = key & 0x7F;
+        if (releaseScancode < 128) keyStates[releaseScancode] = 0;  // Track key up
         switch (key) {
             case 0x9C:  // Enter Released
                 eventHandler->OnSpecialKeyUp(key);

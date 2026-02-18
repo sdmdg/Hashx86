@@ -110,6 +110,9 @@ void MSDOSPartitionTable::ReadPartitions() {
         if (mbr.primaryPartition[i].partition_id == 0x0C ||
             mbr.primaryPartition[i].partition_id == 0x0B) {
             FAT32* fat32 = new FAT32(ata, mbr.primaryPartition[i].start_lba);
+            if (!fat32) {
+                HALT("CRITICAL: Failed to allocate FAT32 filesystem!\n");
+            }
             this->partitions[partitionsCounter++] = fat32;
 
             /*             fat32.CreateFile("file1.txt");

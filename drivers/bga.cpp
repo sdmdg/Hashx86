@@ -136,5 +136,9 @@ public:
 };
 
 extern "C" Driver* CreateDriverInstance() {
-    return new DynamicBGADriver();
+    DynamicBGADriver* drv = new DynamicBGADriver();
+    if (!drv) {
+        HALT("CRITICAL: [BGA] Failed to allocate DynamicBGADriver!\n");
+    }
+    return drv;
 }

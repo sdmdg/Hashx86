@@ -8,9 +8,7 @@
 
 #include <gui/widget.h>
 
-// ============================================================================
-// WIDGET BASE CLASS
-// ============================================================================
+// Widget Base Class
 
 Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h) {
     this->parent = parent;
@@ -19,9 +17,13 @@ Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h) {
     this->w = w;
     this->h = h;
 
-    // Allocate the back buffer for this widget
-    // Note: Calloc (via new[]()) ensures buffer is zeroed, which is safer.
-    this->cache = new uint32_t[w * h]();
+    // Allocate and zero-init cache buffer
+    if (w > 0 && h > 0) {
+        cache = new uint32_t[w * h]();
+        if (!cache) {
+            HALT("CRITICAL: Failed to allocate button cache!\n");
+        }
+    }
 }
 
 Widget::~Widget() {
@@ -31,50 +33,46 @@ Widget::~Widget() {
 void Widget::MarkDirty() {
     this->isDirty = true;
 
-    // Propagate the dirty flag up the tree so the Desktop knows to redraw
+    // Propagate dirty flag upward
     if (this->parent != nullptr) {
         this->parent->MarkDirty();
     }
 }
 
 void Widget::RedrawToCache() {
-    // Default: Clear cache to transparent/black
-    // Override this in child classes (e.g., Button, Label)
+    // Clear cache (override in child classes)
     if (cache) memset(cache, 0, sizeof(uint32_t) * w * h);
 }
 
 void Widget::Draw(GraphicsDriver* gc) {
-    // If we are dirty, we update our internal cache.
-    // The actual "blitting" to the screen usually happens in the Parent's draw loop
-    // or via the Desktop.
+    // Update cache if dirty
     if (isDirty) {
         if (isVisible) {
             RedrawToCache();
         } else {
-            // If hidden, clear the cache to avoid ghosting
+            // Clear cache if hidden
             if (cache) memset(cache, 0, sizeof(uint32_t) * w * h);
         }
         isDirty = false;
     }
 }
 
-// -- Coordinates --
+// Coordinates
 
 void Widget::ModelToScreen(int32_t& x_out, int32_t& y_out) {
-    // Recursively calculate absolute screen coordinates
+    // Calculate absolute screen position
     if (parent) parent->ModelToScreen(x_out, y_out);
     x_out += this->x;
     y_out += this->y;
 }
 
 bool Widget::ContainsCoordinate(int32_t targetX, int32_t targetY) {
-    // Checks if a *local* coordinate is inside this widget
-    // NOTE: Input x,y should be relative to the parent
+    // Check if local coordinate is inside widget
     return (targetX >= this->x) && (targetX < this->x + this->w) && (targetY >= this->y) &&
            (targetY < this->y + this->h);
 }
 
-// -- Focus --
+// Focus
 
 void Widget::GetFocus(Widget* widget) {
     if (parent) parent->GetFocus(widget);
@@ -82,7 +80,7 @@ void Widget::GetFocus(Widget* widget) {
 
 void Widget::SetFocus(bool result) {
     this->isFocused = result;
-    // Redraw to show focus ring/highlight
+    // Redraw with focus indicator
     this->MarkDirty();
 }
 
@@ -90,10 +88,9 @@ void Widget::SetFocussable(bool focussable) {
     this->isFocussable = focussable;
 }
 
-// -- Child Management --
+// Child Management
 
 bool Widget::AddChild(Widget* child) {
-    // No arbitrary limit (100) needed if LinkedList is dynamic
     childrenList.Add(child);
     child->parent = this;
     this->MarkDirty();
@@ -106,7 +103,7 @@ bool Widget::RemoveChild(Widget* child) {
     return result;
 }
 
-// -- Identification --
+// Identification
 
 void Widget::SetPID(uint32_t pid) {
     this->PID = pid;
@@ -137,7 +134,7 @@ Widget* Widget::FindWidgetByPID(uint32_t pid) {
     return result;
 }
 
-// -- Default Input Handlers --
+// Default Input Handlers
 
 void Widget::OnMouseDown(int32_t, int32_t, uint8_t) {
     if (isFocussable) GetFocus(this);
@@ -149,9 +146,7 @@ void Widget::OnSpecialKeyDown(uint8_t) {}
 void Widget::OnKeyUp(const char*) {}
 void Widget::OnSpecialKeyUp(uint8_t) {}
 
-// ============================================================================
-// COMPOSITE WIDGET
-// ============================================================================
+// Composite Widget
 
 CompositeWidget::CompositeWidget(CompositeWidget* parent, int32_t x, int32_t y, int32_t w,
                                  int32_t h)
@@ -160,18 +155,16 @@ CompositeWidget::CompositeWidget(CompositeWidget* parent, int32_t x, int32_t y, 
 CompositeWidget::~CompositeWidget() {}
 
 void CompositeWidget::GetFocus(Widget* widget) {
-    // Deselect previous
+    // Deselect previous child
     if (focusedChild && focusedChild != widget) {
         focusedChild->SetFocus(false);
     }
 
-    // Select new
+    // Select new child
     focusedChild = widget;
     if (widget) {
         widget->SetFocus(true);
-        // Move to front (Render order usually follows list order)
-        // Optimization: Removing and re-adding can be expensive on large lists.
-        // For now, it's fine as it ensures Z-indexing.
+        // Move to front for Z-order
         childrenList.Remove([&](Widget* c) { return c == widget; });
         childrenList.PushBack(widget);
     }
@@ -180,26 +173,21 @@ void CompositeWidget::GetFocus(Widget* widget) {
 }
 
 void CompositeWidget::Draw(GraphicsDriver* gc) {
-    // Draw self first
+    // Draw self
     Widget::Draw(gc);
 
-    // Draw children from back to front
-    // Note: If you want Z-order, iterate normally. If ReverseForEach meant "Top first",
-    // standard drawing should be bottom-up (first in list = back).
-    // Assuming AddChild appends to end (Top), we iterate normally.
+    // Draw children back-to-front
     childrenList.ForEach([&](Widget* child) { child->Draw(gc); });
 }
 
 void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
-    // Transform Global coordinates to Local
+    // Transform to local coordinates
     int32_t localX = x - this->x;
     int32_t localY = y - this->y;
 
     Widget* clicked = nullptr;
 
-    // Hit testing: Iterate backwards (Front-to-Back) to catch the top-most widget first
-    // Note: If your list is ordered Back-to-Front, you must iterate Reverse to click top items.
-    // Assuming Add() puts items at end (Top):
+    // Hit test front-to-back
     childrenList.ReverseForEach([&](Widget* child) {
         if (!clicked && child->ContainsCoordinate(localX, localY)) {
             child->OnMouseDown(localX, localY, button);
@@ -210,20 +198,19 @@ void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
     if (clicked) {
         GetFocus(clicked);
     } else {
-        // Clicked on background of composite widget
+        // Background click
         /* if (focusedChild) focusedChild->SetFocus(false);
            focusedChild = nullptr; */
     }
 }
 
 void CompositeWidget::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
-    // Transform
+    // Transform to local
     int32_t localX = x - this->x;
     int32_t localY = y - this->y;
 
     childrenList.ForEach([&](Widget* child) {
-        // We pass the Up event to the child even if mouse moved out,
-        // to handle "drag release" logic correctly.
+        // Pass event even if mouse moved out
         if (child->ContainsCoordinate(localX, localY)) {
             child->OnMouseUp(localX, localY, button);
         }
@@ -237,7 +224,7 @@ void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int3
     int32_t localNewY = newy - this->y;
 
     childrenList.ForEach([&](Widget* child) {
-        // Notify child if mouse is inside, OR was inside (exiting)
+        // Notify if mouse inside or entering/exiting
         bool inOld = child->ContainsCoordinate(localOldX, localOldY);
         bool inNew = child->ContainsCoordinate(localNewX, localNewY);
 

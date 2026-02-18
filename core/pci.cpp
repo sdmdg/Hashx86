@@ -59,6 +59,9 @@ PeripheralComponentInterconnectController::GetDeviceDescriptor(uint16_t bus, uin
                                                                uint16_t function) {
     PeripheralComponentInterconnectDeviceDescriptor* result =
         new PeripheralComponentInterconnectDeviceDescriptor();
+    if (!result) {
+        HALT("CRITICAL: Failed to allocate PCI device descriptor!\n");
+    }
     result->bus = bus;
     result->device = device;
     result->function = function;
@@ -119,6 +122,9 @@ PeripheralComponentInterconnectController::FindHardwareDevice(uint16_t vendorID,
     // Return empty descriptor if not found
     PeripheralComponentInterconnectDeviceDescriptor* empty =
         new PeripheralComponentInterconnectDeviceDescriptor();
+    if (!empty) {
+        HALT("CRITICAL: Failed to allocate PCI device descriptor!\n");
+    }
     empty->vendor_id = 0;
     return empty;
 }

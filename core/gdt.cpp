@@ -10,9 +10,14 @@
  * Global Descriptor Table(GDT) setup
  */
 #include <core/gdt.h>
+#include <core/tss.h>
+
+extern "C" void tss_flush();
 
 GDT g_gdt[NO_GDT_DESCRIPTORS];
+
 GDT_PTR g_gdt_ptr;
+TaskStateSegment g_tss;
 
 /**
  * fill entries of GDT
@@ -47,5 +52,24 @@ void gdt_init() {
     // user data segment
     gdt_set_entry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
+    // TSS segment
+    // memset(&g_tss, 0, sizeof(TaskStateSegment));
+
+    // Set the Kernel Stack Segment (SS0) to Kernel Data (0x10)
+    g_tss.ss0 = 0x10;
+    // Point iomap_base to size (disables bitmap)
+    g_tss.iomap_base = sizeof(TaskStateSegment);
+
+    // Add to GDT
+    // Base: &g_tss
+    // Limit: size - 1
+    // Access: 0x89 (Present | Ring 0 | System Segment | Type=32bit TSS Available)
+    // Flags: 0x00 (Byte granularity)
+    gdt_set_entry(5, (uint32_t)&g_tss, sizeof(g_tss) - 1, 0x89, 0x00);
+
+    // Load GDT
     load_gdt((uint32_t)&g_gdt_ptr);
+
+    // Load TSS (Task Register)
+    tss_flush();
 }

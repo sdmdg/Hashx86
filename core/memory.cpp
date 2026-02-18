@@ -37,7 +37,6 @@ void init_memory_optimizations() {
     if (CheckSSE()) {
         EnableSSE_ASM();
         g_sse_active = true;
-        // Ideally use a debug print here if available
         printf("[Memory] : SSE Detected & Enabled.\n");
     } else {
         g_sse_active = false;
@@ -134,8 +133,8 @@ int kheap_init(void* start_addr, void* end_addr) {
         return -1;
     }
 
-    // --- 1. ENABLE OPTIMIZATIONS ---
-    // init_memory_optimizations();
+    // ENABLE OPTIMIZATIONS
+    init_memory_optimizations();
 
     g_kheap_start_addr = start_addr;
     g_kheap_end_addr = end_addr;

@@ -7,6 +7,7 @@
 #include <core/memory.h>
 #include <core/paging.h>
 #include <core/process_types.h>
+#include <core/tss.h>
 
 class Scheduler {
 private:
@@ -19,6 +20,7 @@ private:
     uint32_t _pidCounter;
     uint32_t _tidCounter;
     Paging* _pager;
+    uint32_t _trampolinePhys;  // Physical page holding user-mode exit trampoline code
 
 public:
     static Scheduler* activeInstance;
@@ -34,7 +36,9 @@ public:
 
     bool KillProcess(uint32_t pid);
     void TerminateThread(ThreadControlBlock* thread);
+    bool ExitCurrentThread();
     void Sleep(uint32_t milliseconds);
+    void WakeThread(ThreadControlBlock* thread);
 
     // CORE SCHEDULING (Called by Interrupt Handler)
     CPUState* Schedule(CPUState* context);

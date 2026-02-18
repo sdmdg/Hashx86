@@ -111,6 +111,9 @@ uint16_t Font::getLineHeight() {
 FontManager::FontManager() {
     activeInstance = this;
     font_list = new LinkedList<FontFile*>();
+    if (!font_list) {
+        HALT("CRITICAL: Failed to allocate font list!\n");
+    }
 }
 
 FontManager::~FontManager() {}
@@ -132,6 +135,9 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
     }
 
     FontFile* new_font_file = new FontFile();
+    if (!new_font_file) {
+        HALT("CRITICAL: Failed to allocate font file!\n");
+    }
 
     for (int i = 0; i < font_count; i++) {
         // ---- Per-font header ----
@@ -149,6 +155,9 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
         ptr += 2;
 
         FontData* new_font = new FontData{};
+        if (!new_font) {
+            HALT("CRITICAL: Failed to allocate font data!\n");
+        }
         new_font->magic = magic;
         new_font->size = size;
         new_font->style = style;
@@ -160,18 +169,27 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
         // ---- Atlas ----
         size_t atlasSize = atlas_width * atlas_height;
         new_font->atlas = new uint32_t[atlasSize];
+        if (!new_font->atlas) {
+            HALT("CRITICAL: Failed to allocate font atlas!\n");
+        }
         memcpy(new_font->atlas, ptr, atlasSize * sizeof(uint32_t));
         ptr += atlasSize * sizeof(uint32_t);
 
         // ---- Glyphs ----
         size_t glyphSize = glyph_count * 8;
         new_font->glyphs = new int16_t[glyphSize];
+        if (!new_font->glyphs) {
+            HALT("CRITICAL: Failed to allocate font glyphs!\n");
+        }
         memcpy(new_font->glyphs, ptr, glyphSize * sizeof(int16_t));
         ptr += glyphSize * sizeof(int16_t);
 
         // ---- Kernings ----
         size_t kerningSize = kerning_count * 3;
         new_font->kernings = new int16_t[kerningSize];
+        if (!new_font->kernings) {
+            HALT("CRITICAL: Failed to allocate font kernings!\n");
+        }
         memcpy(new_font->kernings, ptr, kerningSize * sizeof(int16_t));
         ptr += kerningSize * sizeof(int16_t);
 
@@ -190,6 +208,9 @@ void FontManager::LoadFile(File* file) {
     }
 
     uint8_t* buffer = new uint8_t[file->size + 1];
+    if (!buffer) {
+        HALT("CRITICAL: Failed to allocate font file buffer!\n");
+    }
     file->Read(buffer, file->size);
     buffer[file->size] = 0;
     file->Close();
@@ -203,5 +224,8 @@ Font* FontManager::getNewFont(FontSize size, FontType type) {
 
     FontFile* ff = font_list->GetFront();
     Font* sysFont = new Font(ff, size, type);
+    if (!sysFont) {
+        HALT("CRITICAL: Failed to allocate Font object!\n");
+    }
     return sysFont;
 }

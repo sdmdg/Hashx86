@@ -17,6 +17,7 @@ enum ThreadState {
 // CONTEXT (FIXED for pusha/iret)
 // --------------------------------------------------------------------------
 struct CPUState {
+    // General Purpose Registers
     uint32_t eax;
     uint32_t ebx;
     uint32_t ecx;
@@ -25,15 +26,22 @@ struct CPUState {
     uint32_t edi;
     uint32_t ebp;
 
+    // Segment Registers
+    uint32_t ds;
+    uint32_t es;
+    uint32_t fs;
+    uint32_t gs;
+
+    // Interrupt Information
     uint32_t error;
 
+    // Return State
     uint32_t eip;
     uint32_t cs;
     uint32_t eflags;
-
-    uint32_t esp;  // <--- This will NOT be popped by IRET in Kernel Mode
-    uint32_t ss;   // <--- This will NOT be popped by IRET in Kernel Mode
-};
+    uint32_t esp;
+    uint32_t ss;
+} __attribute__((packed));
 
 class Process;  // Forward declaration
 

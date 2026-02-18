@@ -68,7 +68,7 @@ void EventHandlerHGUI(void* arg) {
 }
 
 void Desktop::innitEventHandler() {
-    PrArguments args = {};
-    uint32_t tid = syscall_register_event_handler(EventHandlerHGUI, (void*)&args);
+    // Pass nullptr — EventHandlerHGUI uses it for HguiAPI(EVENT, GET, ...)
+    uint32_t tid = syscall_register_event_handler(EventHandlerHGUI, nullptr);
     printf("[PROG] : Event Handler thread created with TID : %d\n", tid);
 }

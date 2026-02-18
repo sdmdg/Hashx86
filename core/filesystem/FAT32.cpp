@@ -291,6 +291,9 @@ File* FAT32::Open(char* path) {
 
     // Create the File Object
     File* file = new File();
+    if (!file) {
+        HALT("CRITICAL: Failed to allocate File object!\n");
+    }
 
     // Copy Name
     int i = 0;

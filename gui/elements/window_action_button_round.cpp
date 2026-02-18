@@ -2,7 +2,7 @@
  * @file        window_action_button_round.cpp
  * @brief       Round Action Button (part of #x86 GUI Framework)
  *
- * @date        01/02/2026
+ * @date        11/02/2026
  * @version     1.0.0
  */
 
@@ -27,7 +27,12 @@ ACRButton::ACRButton(Widget* parent, int32_t x, int32_t y, const char* label)
 
     // Allocate proper cache immediately
     if (cache) delete[] cache;
-    cache = new uint32_t[w * h]();
+    if (w > 0 && h > 0) {
+        cache = new uint32_t[w * h]();
+        if (!cache) {
+            HALT("CRITICAL: Failed to allocate action button cache!\n");
+        }
+    }
 }
 
 ACRButton::~ACRButton() {}
@@ -38,19 +43,19 @@ void ACRButton::RedrawToCache() {
 
     int32_t radius = w / 2;
 
-    // 1. Background Fill
+    // Background Fill
     uint32_t bgColor = isPressed ? WINDOW_CLOSE_BUTTON_BACKGROUND_COLOR_PRESSED
                                  : WINDOW_CLOSE_BUTTON_BACKGROUND_COLOR_NORMAL;
 
     NINA::activeInstance->FillCircle(cache, w, h, radius, radius, radius, bgColor);
 
-    // 2. Border
+    // Border
     uint32_t borderColor = isPressed ? WINDOW_CLOSE_BUTTON_BORDER_COLOR_PRESSED
                                      : WINDOW_CLOSE_BUTTON_BORDER_COLOR_NORMAL;
 
     NINA::activeInstance->DrawCircle(cache, w, h, radius, radius, radius, borderColor);
 
-    // 3. Centered Text
+    // Centered Text
     int32_t textW = font->getStringLength(label);
     int32_t textH = font->getLineHeight();
 

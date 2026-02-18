@@ -28,12 +28,10 @@
 #include <debug.h>
 #include <gui/Hgui.h>
 #include <gui/bmp.h>
-#include <gui/gameSDK.h>
 #include <gui/gui.h>
 #include <gui/renderer/nina.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdlib/Renderer3D.h>
 #include <stdlib/math.h>
 
 // symbols from linker.ld for section addresses

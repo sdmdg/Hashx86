@@ -5,6 +5,7 @@
 #include <core/drivers/keyboard.h>
 #include <core/drivers/mouse.h>
 #include <gui/bmp.h>
+#include <gui/taskbar.h>
 #include <gui/widget.h>
 
 /**
@@ -28,6 +29,7 @@ protected:
     bool hasBackBuffer = false;
 
     LinkedList<EventHandler*> HguiEventHandlers;
+    Taskbar* taskbar;
 
 public:
     static Desktop* activeInstance;
@@ -44,6 +46,11 @@ public:
 
     uint32_t getNewID();
     void RemoveAppByPID(uint32_t PID);
+    void GetFocus(Widget* widget) override;
+
+    Taskbar* GetTaskbar() {
+        return taskbar;
+    }
 
     // Driver Inputs
     void OnMouseDown(uint8_t button) override;

@@ -1,6 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include <core/scheduler.h>
 #include <gui/desktop.h>
 #include <gui/elements/window_action_button_round.h>
 #include <gui/widget.h>
@@ -23,6 +24,9 @@ public:
     void OnClose();
     void setVisible(bool val);
     void setWindowTitle(const char* title);
+    const char* getWindowTitle() const {
+        return windowTitle;
+    }
 
     // Drawing
     void Draw(GraphicsDriver* gc) override;

@@ -17,12 +17,21 @@ MessageBox::MessageBox(CompositeWidget* parent, const char* title, const char* m
 
     if (type == INFO) {
         okButton = new ACButton(this, w - 40, h - 35, 60, 25, "OK");
+        if (!okButton) {
+            HALT("CRITICAL: Failed to allocate messagebox OK button!\n");
+        }
         okButton->OnClick(this,
                           [](void* instance) { static_cast<Window*>(instance)->OnCloseButton(); });
         this->AddChild(okButton);
     } /* else if (type == YES_NO) {
         yesButton = new Button(this, w / 2 - 70, h - 40, 60, 25, "Yes");
+        if (!yesButton) {
+            HALT("CRITICAL: Failed to allocate messagebox Yes button!\n");
+        }
         noButton = new Button(this, w / 2 + 10, h - 40, 60, 25, "No");
+        if (!noButton) {
+            HALT("CRITICAL: Failed to allocate messagebox No button!\n");
+        }
 
         yesButton->OnClick(this, [](void* instance) {
             MessageBox* box = static_cast<MessageBox*>(instance);

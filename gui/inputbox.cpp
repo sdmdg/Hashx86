@@ -27,6 +27,9 @@ InputBox::InputBox(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, u
     : Widget(parent, x, y, w, h), capacity(capacity), length(0), cursorPos(0) {
     this->font = FontManager::activeInstance->getNewFont();
     text = new char[capacity];
+    if (!text) {
+        HALT("CRITICAL: Failed to allocate inputbox text buffer!\n");
+    }
     text[0] = '\0';  // start empty
 }
 

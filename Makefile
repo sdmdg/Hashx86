@@ -1,4 +1,7 @@
-GPP_PARAMS = -m32 -g -ffreestanding -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common -fno-omit-frame-pointer
+KDBG_ENABLE ?= 1
+KDBG_LEVEL ?= 1
+
+GPP_PARAMS = -m32 -g -ffreestanding -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common -fno-omit-frame-pointer -DKDBG_ENABLE=$(KDBG_ENABLE) -DKDBG_LEVEL=$(KDBG_LEVEL)
 ASM_PARAMS = --32 -g
 ASM_NASM_PARAMS = -f elf32
 objects = asm/common_handler.o \
@@ -40,6 +43,7 @@ objects = asm/common_handler.o \
           gui/Hgui.o \
           gui/label.o \
           gui/renderer/nina.o \
+          gui/taskbar.o \
           gui/widget.o \
           gui/window.o \
           kernel.o \
@@ -91,6 +95,8 @@ clean:
 build:
 	make clean
 	make
+	make -C user_prog clean
+	make -C user_prog
 	make iso
 	make hdd
 	make runq
@@ -125,19 +131,22 @@ hdd:
 	-sudo mkdir -p /mnt/vdi_p1/bitmaps
 	-sudo mkdir -p /mnt/vdi_p1/drivers
 	-sudo mkdir -p /mnt/vdi_p1/audio
+	-sudo mkdir -p /mnt/vdi_p1/SYS32
+	-sudo mkdir -p /mnt/vdi_p1/ProgFile/Game3D
 
 	-sudo cp kernel.map /mnt/vdi_p1/kernel.map
 
-#	-sudo cp bin/obj.obj /mnt/vdi_p1/obj.obj
-#	-sudo cp bin/obj1.obj /mnt/vdi_p1/obj1.obj
-#	-sudo cp bin/map.bmp /mnt/vdi_p1/map.bmp
-#	-sudo cp bin/sky.bmp /mnt/vdi_p1/sky.bmp
 	-sudo cp bin/audio/boot.wav /mnt/vdi_p1/audio/boot.wav
 	-sudo cp bin/bitmaps/boot.bmp /mnt/vdi_p1/bitmaps/boot.bmp
 	-sudo cp bin/bitmaps/icon.bmp /mnt/vdi_p1/bitmaps/icon.bmp
 	-sudo cp bin/bitmaps/cursor.bmp /mnt/vdi_p1/bitmaps/cursor.bmp
 	-sudo cp bin/bitmaps/desktop.bmp /mnt/vdi_p1/bitmaps/desktop.bmp
 	-sudo cp bin/bitmaps/panic.bmp /mnt/vdi_p1/bitmaps/panic.bmp
+
+	-sudo cp bin/ProgFile/Game3D/obj.obj /mnt/vdi_p1/ProgFile/Game3D/obj.obj
+	-sudo cp bin/ProgFile/Game3D/floor.obj /mnt/vdi_p1/ProgFile/Game3D/floor.obj
+	-sudo cp bin/ProgFile/Game3D/map.bmp /mnt/vdi_p1/ProgFile/Game3D/map.bmp
+	-sudo cp bin/ProgFile/Game3D/sky.bmp /mnt/vdi_p1/ProgFile/Game3D/sky.bmp
 
 #	-sudo cp bin/sound.wav /mnt/vdi_p1/sound.wav
 #	-sudo rm -f /mnt/vdi_p1/drivers/ac97.sys
@@ -147,8 +156,10 @@ hdd:
 
 	-sudo cp bin/fonts/segoeui.bin /mnt/vdi_p1/fonts/segoeui.bin
 
-	-sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/bin/MeMView.bin
-	-sudo cp user_prog/test/prog.bin /mnt/vdi_p1/bin/test.bin
+	-sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/SYS32/MeMView.bin
+	-sudo cp user_prog/test/prog.bin /mnt/vdi_p1/SYS32/test.bin
+	-sudo cp user_prog/Game3D/prog.bin /mnt/vdi_p1/ProgFile/Game3D/Game3D.bin
+
 # 	5. Cleanup
 	sudo umount /mnt/vdi_p1
 	sudo qemu-nbd --disconnect /dev/nbd0

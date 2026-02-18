@@ -53,8 +53,23 @@ class MouseDriver : public InterruptHandler, public Driver {
     uint8_t offset;                   ///< Current offset in the buffer.
     uint8_t buttons;                  ///< Current state of mouse buttons.
     int8_t x = 40, y = 12;            ///< Cursor position.
+    int32_t accumDX;                  ///< Accumulated mouse X delta for polling
+    int32_t accumDY;                  ///< Accumulated mouse Y delta for polling
 
 public:
+    static MouseDriver* activeInstance;
+
+    /// Get and reset accumulated mouse delta since last poll
+    void GetMouseDelta(int32_t& dx, int32_t& dy) {
+        dx = accumDX;
+        dy = accumDY;
+        accumDX = 0;
+        accumDY = 0;
+    }
+    /// Get current button state (bit 0=left, 1=right, 2=middle)
+    uint8_t GetButtons() {
+        return buttons;
+    }
     /**
      * @brief Constructs the MouseDriver object.
      * @param manager Pointer to the interrupt manager.

@@ -36,17 +36,18 @@ This project focuses on low-level system development, implementing core operatin
 - FAT32 filesystem support
 - DMA / PCI driver framework
 - Audio driver support
+- Task State Segment (TSS) integration
 ---
 
 ## 🖼 Demonstrations
 
-- 📺 **Dynamic BGA Graphics (High Resolution) and Sound Support**
+- 📺 **Taskbar, Dynamic BGA Graphics (High Resolution) and Sound Support**
 
-  The kernel detects BGA and audio hardware via PCI, loads the drivers from the FAT32 disk and instantly switches to high resolution.
+  Seamless transition from boot to a high-resolution desktop environment with active sound support and taskbar integration.
 
-  <p align="center">
-    <img alt="Image" src="https://github.com/user-attachments/assets/9da5f8c1-d3a0-4293-b940-f39377d542ea" />
-  </p>
+  https://github.com/user-attachments/assets/e57feed9-6dd5-41ff-b930-78bbaea33a81
+
+- 📺 **Concurrency & Kernel Error Handling**
 
   https://github.com/user-attachments/assets/63dbf463-cb2d-4e7b-83dc-c5fb6a2dcb69
 
@@ -82,7 +83,6 @@ Hashx86 is currently under active development. Upcoming improvements include:
 - Expanded system call library
 - Thread-safe process management
 - Networking support
-- Task State Segment (TSS) integration
 - USB driver support
 
 **Stay tuned for future updates!**

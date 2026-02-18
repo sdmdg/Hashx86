@@ -128,6 +128,11 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
         // If the stack pointer is null or invalid, stop
         if (!stack) break;
 
+        // Safety: stop if EBP is outside kernel-mapped memory (0 - 256MB)
+        // Following user-mode EBP pointers after switching to KernelPageDirectory
+        // would cause a page fault and infinite loop since activeInstance=0.
+        if ((uint32_t)stack < 0x1000 || (uint32_t)stack >= 0x10000000) break;
+
         // Print
         uint32_t offset = 0;
         const char* name = KernelSymbolTable::Lookup(stack->eip, &offset);
@@ -138,8 +143,5 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
 
         // Move to the previous frame (walk up the stack)
         stack = stack->ebp;
-
-        // Safety check: If we hit 0 (start of kernel), stop
-        if ((uint32_t)stack < 0x1000) break;
     }
 }

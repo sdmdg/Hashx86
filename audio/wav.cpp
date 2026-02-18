@@ -2,14 +2,14 @@
  * @file        wav.cpp
  * @brief       WAV Audio File Handler
  *
- * @date        01/02/2026
+ * @date        11/02/2026
  * @version     1.0.0
  */
 
 #include <audio/wav.h>
 
 // External reference to the mixer created in kernel.cpp
-extern AudioMixer* g_systemMixer;
+extern AudioMixer* g_AudioMixer;
 
 Wav::Wav(File* file) {
     this->valid = false;
@@ -157,11 +157,11 @@ void Wav::Load(File* file) {
 }
 
 void Wav::Play(bool loop) {
-    if (!valid || !buffer || !g_systemMixer) return;
+    if (!valid || !buffer || !g_AudioMixer) return;
 
     // Configure Hardware Rate
-    g_systemMixer->SetOutputSampleRate(this->sampleRate);
+    g_AudioMixer->SetOutputSampleRate(this->sampleRate);
 
     // Play
-    g_systemMixer->PlayBuffer(this->buffer, this->length, loop);
+    g_AudioMixer->PlayBuffer(this->buffer, this->length, loop);
 }

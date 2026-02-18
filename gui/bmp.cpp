@@ -49,17 +49,28 @@ Bitmap::Bitmap(char* path) {
 }
 
 Bitmap::Bitmap(int width, int height, uint32_t color) {
-    this->valid = true;
+    this->valid = false;
     this->width = width;
     this->height = height;
+    this->buffer = 0;
+
+    if (width == 0 || height == 0) {
+        printf("BMP Error: width or height is 0.\n");
+        return;
+    }
 
     // Allocate buffer
     this->buffer = new uint32_t[width * height];
+    if (!this->buffer) {
+        HALT("CRITICAL: Failed to allocate bitmap buffer!\n");
+    }
 
     // Fill with color
     for (int i = 0; i < width * height; i++) {
         this->buffer[i] = color;
     }
+
+    this->valid = true;
 }
 
 Bitmap::~Bitmap() {
@@ -74,6 +85,9 @@ void Bitmap::Load(File* file) {
 
     // Allocate Buffer for the raw file
     uint8_t* rawFile = new uint8_t[file->size];
+    if (!rawFile) {
+        HALT("CRITICAL: Failed to allocate bitmap raw file buffer!\n");
+    }
 
     // Read entire file into RAM
     file->Seek(0);
@@ -111,6 +125,9 @@ void Bitmap::Load(File* file) {
 
     // Allocate Pixel Buffer
     this->buffer = new uint32_t[width * height];
+    if (!this->buffer) {
+        HALT("CRITICAL: Failed to allocate bitmap pixel buffer!\n");
+    }
 
     // Decode
     uint8_t* pixelData = rawFile + fileHeader->offBits;

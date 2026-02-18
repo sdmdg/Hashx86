@@ -16,6 +16,9 @@ GraphicsDriver::GraphicsDriver(uint32_t w, uint32_t h, uint32_t b, uint32_t* vra
 
     // Allocate Backbuffer
     this->backBuffer = new uint32_t[width * height];
+    if (!this->backBuffer) {
+        HALT("CRITICAL: Failed to allocate graphics back buffer!\n");
+    }
 
     // Clear screen
     FillRectangle(0, 0, width, height, 0xFF000000);

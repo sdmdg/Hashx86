@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#include <Hx86/Hsyscalls/syscalls.h>
 #include <Hx86/memory.h>
 
 void *memcpy(void *destination, const void *source, size_t size) {
@@ -71,8 +72,21 @@ int heap_init(void *start_addr, void *end_addr) {
 void *kbrk(int size) {
     void *addr = NULL;
     if (size <= 0) return NULL;
+
     // check memory is available or not
-    if ((int)(g_total_size - g_total_used_size) <= size) return NULL;
+    if ((long)(g_total_size - g_total_used_size) <= size) {
+        // Request more memory from kernel (min 1MB growth)
+        int needed = size - (g_total_size - g_total_used_size);
+        int request_size = (needed + 4095) & ~4095;                  // Page align
+        if (request_size < 1024 * 1024) request_size = 1024 * 1024;  // Min 1MB
+
+        int32_t res = syscall_sbrk(request_size);
+        if (res == -1) return NULL;
+
+        g_total_size += request_size;
+        g_heap_end_addr = (void *)((unsigned long)g_heap_end_addr + request_size);
+    }
+
     // add start addr with total previously used memory
     addr = (void *)((unsigned long)g_heap_start_addr + g_total_used_size);
     g_total_used_size += size;

@@ -2,7 +2,7 @@
  * @file        window.cpp
  * @brief       Window Component (part of #x86 GUI Framework)
  *
- * @date        01/02/2026
+ * @date        11/02/2026
  * @version     1.0.0
  */
 
@@ -12,10 +12,16 @@ Window::Window(CompositeWidget* parent, int32_t x, int32_t y, int32_t w, int32_t
     : CompositeWidget(parent, x, y, w, h) {
     this->isDragging = false;
     this->windowTitle = new char[10];
+    if (!this->windowTitle) {
+        HALT("CRITICAL: Failed to allocate window title!\n");
+    }
     strcpy(this->windowTitle, "Untitled");
     this->font = FontManager::activeInstance->getNewFont();
 
     closeButton = new ACRButton(this, w - 22, 4, "x");
+    if (!closeButton) {
+        HALT("CRITICAL: Failed to allocate window close button!\n");
+    }
     closeButton->OnClick(this, [](void* instance) { static_cast<Window*>(instance)->OnClose(); });
 
     this->AddChild(closeButton);
@@ -31,12 +37,20 @@ void Window::OnClose() {
     if (this->parent) this->parent->MarkDirty();
 
     Event* new_event = new Event{this->ID, ON_WINDOW_CLOSE};
-    Desktop::activeInstance->getHandler(this->PID)->eventQueue.Add(new_event);
+    if (!new_event) {
+        HALT("CRITICAL: Failed to allocate window close event!\n");
+    }
+    EventHandler* handler = Desktop::activeInstance->getHandler(this->PID);
+    handler->eventQueue.Add(new_event);
+    g_scheduler->WakeThread(handler->thread);
 }
 
 void Window::setWindowTitle(const char* title) {
     if (windowTitle) delete[] windowTitle;
     windowTitle = new char[strlen(title) + 1];
+    if (!windowTitle) {
+        HALT("CRITICAL: Failed to allocate window title!\n");
+    }
     strcpy(windowTitle, title);
     MarkDirty();
 }
@@ -105,14 +119,18 @@ void Window::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
 }
 
 void Window::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy) {
-    if (isDragging) {
-        int32_t dx = newx - oldx;
-        int32_t dy = newy - oldy;
+    if (ContainsCoordinate(oldx, oldy)) {
+        if (isDragging) {
+            int32_t dx = newx - oldx;
+            int32_t dy = newy - oldy;
 
-        this->x += dx;
-        this->y += dy;
+            this->x += dx;
+            this->y += dy;
 
-        if (this->parent) this->parent->MarkDirty();
+            if (this->parent) this->parent->MarkDirty();
+        }
+    } else {
+        this->isDragging = false;
     }
 
     CompositeWidget::OnMouseMove(oldx, oldy, newx, newy);

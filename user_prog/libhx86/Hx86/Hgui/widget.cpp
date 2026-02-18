@@ -10,6 +10,11 @@
 
 Widget::Widget(Widget* parent, int32_t x, int32_t y, uint32_t w, uint32_t h) {
     this->parent = parent;
+    this->onClickPtr = nullptr;
+    this->callbackInstance = nullptr;
+    this->onClickMemberPtr = nullptr;
+    this->ID = 0;
+    this->pid = 0;
 }
 
 Widget::~Widget() {}
