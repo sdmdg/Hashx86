@@ -4,6 +4,7 @@
 #include <core/drivers/ata.h>
 #include <core/filesystem/File.h>
 #include <core/memory.h>
+#include <debug.h>
 #include <types.h>
 #include <utils/string.h>
 

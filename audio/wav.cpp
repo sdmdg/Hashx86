@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "WAV"
 #include <audio/wav.h>
 
 // External reference to the mixer created in kernel.cpp
@@ -28,7 +29,7 @@ Wav::Wav(char* path) {
     // Get the active filesystem
     if (!MSDOSPartitionTable::activeInstance ||
         !MSDOSPartitionTable::activeInstance->partitions[0]) {
-        printf("[WAV] Error: File system not ready.\n");
+        KDBG1("Error: File system not ready.");
         return;
     }
 
@@ -36,12 +37,12 @@ Wav::Wav(char* path) {
     File* file = fs->Open(path);
 
     if (file == 0) {
-        printf("[WAV] Error: File not found %s\n", path);
+        KDBG1("Error: File not found %s", path);
         return;
     }
 
     if (file->size == 0) {
-        printf("[WAV] Error: File is empty %s\n", path);
+        KDBG1("Error: File is empty %s", path);
         file->Close();
         delete file;
         return;
@@ -64,13 +65,13 @@ void Wav::Load(File* file) {
 
     WavHeader header;
     if (file->Read((uint8_t*)&header, sizeof(WavHeader)) != sizeof(WavHeader)) {
-        printf("[WAV] Error: Header read failed.\n");
+        KDBG1("Error: Header read failed.");
         return;
     }
 
     // signature checks
     if (strncmp(header.riff, "RIFF", 4) != 0 || strncmp(header.wave, "WAVE", 4) != 0) {
-        printf("[WAV] Error: Invalid RIFF/WAVE signature.\n");
+        KDBG1("Error: Invalid RIFF/WAVE signature.");
         return;
     }
 
@@ -90,7 +91,7 @@ void Wav::Load(File* file) {
         // "fmt " chunk
         if (strncmp(chunk.id, "fmt ", 4) == 0) {
             if (chunk.size < sizeof(WavFmt)) {
-                printf("[WAV] Error: FMT chunk too small.\n");
+                KDBG1("Error: FMT chunk too small.");
                 return;
             }
             file->Read((uint8_t*)&fmt, sizeof(WavFmt));
@@ -120,13 +121,13 @@ void Wav::Load(File* file) {
     }
 
     if (!fmtFound || !dataFound) {
-        printf("[WAV] Error: Missing FMT or DATA chunk.\n");
+        KDBG1("Error: Missing FMT or DATA chunk.");
         return;
     }
 
     // Validation (Enforce 16-bit PCM for now, as per your mixer limits)
     if (fmt.audioFormat != 1) {
-        printf("[WAV] Error: Not PCM format (Format=%d).\n", fmt.audioFormat);
+        KDBG1("Error: Not PCM format (Format=%d).", fmt.audioFormat);
         return;
     }
 
@@ -139,7 +140,7 @@ void Wav::Load(File* file) {
     // Allocate Memory
     this->buffer = (uint8_t*)kmalloc(this->length);
     if (!this->buffer) {
-        printf("[WAV] Error: Out of memory (Size=%d)\n", this->length);
+        KDBG1("Error: Out of memory (Size=%d)", this->length);
         return;
     }
 
@@ -148,12 +149,12 @@ void Wav::Load(File* file) {
     uint32_t read = file->Read(this->buffer, this->length);
 
     if (read != this->length) {
-        printf("[WAV] Warning: Read mismatch (%d vs %d)\n", (int32_t)read, (int32_t)this->length);
+        KDBG2("Warning: Read mismatch (%d vs %d)", (int32_t)read, (int32_t)this->length);
     }
 
     this->valid = true;
-    printf("[WAV] Loaded: %d Hz, %d-bit, %s (%d bytes)\n", sampleRate, bitsPerSample,
-           (channels == 2) ? "Stereo" : "Mono", length);
+    KDBG2("Loaded: %d Hz, %d-bit, %s (%d bytes)", sampleRate, bitsPerSample,
+          (channels == 2) ? "Stereo" : "Mono", length);
 }
 
 void Wav::Play(bool loop) {

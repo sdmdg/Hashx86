@@ -6,7 +6,7 @@
  * @version     1.0.0
  */
 
-#include <console.h>
+#define KDBG_COMPONENT "BMP"
 #include <core/filesystem/FAT32.h>
 #include <core/filesystem/msdospart.h>
 #include <gui/bmp.h>
@@ -32,12 +32,12 @@ Bitmap::Bitmap(char* path) {
     File* file = fs->Open(path);
 
     if (file == 0) {
-        printf("BMP Error: File not found %s\n", path);
+        KDBG1("Error: File not found %s", path);
         return;
     }
 
     if (file->size == 0) {
-        printf("BMP Error: File is empty %s\n", path);
+        KDBG1("Error: File is empty %s", path);
         file->Close();
         delete file;
         return;
@@ -55,7 +55,7 @@ Bitmap::Bitmap(int width, int height, uint32_t color) {
     this->buffer = 0;
 
     if (width == 0 || height == 0) {
-        printf("BMP Error: width or height is 0.\n");
+        KDBG1("Error: width or height is 0.");
         return;
     }
 
@@ -94,7 +94,7 @@ void Bitmap::Load(File* file) {
     int bytesRead = file->Read(rawFile, file->size);
 
     if (bytesRead != file->size) {
-        printf("BMP Warning: Read %d bytes, expected %d\n", bytesRead, file->size);
+        KDBG1("Warning: Read %d bytes, expected %d", bytesRead, file->size);
     }
 
     // Parse Headers
@@ -103,13 +103,13 @@ void Bitmap::Load(File* file) {
 
     // Validate
     if (fileHeader->type != 0x4D42) {  // 'BM'
-        printf("BMP Error: Invalid signature 0x%x\n", fileHeader->type);
+        KDBG1("Error: Invalid signature 0x%x", fileHeader->type);
         delete[] rawFile;
         return;
     }
 
     if (infoHeader->bitCount != 24 && infoHeader->bitCount != 32) {
-        printf("BMP Error: Only 24/32-bit supported (got %d)\n", infoHeader->bitCount);
+        KDBG1("Error: Only 24/32-bit supported (got %d)", infoHeader->bitCount);
         delete[] rawFile;
         return;
     }
@@ -157,5 +157,5 @@ void Bitmap::Load(File* file) {
 
     delete[] rawFile;
     this->valid = true;
-    printf("BMP Loaded: %dx%d\n", width, height);
+    KDBG2("Loaded: %dx%d", width, height);
 }

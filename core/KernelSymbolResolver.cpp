@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "K.SYMBOL"
 #include <core/KernelSymbolResolver.h>
 
 static char* fileBuffer = nullptr;
@@ -14,16 +15,15 @@ static uint32_t symbolCount = 0;
 
 void KernelSymbolTable::Load(FAT32* fs, const char* path) {
     if (!fs) return;
-
-    printf("[KernelSymbolTable] Loading map file: %s\n", path);
+    KDBG1("Loading map file: %s", path);
     File* file = fs->Open((char*)path);
     if (!file) {
-        printf("[KernelSymbolTable] Failed to open %s\n", path);
+        KDBG1("Failed to open %s", path);
         return;
     }
 
     if (file->size == 0) {
-        printf("[KernelSymbolTable] Map file is empty!\n");
+        KDBG1("Map file is empty!");
         file->Close();
         delete file;
         return;
@@ -86,7 +86,7 @@ void KernelSymbolTable::Load(FAT32* fs, const char* path) {
         while (*cursor != '\n' && *cursor != '\r' && *cursor != 0) cursor++;
     }
 
-    printf("[KernelSymbolTable] Parsed %d functions.\n", (int32_t)symbolCount);
+    KDBG1("Parsed %d functions.", (int32_t)symbolCount);
 }
 
 const char* KernelSymbolTable::Lookup(uint32_t eip, uint32_t* offset) {
@@ -122,7 +122,7 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
     // Get the current EBP register
     asm volatile("mov %%ebp, %0" : "=r"(stack));
 
-    printf("\n[ Stack Trace ]\n");
+    KDBG1("\n[ Stack Trace ]");
 
     for (unsigned int i = 0; i < maxFrames; ++i) {
         // If the stack pointer is null or invalid, stop
@@ -137,9 +137,9 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
         uint32_t offset = 0;
         const char* name = KernelSymbolTable::Lookup(stack->eip, &offset);
         if (name)
-            printf(" 0x%x <%s+%d>\n", stack->eip, name, (int32_t)offset);
+            KDBG1(" 0x%x <%s+%d>", stack->eip, name, (int32_t)offset);
         else
-            printf(" 0x%x\n", stack->eip);
+            KDBG1(" 0x%x", stack->eip);
 
         // Move to the previous frame (walk up the stack)
         stack = stack->ebp;

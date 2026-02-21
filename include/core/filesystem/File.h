@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <console.h>
+#include <debug.h>
 #include <types.h>
 
 class FAT32;

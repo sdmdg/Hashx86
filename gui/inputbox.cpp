@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "GUI:INPUTBOX"
 #include <gui/inputbox.h>
 #include <utils/string.h>
 
@@ -66,7 +67,7 @@ void InputBox::setType(FontType type) {
 }
 
 void InputBox::RedrawToCache() {
-    // DEBUG_LOG("Widget %d: Updating", this->ID);
+    // KDBG1("Widget %d: Updating", this->ID);
     NINA::activeInstance->FillRoundedRectangle(
         cache, w, h, 0, 0, w, h, 3,
         isFocused ? INPUT_BACKGROUND_COLOR_ACTIVE : INPUT_BACKGROUND_COLOR_NORMAL);

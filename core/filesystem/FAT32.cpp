@@ -6,7 +6,7 @@
  * @version     1.0.0
  */
 
-#include <console.h>
+#define KDBG_COMPONENT "FAT32"
 #include <core/filesystem/FAT32.h>
 
 FAT32::FAT32(AdvancedTechnologyAttachment* hd, uint32_t partitionOffset) {
@@ -20,7 +20,7 @@ FAT32::FAT32(AdvancedTechnologyAttachment* hd, uint32_t partitionOffset) {
     this->bpb = *bpbPtr;
 
     if (bpb.bootSignature != 0x28 && bpb.bootSignature != 0x29) {
-        printf("FAT32 Error: Invalid Boot Signature\n");
+        KDBG1("Error: Invalid Boot Signature");
         return;
     }
 
@@ -29,7 +29,7 @@ FAT32::FAT32(AdvancedTechnologyAttachment* hd, uint32_t partitionOffset) {
     this->rootStart = ClusterToSector(bpb.rootCluster);
     this->valid = true;
 
-    printf("FAT32  Mounted.\n");
+    KDBG2("Mounted.");
 }
 
 FAT32::~FAT32() {}
@@ -367,13 +367,13 @@ void FAT32::ListRoot() {
 void FAT32::ListDir(char* path) {
     uint32_t dirCluster = ResolvePath(path);
     if (dirCluster == 0) {
-        printf("Path not found: %s\n", path);
+        KDBG1("Path not found: %s", path);
         return;
     }
 
     uint8_t buffer[512];
     uint32_t currentCluster = dirCluster;
-    printf("Listing: %s\n", path);
+    KDBG2("Listing: %s", path);
 
     while (currentCluster < 0x0FFFFFF8) {
         uint32_t sector = ClusterToSector(currentCluster);
@@ -395,10 +395,14 @@ void FAT32::ListDir(char* path) {
                     else
                         break;
                 }
-
-                printf(" %s", name);
-                if ((dirents[i].attributes & 0x10)) printf("/");
-                printf("\n");
+                char logBuf[64];
+                int len = 0;
+                for (int x = 0; name[x] != 0 && len < 63; x++) logBuf[len++] = name[x];
+                if ((dirents[i].attributes & 0x10)) {
+                    logBuf[len++] = '/';
+                }
+                logBuf[len] = 0;
+                KDBG2(" %s", logBuf);
             }
         }
         currentCluster = GetFATEntry(currentCluster);
@@ -409,27 +413,27 @@ void FAT32::CreateFile(char* path) {
     char filename[13];
     uint32_t parentCluster = ParsePath(path, filename);
     if (parentCluster == 0) {
-        printf("Error: Parent directory not found.\n");
+        KDBG1("Error: Parent directory not found.");
         return;
     }
 
-    printf("Create File: %s\n", filename);
+    KDBG2("Create File: %s", filename);
 
     uint32_t s, o;
     DirectoryEntryFat32 e;
     if (FindEntryInCluster(parentCluster, filename, s, o, e)) {
-        printf("Error: Exists.\n");
+        KDBG1("Error: Exists.");
         return;
     }
 
     uint32_t newCluster = AllocateCluster();
     if (newCluster == 0) {
-        printf("Disk Full\n");
+        KDBG1("Disk Full");
         return;
     }
 
     if (!FindFreeEntryInCluster(parentCluster, s, o)) {
-        printf("Dir Full\n");
+        KDBG1("Dir Full");
         return;
     }
 
@@ -447,29 +451,29 @@ void FAT32::CreateFile(char* path) {
     for (int i = 0; i < sizeof(DirectoryEntryFat32); i++) dest[i] = src[i];
     hd->Write28(s, buffer, 512);
 
-    printf("Created.\n");
+    KDBG2("Created.");
 }
 
 void FAT32::DeleteFile(char* path) {
     char filename[13];
     uint32_t parentCluster = ParsePath(path, filename);
     if (parentCluster == 0) {
-        printf("Invalid Path\n");
+        KDBG1("Invalid Path");
         return;
     }
 
-    printf("Deleting: %s... ", filename);
+    KDBG2("Deleting: %s... ", filename);
 
     uint32_t s, o;
     DirectoryEntryFat32 entry;
 
     if (!FindEntryInCluster(parentCluster, filename, s, o, entry)) {
-        printf("Not Found.\n");
+        KDBG1("Not Found.");
         return;
     }
 
     if ((entry.attributes & 0x10) == 0x10) {
-        printf("Is Dir. Use DeleteDir.\n");
+        KDBG1("Is Dir. Use DeleteDir.");
         return;
     }
 
@@ -482,35 +486,35 @@ void FAT32::DeleteFile(char* path) {
     uint32_t startCluster = ((uint32_t)entry.firstClusterHi << 16) | entry.firstClusterLow;
     if (startCluster != 0) FreeChain(startCluster);
 
-    printf("Done.\n");
+    KDBG2("Deleted.");
 }
 
 void FAT32::DeleteDirectory(char* path) {
     char dirname[13];
     uint32_t parentCluster = ParsePath(path, dirname);
     if (parentCluster == 0) {
-        printf("Invalid Path\n");
+        KDBG1("Invalid Path");
         return;
     }
 
-    printf("Deleting Dir: %s... ", dirname);
+    KDBG2("Deleting Dir: %s", dirname);
 
     uint32_t s, o;
     DirectoryEntryFat32 entry;
 
     if (!FindEntryInCluster(parentCluster, dirname, s, o, entry)) {
-        printf("Not Found.\n");
+        KDBG1("Not Found.");
         return;
     }
 
     if ((entry.attributes & 0x10) != 0x10) {
-        printf("Not a Dir.\n");
+        KDBG1("Not a Dir.");
         return;
     }
 
     uint32_t startCluster = ((uint32_t)entry.firstClusterHi << 16) | entry.firstClusterLow;
     if (!IsDirectoryEmpty(startCluster)) {
-        printf("Not Empty.\n");
+        KDBG1("Not Empty.");
         return;
     }
 
@@ -521,7 +525,7 @@ void FAT32::DeleteDirectory(char* path) {
 
     if (startCluster != 0) FreeChain(startCluster);
 
-    printf("Done.\n");
+    KDBG2("Dir Deleted");
 }
 
 void FAT32::MakeDirectory(char* path) {
@@ -529,11 +533,11 @@ void FAT32::MakeDirectory(char* path) {
     uint32_t parentCluster = ParsePath(path, dirname);
 
     if (parentCluster == 0) {
-        printf("Invalid Path\n");
+        KDBG1("Invalid Path");
         return;
     }
 
-    printf("Create Dir: %s\n", dirname);
+    KDBG2("Create Dir: %s", dirname);
 
     uint32_t s, o;
     DirectoryEntryFat32 e;
@@ -578,11 +582,11 @@ void FAT32::MakeDirectory(char* path) {
     dotdot->firstClusterHi = (parentCluster >> 16) & 0xFFFF;
 
     hd->Write28(ClusterToSector(newCluster), buffer, 512);
-    printf("Done.\n");
+    KDBG2("Dir Created");
 }
 
 void FAT32::Format() {
-    printf("Formatting Drive (Quick Format)... ");
+    KDBG2("Formatting Drive (Quick Format)... ");
 
     uint8_t zeros[512];
     memset(zeros, 0, 512);
@@ -605,21 +609,21 @@ void FAT32::Format() {
         hd->Write28(rootSec + i, zeros, 512);
     }
 
-    printf("Done. Please Reboot.\n");
+    KDBG2("Done. Please Reboot.");
 }
 
 void FAT32::ReadFile(char* path, uint8_t* buffer, uint32_t length) {
     char filename[13];
     uint32_t parentCluster = ParsePath(path, filename);
     if (parentCluster == 0) {
-        printf("Invalid path\n");
+        KDBG1("Invalid path");
         return;
     }
 
     uint32_t s, o;
     DirectoryEntryFat32 entry;
     if (!FindEntryInCluster(parentCluster, filename, s, o, entry)) {
-        printf("File not found\n");
+        KDBG1("File not found");
         return;
     }
 
@@ -649,7 +653,7 @@ void FAT32::WriteFile(char* path, uint8_t* buffer, uint32_t length) {
     char filename[13];
     uint32_t parentCluster = ParsePath(path, filename);
     if (parentCluster == 0) {
-        printf("Invalid Path\n");
+        KDBG1("Invalid Path");
         return;
     }
 
@@ -658,7 +662,7 @@ void FAT32::WriteFile(char* path, uint8_t* buffer, uint32_t length) {
 
     // Find Entry
     if (!FindEntryInCluster(parentCluster, filename, dirSector, dirOffset, entry)) {
-        printf("Not Found.\n");
+        KDBG1("Not Found.");
         return;
     }
 
@@ -715,7 +719,7 @@ void FAT32::WriteFile(char* path, uint8_t* buffer, uint32_t length) {
     onDisk->size = length;
     hd->Write28(dirSector, dirBuff, 512);
 
-    printf("Done.\n");
+    KDBG2("Written.");
 }
 
 // Returns the size of a file in bytes. Returns 0 if file not found.
@@ -742,7 +746,7 @@ uint32_t FAT32::GetFileSize(char* path) {
 
 void FAT32::FormatRaw(AdvancedTechnologyAttachment* hd, uint32_t startSector,
                       uint32_t sizeSectors) {
-    printf("Formatting Raw Partition at %d (Size: %d)... ", startSector, sizeSectors);
+    KDBG2("Formatting Raw Partition at %d (Size: %d)... ", startSector, sizeSectors);
 
     // Calculate FAT32 Geometry
     uint16_t bytesPerSec = 512;
@@ -832,5 +836,5 @@ void FAT32::FormatRaw(AdvancedTechnologyAttachment* hd, uint32_t startSector,
         hd->Write28(dataStart + i, buffer, 512);
     }
 
-    printf("Done.\n");
+    KDBG2("Raw Format Done. Please reboot.");
 }

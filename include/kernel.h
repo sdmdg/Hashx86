@@ -5,6 +5,7 @@
 #include <core/KernelSymbolResolver.h>
 #include <core/driver.h>
 #include <core/drivers/AudioDriver.h>
+#include <core/drivers/AudioMixer.h>
 #include <core/drivers/GraphicsDriver.h>
 #include <core/drivers/ata.h>
 #include <core/drivers/keyboard.h>

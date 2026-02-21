@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "SYSCALL"
 #include <core/drivers/keyboard.h>
 #include <core/drivers/mouse.h>
 #include <core/filesystem/msdospart.h>
@@ -57,7 +58,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
             break;
 
         default:
-            DEBUG_LOG("Unknown system call at 0x80: %u\n", cpu->eax);
+            KDBG1("Unknown system call at 0x80: %u\n", cpu->eax);
             break;
     }
 
@@ -65,7 +66,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
 }
 
 void SyscallHandlers::Handle_sys_restart(uint32_t esp) {
-    DEBUG_LOG("sys_restart\n");
+    KDBG1("sys_restart\n");
 
     // Use a triple fault to restart the system (Not the best way, but for now this is good :) )
     asm volatile(
@@ -92,14 +93,14 @@ void SyscallHandlers::Handle_sys_exit(uint32_t esp) {
 
         // Restore Desktop rendering if the owner exits
         if (g_stop_gui_rendering && g_gui_owner_pid == (int)pid) {
-            DEBUG_LOG("sys_exit: Releasing GUI lock from PID %d", pid);
+            KDBG1("sys_exit: Releasing GUI lock from PID %d", pid);
             g_stop_gui_rendering = false;
             g_gui_owner_pid = -1;
             // Force redraw of desktop
             if (Desktop::activeInstance) Desktop::activeInstance->MarkDirty();
         }
 
-        DEBUG_LOG("sys_exit: Process PID %d terminated\n", pid);
+        KDBG1("sys_exit: Process PID %d terminated\n", pid);
     }
 }
 
@@ -134,7 +135,7 @@ void SyscallHandlers::Handle_sys_peek_memory(uint32_t esp) {
 void SyscallHandlers::Handle_sys_clone(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
     int32_t* return_data = (int32_t*)cpu->edx;
-    DEBUG_LOG("sys_clone: Creating a new Thread");
+    KDBG1("sys_clone: Creating a new Thread");
 
     ProcessControlBlock* current_process = Scheduler::activeInstance->GetCurrentProcess();
     *return_data = (int32_t)Scheduler::activeInstance->CreateThread(
@@ -145,7 +146,7 @@ void SyscallHandlers::Handle_sys_clone(uint32_t esp) {
 void SyscallHandlers::Handle_sys_sleep(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
     ThreadControlBlock* t = Scheduler::activeInstance->GetCurrentThread();
-    // DEBUG_LOG("sys_sleep: Sleeping TID : %d", t->tid);
+    // KDBG1("sys_sleep: Sleeping TID : %d", t->tid);
     Scheduler::activeInstance->Sleep((cpu->ebx));
 }
 
@@ -160,8 +161,7 @@ void SyscallHandlers::Handle_sys_sbrk(uint32_t esp) {
 
     if (increment > 0) {
         if (new_brk > process->heap.maxAddress) {
-            DEBUG_LOG("sbrk: Heap Overflow! Max: 0x%x, Req: 0x%x", process->heap.maxAddress,
-                      new_brk);
+            KDBG1("sbrk: Heap Overflow! Max: 0x%x, Req: 0x%x", process->heap.maxAddress, new_brk);
             *return_data = -1;
             return;
         }
@@ -175,7 +175,7 @@ void SyscallHandlers::Handle_sys_sbrk(uint32_t esp) {
                 if (g_paging->GetPhysicalAddress(process->page_directory, addr) == 0) {
                     uint32_t phys_frame = (uint32_t)pmm_alloc_block();
                     if (!phys_frame) {
-                        DEBUG_LOG("sbrk: Out of physical memory!");
+                        KDBG1("sbrk: Out of physical memory!");
                         *return_data = -1;
                         return;
                     }
@@ -183,7 +183,7 @@ void SyscallHandlers::Handle_sys_sbrk(uint32_t esp) {
                                            PAGE_PRESENT | PAGE_RW | PAGE_USER)) {
                         /* Mapping failed (likely out of low memory for page tables) */
                         pmm_free_block((void*)phys_frame);
-                        DEBUG_LOG("sbrk: MapPage failed!");
+                        KDBG1("sbrk: MapPage failed!");
                         *return_data = -1;
                         return;
                     }
@@ -204,11 +204,11 @@ void SyscallHandlers::Handle_sys_debug(uint32_t esp) {
 
     // ATOMIC PRINT
     InterruptGuard guard;
-    printf("%s", userString);
+    KDBG1("User prog. says, %s", userString);
 }
 
 void SyscallHandlers::Handle_sys_Hcall(uint32_t esp) {
-    // DEBUG_LOG("sys_Hcall:");
+    // KDBG1("sys_Hcall:");
     CPUState* cpu = (CPUState*)esp;
     ProcessControlBlock* current_process = Scheduler::activeInstance->GetCurrentProcess();
 
@@ -221,7 +221,7 @@ void SyscallHandlers::Handle_sys_Hcall(uint32_t esp) {
         data->param1 = current_process->heap.endAddress;
         *return_data = 1;
     } else if (cpu->ebx == Hsys_regEventH) {
-        DEBUG_LOG("Hsys_regEventH: Creating a new Thread for handler");
+        KDBG1("Hsys_regEventH: Creating a new Thread for handler");
         void* threadArgs = (void*)data->param0;
         void* entryPoint = (void*)data->param1;
 
@@ -278,7 +278,7 @@ void SyscallHandlers::Handle_sys_Hcall(uint32_t esp) {
             // STOP KERNEL GUI RENDERING
             g_stop_gui_rendering = true;
             g_gui_owner_pid = Scheduler::activeInstance->GetCurrentProcess()->pid;
-            DEBUG_LOG("Hsys_getFramebuffer: PID %d took ownership of screen", g_gui_owner_pid);
+            KDBG1("Hsys_getFramebuffer: PID %d took ownership of screen", g_gui_owner_pid);
 
             *return_data = 1;
         } else {
@@ -327,40 +327,40 @@ void SyscallHandlers::Handle_sys_Hcall(uint32_t esp) {
             }
 
             if (fs) {
-                DEBUG_LOG("Hsys_readFile: Opening %s", filename);
+                KDBG1("Hsys_readFile: Opening %s", filename);
 
                 // Validate Buffer is User Space
                 if ((uint32_t)destBuffer < 0x10000000) {
-                    DEBUG_LOG("Hsys_readFile: SECURITY VIOLATION: Buffer in Kernel Space! 0x%x",
-                              destBuffer);
+                    KDBG1("Hsys_readFile: SECURITY VIOLATION: Buffer in Kernel Space! 0x%x",
+                          destBuffer);
                     *return_data = -1;
                     return;
                 }
 
                 File* file = fs->Open(filename);
                 if (file && file->size > 0) {
-                    DEBUG_LOG("Hsys_readFile: Opened %s, Size %d", filename, file->size);
+                    KDBG1("Hsys_readFile: Opened %s, Size %d", filename, file->size);
                     uint32_t readSize = file->size < maxSize ? file->size : maxSize;
                     file->Seek(0);
-                    DEBUG_LOG("Hsys_readFile: Reading...");
+                    KDBG2("Hsys_readFile: Reading...");
                     int bytesRead = file->Read(destBuffer, readSize);
-                    DEBUG_LOG("Hsys_readFile: Read %d bytes. Closing...", bytesRead);
+                    KDBG2("Hsys_readFile: Read %d bytes. Closing...", bytesRead);
 
                     data->param3 = file->size;  // Report actual file size
                     file->Close();
 
-                    DEBUG_LOG("Hsys_readFile: Deleting file object...");
+                    KDBG2("Hsys_readFile: Deleting file object...");
                     delete file;
 
-                    DEBUG_LOG("Hsys_readFile: Success.");
+                    KDBG1("Hsys_readFile: Success.");
                     *return_data = bytesRead;
                 } else {
                     if (file) {
-                        DEBUG_LOG("Hsys_readFile: Empty file %s", filename);
+                        KDBG1("Hsys_readFile: Empty file %s", filename);
                         file->Close();
                         delete file;
                     } else {
-                        DEBUG_LOG("Hsys_readFile: Failed to open %s", filename);
+                        KDBG1("Hsys_readFile: Failed to open %s", filename);
                     }
                     *return_data = -1;
                 }
@@ -372,6 +372,6 @@ void SyscallHandlers::Handle_sys_Hcall(uint32_t esp) {
         }
     } else {
         // Default case (optional: handle unknown Hcalls)
-        DEBUG_LOG("Unknown Hcall ID: %d", cpu->ebx);
+        KDBG1("Unknown Hcall ID: %d", cpu->ebx);
     }
 }

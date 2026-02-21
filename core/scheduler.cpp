@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "SCHEDULER"
 #include <core/scheduler.h>
 
 extern TaskStateSegment g_tss;
@@ -82,6 +83,7 @@ Scheduler::Scheduler(Paging* pager) {
     code[8] = 0xFE;
 
     idleThread = CreateThread(nullptr, IdleTask, nullptr);
+    KDBG1("Scheduler initialized. Trampoline=0x%x", _trampolinePhys);
 }
 
 ProcessControlBlock* Scheduler::CreateProcess(bool isKernel, void (*entrypoint)(void*), void* arg) {
@@ -110,6 +112,7 @@ ProcessControlBlock* Scheduler::CreateProcess(bool isKernel, void (*entrypoint)(
 
     // Register
     globalProcessList.PushBack(pcb);
+    KDBG1("CreateProcess PID=%d Kernel=%d", pcb->pid, isKernel);
     return pcb;
 }
 
@@ -170,9 +173,8 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
         for (uint32_t p = 0; p < USER_STACK_PAGES; p++) {
             uint32_t phys = (uint32_t)pmm_alloc_block_low(256 * 1024 * 1024);
             if (!phys) {
-                DEBUG_LOG(
-                    "CreateThread: Failed to allocate user stack page %d! Low Memory Exhausted?",
-                    p);
+                KDBG1("CreateThread: Failed to allocate user stack page %d! Low Memory Exhausted?",
+                      p);
                 // Free previously allocated pages
                 for (uint32_t q = 0; q < p; q++) {
                     uint32_t va = user_stack_base + q * PAGE_SIZE;
@@ -186,7 +188,7 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
             uint32_t vaddr = user_stack_base + p * PAGE_SIZE;
             if (!_pager->MapPage(parent->page_directory, vaddr, phys,
                                  PAGE_PRESENT | PAGE_RW | PAGE_USER)) {
-                DEBUG_LOG("CreateThread: Failed to map user stack page %d!", p);
+                KDBG1("CreateThread: Failed to map user stack page %d!", p);
                 pmm_free_block((void*)phys);
                 for (uint32_t q = 0; q < p; q++) {
                     uint32_t va = user_stack_base + q * PAGE_SIZE;
@@ -217,9 +219,10 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
     }
 
     if (arg == nullptr) {
-        DEBUG_LOG("WARNING: Thread TID %d created with NULL arg!", tcb->tid);
+        KDBG1("WARNING: Thread TID %d created with NULL arg!", tcb->tid);
     }
 
+    KDBG1("CreateThread TID=%d PID=%d EIP=0x%x", tcb->tid, tcb->pid, entrypoint);
     return tcb;
 }
 
@@ -295,12 +298,15 @@ bool Scheduler::KillProcess(uint32_t pid) {
 
     delete target;
 
+    KDBG1("KillProcess PID=%d success", pid);
     return true;
 }
 
 void Scheduler::TerminateThread(ThreadControlBlock* thread) {
     if (!thread) return;
     if (thread->state == THREAD_STATE_TERMINATED) return;
+
+    KDBG1("TerminateThread TID=%d", thread->tid);
 
     // Null out currentThread BEFORE freeing/deleting.
     // Otherwise Schedule() will dereference dangling pointer.
@@ -349,13 +355,13 @@ bool Scheduler::ExitCurrentThread() {
 
     // Last thread standing -> kill the entire process
     if (activeThreadCount <= 1) {
-        DEBUG_LOG("Thread TID %d is last in process PID %d - terminating process",
-                  currentThread->tid, parent->pid);
+        KDBG1("Thread TID %d is last in process PID %d - terminating process", currentThread->tid,
+              parent->pid);
         KillProcess(parent->pid);
         return true;
     } else {
-        DEBUG_LOG("Thread TID %d exiting, %d threads remain in process PID %d", currentThread->tid,
-                  activeThreadCount - 1, parent->pid);
+        KDBG1("Thread TID %d exiting, %d threads remain in process PID %d", currentThread->tid,
+              activeThreadCount - 1, parent->pid);
         TerminateThread(currentThread);
         return false;
     }
@@ -366,6 +372,7 @@ void Scheduler::Sleep(uint32_t milliseconds) {
     if (!currentThread) return;
     currentThread->wakeTime = timerTicks + milliseconds;
     currentThread->state = THREAD_STATE_BLOCKED;
+    // KDBG3("Sleep TID=%d ms=%d", currentThread->tid, milliseconds);
 }
 
 void Scheduler::WakeThread(ThreadControlBlock* thread) {
@@ -376,6 +383,7 @@ void Scheduler::WakeThread(ThreadControlBlock* thread) {
     thread->wakeTime = 0;
     blockedQueue.Remove([thread](ThreadControlBlock* t) { return t == thread; });
     readyQueue.PushBack(thread);
+    // KDBG3("WakeThread TID=%d", thread->tid);
 }
 
 CPUState* Scheduler::Schedule(CPUState* context) {
@@ -418,8 +426,8 @@ CPUState* Scheduler::Schedule(CPUState* context) {
     }
     currentThread->state = THREAD_STATE_RUNNING;
 
-    // DEBUG_LOG("Switching to TID=%d, PID=%d, EIP=0x%x, ESP=0x%x", currentThread->tid,
-    // currentThread->pid, currentThread->context->eip, currentThread->context->esp);
+    // KDBG3("Switching to TID=%d, PID=%d, EIP=0x%x, ESP=0x%x", currentThread->tid,
+    //        currentThread->pid, currentThread->context->eip, currentThread->context->esp);
 
     g_tss.esp0 = (uint32_t)(currentThread->stack + KERNEL_STACK_SIZE);
 

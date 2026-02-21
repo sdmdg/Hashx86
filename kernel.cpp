@@ -6,7 +6,7 @@
  * @version     1.2.0-beta
  */
 
-#include <core/drivers/AudioMixer.h>
+#define KDBG_COMPONENT "KERNEL"
 #include <kernel.h>
 
 #define DEBUG_ENABLED TRUE;
@@ -17,9 +17,7 @@ KERNEL_MEMORY_MAP g_kmap;
 
 extern "C" uint32_t pci_find_bar0(uint16_t vendor, uint16_t device);
 extern "C" void __cxa_pure_virtual() {
-    // This is the ONE definition that everyone will share
-    printf("Pure Virtual Function Called! System Halted.\n");
-    while (1);
+    HALT("Pure Virtual Function Called! System Halted.");
 }
 
 int get_kernel_memory_map(KERNEL_MEMORY_MAP* kmap, MultibootInfo* mboot_info) {
@@ -69,22 +67,20 @@ int get_kernel_memory_map(KERNEL_MEMORY_MAP* kmap, MultibootInfo* mboot_info) {
 }
 
 void display_kernel_memory_map(KERNEL_MEMORY_MAP* kmap) {
-    printf("kernel:\n");
-    printf("  kernel-start: 0x%x, kernel-end: 0x%x, TOTAL: %d bytes\n", kmap->kernel.k_start_addr,
-           kmap->kernel.k_end_addr, kmap->kernel.k_len);
-    printf("  text-start: 0x%x, text-end: 0x%x, TOTAL: %d bytes\n", kmap->kernel.text_start_addr,
-           kmap->kernel.text_end_addr, kmap->kernel.text_len);
-    printf("  data-start: 0x%x, data-end: 0x%x, TOTAL: %d bytes\n", kmap->kernel.data_start_addr,
-           kmap->kernel.data_end_addr, kmap->kernel.data_len);
-    printf("  rodata-start: 0x%x, rodata-end: 0x%x, TOTAL: %d\n", kmap->kernel.rodata_start_addr,
-           kmap->kernel.rodata_end_addr, kmap->kernel.rodata_len);
-    printf("  bss-start: 0x%x, bss-end: 0x%x, TOTAL: %d\n", kmap->kernel.bss_start_addr,
-           kmap->kernel.bss_end_addr, kmap->kernel.bss_len);
+    KDBG2("MemoryMap section=KERNEL start=0x%x end=0x%x len=%d", kmap->kernel.k_start_addr,
+          kmap->kernel.k_end_addr, kmap->kernel.k_len);
+    KDBG2("MemoryMap section=TEXT   start=0x%x end=0x%x len=%d", kmap->kernel.text_start_addr,
+          kmap->kernel.text_end_addr, kmap->kernel.text_len);
+    KDBG2("MemoryMap section=DATA   start=0x%x end=0x%x len=%d", kmap->kernel.data_start_addr,
+          kmap->kernel.data_end_addr, kmap->kernel.data_len);
+    KDBG2("MemoryMap section=RODATA start=0x%x end=0x%x len=%d", kmap->kernel.rodata_start_addr,
+          kmap->kernel.rodata_end_addr, kmap->kernel.rodata_len);
+    KDBG2("MemoryMap section=BSS    start=0x%x end=0x%x len=%d", kmap->kernel.bss_start_addr,
+          kmap->kernel.bss_end_addr, kmap->kernel.bss_len);
 
-    printf("total_memory: %d KB\n", kmap->system.total_memory);
-    printf("available:\n");
-    printf("  start_adddr: 0x%x\n  end_addr: 0x%x\n  size: %d\n", kmap->available.start_addr,
-           kmap->available.end_addr, kmap->available.size);
+    KDBG1("SystemMemory total=%d KB available_size=%d", kmap->system.total_memory,
+          kmap->available.size);
+    KDBG1("AvailableRAM start=0x%x end=0x%x", kmap->available.start_addr, kmap->available.end_addr);
 }
 
 void init_memory(MultibootInfo* mbinfo) {
@@ -159,8 +155,8 @@ void init_memory(MultibootInfo* mbinfo) {
     uint32_t heap_size_bytes = safe_limit - actual_heap_start;
     uint32_t blocks_needed = heap_size_bytes / PMM_BLOCK_SIZE;
 
-    printf("[PMM] Maximizing Heap: Start=0x%x Limit=0x%x Size=%d MB\n", actual_heap_start,
-           safe_limit, (int32_t)(heap_size_bytes / (1024 * 1024)));
+    KDBG1("Maximizing PMM Heap: Start=0x%x Limit=0x%x Size=%d MB", actual_heap_start, safe_limit,
+          (int32_t)(heap_size_bytes / (1024 * 1024)));
 
     // Allocate
     void* heap_start = pmm_alloc_blocks(blocks_needed);
@@ -180,7 +176,7 @@ void init_memory(MultibootInfo* mbinfo) {
     size_t heap_size = blocks_needed * PMM_BLOCK_SIZE;
     void* heap_end = (void*)((uint32_t)heap_start + heap_size);
 
-    DEBUG_LOG("Kernel Heap: 0x%x - 0x%x (%d MB)", heap_start, heap_end, heap_size / 1024 / 1024);
+    KDBG1("Kernel Heap: 0x%x - 0x%x (%d MB)", heap_start, heap_end, heap_size / 1024 / 1024);
 
     kheap_init(heap_start, heap_end);
 }
@@ -205,11 +201,11 @@ void InitializePIT(uint32_t frequency) {
     outb(PIT_CHANNEL0_PORT, low);
     outb(PIT_CHANNEL0_PORT, high);
 
-    printf("PIT Initialized at %d Hz\n", (int32_t)frequency);
+    KDBG1("PIT Initialized at %d Hz", (int32_t)frequency);
 }
 
 void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
-    printf("\n[Kernel] Initializing Drivers...\n");
+    KDBG1("Initializing Drivers (PCI Scan)...");
     // ---------------------------------------------------------
     // Dynamic Graphics Loading (with PCI)
     // ---------------------------------------------------------
@@ -235,8 +231,8 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
     if (dev->vendor_id != 0) {
         char* BGAfilename = "DRIVERS/BGA.SYS";
 
-        printf("[Kernel] BGA Hardware Detected (ID: %x:%x). Loading Driver... [%s]\n",
-               dev->vendor_id, dev->device_id, BGAfilename);
+        KDBG1("BGA Hardware Detected (ID: %x:%x). Loading Driver... [%s]", dev->vendor_id,
+              dev->device_id, BGAfilename);
         File* bgaFile = boot_partition->Open(BGAfilename);
 
         if (bgaFile) {
@@ -274,9 +270,9 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
                                                          oldDR->GetWidth(), oldDR->GetHeight());
                         }
                         g_GraphicsDriver->Flush();
-                        printf("BGA Module Loaded Successfully.\n");
+                        KDBG1("BGA Module Loaded Successfully.");
                     } else {
-                        printf("[Kernel] Error: Driver loaded, but is not a GraphicsDriver!\n");
+                        KDBG1("Error: Driver loaded, but is not a GraphicsDriver!");
                     }
                 }
             }
@@ -284,10 +280,10 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
             bgaFile->Close();
             delete bgaFile;
         } else {
-            printf("[Kernel] Hardware found, but %s missing!\n", BGAfilename);
+            KDBG1("Hardware found, but %s missing!", BGAfilename);
         }
     } else {
-        printf("[Kernel] No BGA Hardware found. Skipping driver load.\n");
+        KDBG1("No BGA Hardware found. Skipping driver load.");
     }
 
     // Clean up dev for next search
@@ -303,7 +299,7 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
 
     if (dev->vendor_id != 0) {
         char* driverName = "DRIVERS/ac97.sys";
-        printf("[Kernel] Audio Hardware Detected. Loading... [%s]\n", driverName);
+        KDBG1("Audio Hardware Detected. Loading... [%s]", driverName);
 
         File* drvFile = boot_partition->Open(driverName);
         if (drvFile) {
@@ -323,7 +319,7 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
                     AudioDriver* audio = drv->AsAudioDriver();
 
                     if (audio) {
-                        printf("[Kernel] Initializing Mixer...\n");
+                        KDBG1("Initializing Audio Mixer...");
                         // Create the Mixer and link it to the driver
                         g_AudioMixer = new AudioMixer(audio);
                         if (!g_AudioMixer) {
@@ -346,7 +342,7 @@ void pDesktop(void* arg) {
     DesktopArgs* args = (DesktopArgs*)arg;
 
 #ifdef DEBUG_ENABLED
-    DEBUG_LOG("GUI task started");
+    KDBG1("GUI task started");
     if (!args) {
         HALT("Error: args is null");
     }
@@ -403,14 +399,14 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     initSerial();
     if (magicnumber != 0x2BADB002) {
 #ifdef DEBUG_ENABLED
-        DEBUG_LOG("Invalid magic number : [%x], Ignoring...\n", magicnumber);
+        KDBG1("Invalid magic number : [%x], Ignoring...", magicnumber);
 #endif
         // return;
     }
 
     MultibootInfo* mbinfo = (MultibootInfo*)multiboot_structure;
 #ifdef DEBUG_ENABLED
-    DEBUG_LOG("Initializing Hardware");
+    KDBG1("Initializing Hardware");
 #endif
 
     gdt_init();
@@ -421,7 +417,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     InitializePIT(1000);
 
 #ifdef DEBUG_ENABLED
-    DEBUG_LOG("Initializing paging...\n");
+    KDBG1("Initializing paging...");
 #endif
 
     g_paging = new Paging();
@@ -445,7 +441,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     }
 
     for (int i = 0; SATAList[i] != 0; i++) {
-        printf("Checking Drive %d...\n", i);
+        KDBG3("Checking Drive %d...", i);
         uint32_t ata_size = SATAList[i]->Identify();
 
         if (ata_size == 0) continue;  // No Drive detected
@@ -453,6 +449,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         ata = SATAList[i];
 
         // Use the FIRST drive found.
+        KDBG1("Using ATA drive %d (Master/Slave)", i);
         break;
     }
 
@@ -473,7 +470,9 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         HALT("Error: No valid boot partition found!\nPlease reinstall the OS using 'make hdd'.\n");
     }
     g_bootPartition->ListRoot();
+    KDBG1("Boot partition mounted. Root listed.");
     KernelSymbolTable::Load(g_bootPartition, "kernel.map");
+    KDBG1("Kernel symbols loaded from kernel.map");
 
     g_GraphicsDriver =
         new VESA_BIOS_Extensions(mbinfo->framebuffer_width, mbinfo->framebuffer_height, 32,
@@ -507,9 +506,8 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     char* fontFileName = (char*)"FONTS/SEGOEUI.BIN";
     File* fontFile = g_bootPartition->Open(fontFileName);
     if (fontFile->size == 0) {
-        printf(
-            "Font error, file not found or empty: %s\nPlease reinstall the OS using 'make hdd'.\n",
-            fontFile);
+        KDBG1("Font error, file not found or empty: %s. Please reinstall the OS using 'make hdd'.",
+              fontFile);
         while (1) {
             asm volatile("hlt");
         }
@@ -578,11 +576,11 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     ProcessControlBlock* process1 = g_scheduler->CreateProcess(true, pDesktop, desktopArgs);
 
     if (mbinfo->mods_count > 0) {
-        DEBUG_LOG("Found %d Modules", mbinfo->mods_count);
+        KDBG1("Found %d Modules", mbinfo->mods_count);
         struct multiboot_module* modules = (struct multiboot_module*)mbinfo->mods_addr;
         // fManager.LoadFile(modules[0].mod_start, modules[0].mod_end); // load font file
     } else {
-        DEBUG_LOG("No modules found");
+        KDBG1("No modules found");
     }
 
     // Load and start sample programs
@@ -599,65 +597,13 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         sound->Play();
     }
 
-    DEBUG_LOG("Welcome to #x86!\n");
+    KDBG1("Welcome to #x86!");
     g_driverManager->ActivateAll();
+    KDBG1("System Drivers Activated.");
     g_interrupts->Activate();
+    KDBG1("Interrupts Enabled. Entering Halt Loop.");
 
     while (1) {
         asm volatile("hlt");
     }
-
-    // VGA Graphics
-
-    /* clearScreen();
-    VideoGraphicsArray vga;
-
-    GlobalDescriptorTable gdt;
-
-    InterruptManager interrupts(&gdt);
-
-    Desktop desktop(320, 200, 0);
-
-    DEBUG_LOG("Initializing Hardware");
-    DriverManager driverManager;
-
-    ConsoleMouseEventHandler Mousehandler;
-    MouseDriver mouse(&interrupts, &Mousehandler);
-    driverManager.AddDriver(&mouse);
-
-    ConsoleKeyboardEventHandler KeyBoardhandler;
-    KeyboardDriver keyboard(&interrupts, &KeyBoardhandler);
-    driverManager.AddDriver(&keyboard);
-
-    PeripheralComponentInterconnectController PCIcontroller;
-    PCIcontroller.SelectDrivers(&driverManager, &interrupts);
-
-
-    driverManager.ActivateAll();
-
-    interrupts.Activate();
-
-    printf(YELLOW, "Welcome to #x86!\n");
-
-    if (!vga.SetMode(320, 200, 8)) {
-        // if the mode is not supported
-        return;
-    }
-
-    vga.FillRectangle(0, 0, 320, 200, 0);
-    vga.DrawString(128, 130, "Hash x86", 31);
-    //vga.DrawBitmap(135, 50, icon_main_bw_50x50, 50, 50);
-    vga.Flush();
-
-    wait(500);
-
-
-    Window win1(&desktop, 20,15,180,120, 10);
-    win1.setWindowTitle("Welcome !");
-
-    Label myLabel(&win1, 12, 10, 154, 20, "Welcome to #x86!\nThis is vga mode :)", 19);
-    Button myButton(&win1, 108, 90, 66, 14, "Click Me", 19);
-    win1.AddChild(&myLabel);
-    win1.AddChild(&myButton);
-    desktop.AddChild(&win1); */
 }

@@ -52,6 +52,8 @@ objects = asm/common_handler.o \
           utils/string.o
 
 LD_PARAMS = -melf_i386 -Map kernel.map
+QEMU_DISK = HDD.vdi
+RUNQ_DELAY ?= 1
 
 # Compiling C++ files inside the main directory
 %.o: %.cpp
@@ -99,6 +101,8 @@ build:
 	make -C user_prog
 	make iso
 	make hdd
+	@echo "[BUILD] Waiting $(RUNQ_DELAY)s to release the HDD file..."
+	@sleep $(RUNQ_DELAY)
 	make runq
 
 runq:
@@ -191,6 +195,8 @@ iso: kernel.bin
 
 prog:
 	make hdd
+	@echo "[PROG] Waiting $(RUNQ_DELAY)s before runq..."
+	@sleep $(RUNQ_DELAY)
 	make runq
 
 

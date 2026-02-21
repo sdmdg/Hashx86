@@ -6,6 +6,7 @@
  * @version     2.0.0
  */
 
+#define KDBG_COMPONENT "GUI:TASKBAR"
 #include <core/timing.h>
 #include <gui/taskbar.h>
 
@@ -110,13 +111,13 @@ void StartMenuButton::LaunchProgram() {
         if (args) {
             ProcessControlBlock* prog = g_elfLoader->loadELF(file, args);
             if (!prog) {
-                DEBUG_LOG("StartMenu: Failed to load ELF: %s\n", binPath);
+                KDBG1("StartMenu: Failed to load ELF: %s\n", binPath);
             }
         }
         file->Close();
         delete file;
     } else {
-        DEBUG_LOG("StartMenu: File not found: %s\n", binPath);
+        KDBG1("StartMenu: File not found: %s\n", binPath);
         if (file) {
             file->Close();
             delete file;

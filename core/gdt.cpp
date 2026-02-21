@@ -6,11 +6,10 @@
  * @version     1.0.0
  */
 
-/**
- * Global Descriptor Table(GDT) setup
- */
+#define KDBG_COMPONENT "GDT"
 #include <core/gdt.h>
 #include <core/tss.h>
+#include <debug.h>
 
 extern "C" void tss_flush();
 
@@ -34,6 +33,9 @@ void gdt_set_entry(int index, uint32_t base, uint32_t limit, uint8_t access, uin
     entry->granularity = entry->granularity | (gran & 0xF0);
 
     entry->base_high = (base >> 24 & 0xFF);
+
+    KDBG1("SetEntry idx=%d base=0x%x limit=0x%x access=0x%x gran=0x%x", index, base, limit, access,
+          gran);
 }
 
 // initialize GDT
@@ -72,4 +74,6 @@ void gdt_init() {
 
     // Load TSS (Task Register)
     tss_flush();
+
+    KDBG1("Initialized base=0x%x limit=0x%x", (uint32_t)g_gdt, sizeof(g_gdt) - 1);
 }

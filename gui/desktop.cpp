@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "GUI:DESKTOP"
 #include <gui/desktop.h>
 
 Desktop* Desktop::activeInstance = nullptr;
@@ -16,7 +17,7 @@ Desktop::Desktop(int32_t w, int32_t h)
     MouseY = h / 2;
     activeInstance = this;
 
-    DEBUG_LOG("DESKTOP Initialized with ID 0x%x", this->ID);
+    KDBG1("DESKTOP Initialized with ID 0x%x", this->ID);
 
     // Initialize Wallpaper
     char* wallpaperName = (char*)"BITMAPS/DESKTOP.BMP";

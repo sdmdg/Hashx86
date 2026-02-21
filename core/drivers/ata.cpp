@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "ATA"
 #include <core/drivers/ata.h>
 
 AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, uint16_t portBase)
@@ -26,16 +27,19 @@ AdvancedTechnologyAttachment::~AdvancedTechnologyAttachment() {}
 // Returns the total number of sectors on the drive (LBA28)
 // Returns 0 if error or drive not present
 uint32_t AdvancedTechnologyAttachment::Identify() {
-    printf("Identifying %s %s drive...\n",
-           ((this->dataPort.getPortNumber() == 0x1F0) ? "primary" : "secondary"),
-           (master ? "master" : "slave"));
+    KDBG1("Identifying %s %s drive...",
+          ((this->dataPort.getPortNumber() == 0x1F0) ? "primary" : "secondary"),
+          (master ? "master" : "slave"));
 
     devicePort.Write(master ? 0xA0 : 0xB0);
     controlPort.Write(0);
 
     devicePort.Write(0xA0);
     uint8_t status = commandPort.Read();
-    if (status == 0xFF) return 0;  // No Device
+    if (status == 0xFF) {
+        KDBG1("No Device (Status 0xFF)");
+        return 0;
+    }
 
     devicePort.Write(master ? 0xA0 : 0xB0);
     sectorCountPort.Write(0);
@@ -45,12 +49,15 @@ uint32_t AdvancedTechnologyAttachment::Identify() {
     commandPort.Write(0xEC);  // Identify command
 
     status = commandPort.Read();
-    if (status == 0x00) return 0;  // No Device
+    if (status == 0x00) {
+        KDBG1("No Device (Status 0x00)");
+        return 0;
+    }
 
     while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01)) status = commandPort.Read();
 
     if (status & 0x01) {
-        printf("ATA IDENTIFY ERROR\n");
+        KDBG1("IDENTIFY ERROR");
         return 0;
     }
 
@@ -67,8 +74,8 @@ uint32_t AdvancedTechnologyAttachment::Identify() {
         }
     }
 
-    printf("HDD Identified. Size: %d Sectors (%d MB)\n", (int32_t)totalSectors,
-           (int32_t)(totalSectors * 512) / 1024 / 1024);
+    KDBG1("HDD Identified. Size: %d Sectors (%d MB)", (int32_t)totalSectors,
+          (int32_t)(totalSectors * 512) / 1024 / 1024);
     this->ata_size = totalSectors;
     return totalSectors;
 }
@@ -91,7 +98,7 @@ void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t* data, int
 
     while ((status & 0x80) == 0x80) status = commandPort.Read();
     if ((status & 0x01) == 0x01) {
-        printf("ATA READ ERROR\n");
+        KDBG1("READ ERROR");
         return;
     }
     while ((status & 0x08) != 0x08) status = commandPort.Read();

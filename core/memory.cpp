@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "K.HEAP"
 #include <core/memory.h>
 
 // --- SSE HELPERS ---
@@ -37,7 +38,7 @@ void init_memory_optimizations() {
     if (CheckSSE()) {
         EnableSSE_ASM();
         g_sse_active = true;
-        printf("[Memory] : SSE Detected & Enabled.\n");
+        KDBG1("SSE Enabled");
     } else {
         g_sse_active = false;
     }
@@ -129,7 +130,7 @@ static bool kheap_initialized = false;
  */
 int kheap_init(void* start_addr, void* end_addr) {
     if (start_addr > end_addr) {
-        // printf("failed to init kheap\n");
+        KDBG1("Init failed start=0x%x end=0x%x", start_addr, end_addr);
         return -1;
     }
 
@@ -151,10 +152,14 @@ void* kbrk(int size) {
     void* addr = NULL;
     if (size <= 0) return NULL;
     // check memory is available or not
-    if ((int)(g_total_size - g_total_used_size) <= size) return NULL;
+    if ((int)(g_total_size - g_total_used_size) <= size) {
+        KDBG1("HeapExhausted req=%d available=%d", size, (g_total_size - g_total_used_size));
+        return NULL;
+    }
     // add start addr with total previously used memory
     addr = (void*)((unsigned long)g_kheap_start_addr + g_total_used_size);
     g_total_used_size += size;
+    // KDBG3("HeapExpand size=%d addr=0x%x", size, addr);
     return addr;
 }
 
@@ -163,10 +168,10 @@ void* kbrk(int size) {
  */
 void kheap_print_blocks() {
     KHEAP_BLOCK* temp = g_head;
-    // printf("Block Size: %d\n", sizeof(KHEAP_BLOCK));
+    KDBG3("PrintBlocks size=%d", sizeof(KHEAP_BLOCK));
     while (temp != NULL) {
-        // printf("size:%d, free:%d, data: 0x%x, curr: 0x%x, next: 0x%x\n",
-        //        temp->metadata.size, temp->metadata.is_free, temp->data, temp, temp->next);
+        KDBG3("Block size=%d free=%d data=0x%x curr=0x%x next=0x%x", temp->metadata.size,
+              temp->metadata.is_free, temp->data, temp, temp->next);
         temp = temp->next;
     }
 }
@@ -216,10 +221,16 @@ KHEAP_BLOCK* allocate_new_block(int size) {
  */
 void* kmalloc(int size) {
     InterruptGuard guard;
-    if (size <= 0) return NULL;
+    if (size <= 0) {
+        KDBG2("AllocInvalid invalid_size=%d", size);
+        return NULL;
+    }
     if (g_head == NULL) {
         g_head = (KHEAP_BLOCK*)kbrk(sizeof(KHEAP_BLOCK));
-        if (!g_head) return NULL;
+        if (!g_head) {
+            KDBG1("AllocFail reason=InitHeapMetadataOM");
+            return NULL;
+        }
 
         g_head->metadata.is_free = false;
         g_head->metadata.size = size;
@@ -232,7 +243,10 @@ void* kmalloc(int size) {
         KHEAP_BLOCK* worst = worst_fit(size);
         if (worst == NULL) {
             KHEAP_BLOCK* new_block = allocate_new_block(size);
-            if (!new_block) return NULL;
+            if (!new_block) {
+                KDBG1("AllocFail size=%d reason=NoBlock/OOM", size);
+                return NULL;
+            }
 
             new_block->metadata.is_free = false;
             new_block->metadata.size = size;
@@ -242,6 +256,7 @@ void* kmalloc(int size) {
             return new_block->data;
         } else {
             worst->metadata.is_free = false;
+            // if (size != 8) KDBG3("Alloc size=%d ptr=0x%x", size, worst->data);
             return worst->data;
         }
     }
@@ -254,6 +269,8 @@ void* aligned_kmalloc(size_t size, size_t alignment) {
     if (!raw_addr) return nullptr;
 
     uintptr_t aligned_addr = (raw_addr + alignment - 1) & ~(alignment - 1);
+    KDBG3("AlignedAlloc size=%d align=%d raw=0x%x addr=0x%x", size, alignment, raw_addr,
+          aligned_addr);
     return (void*)aligned_addr;
 }
 
@@ -265,6 +282,7 @@ void* kcalloc(int n, int size) {
     if (n < 0 || size < 0) return NULL;
     void* mem = kmalloc(n * size);
     if (mem) memset(mem, 0, n * size);
+    KDBG3("Calloc n=%d size=%d addr=0x%x", n, size, mem);
     return mem;
 }
 
@@ -289,6 +307,7 @@ void* krealloc(void* ptr, int size) {
             // Uses the optimized memcpy automatically
             memcpy(new_ptr, ptr, temp->metadata.size < size ? temp->metadata.size : size);
             temp->metadata.is_free = true;
+            // if (size != 8) KDBG3("Realloc ptr=0x%x new_ptr=0x%x size=%d", ptr, new_ptr, size);
             return new_ptr;
         }
         temp = temp->next;
@@ -301,16 +320,21 @@ void* krealloc(void* ptr, int size) {
  */
 void kfree(void* addr) {
     InterruptGuard guard;
-    if (!addr) return;
+    if (!addr) {
+        KDBG2("FreeInvalid ptr=NULL");
+        return;
+    }
 
     KHEAP_BLOCK* temp = g_head;
     while (temp != NULL) {
         if (temp->data == addr) {
             temp->metadata.is_free = true;
+            // if (temp->metadata.size != 8) KDBG3("Free ptr=0x%x", addr);
             return;
         }
         temp = temp->next;
     }
+    KDBG1("FreeError ptr=0x%x reason=NotFound", addr);
 }
 
 // --- C++ OPERATORS ---

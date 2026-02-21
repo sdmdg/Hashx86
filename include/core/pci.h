@@ -5,6 +5,7 @@
 #include <core/driver.h>
 #include <core/interrupts.h>
 #include <core/ports.h>
+#include <debug.h>
 #include <types.h>
 
 // Temporary

@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "ELFLOADER"
 #include <core/elf.h>
 
 ELFLoader::ELFLoader(Paging* pager, Scheduler* scheduler) {
@@ -23,12 +24,12 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
     struct elf_header header;
     elf->Seek(0);
     if (elf->Read((uint8_t*)&header, sizeof(elf_header)) != sizeof(elf_header)) {
-        DEBUG_LOG("Error: ELF file too short");
+        KDBG1("Error: ELF file too short");
         return nullptr;
     }
 
     if (header.magic != ELF_MAGIC) {
-        DEBUG_LOG("Error: Invalid ELF Magic!");
+        KDBG1("Error: Invalid ELF Magic!");
         return nullptr;
     }
 
@@ -45,7 +46,7 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
 
     elf->Seek(header.ph_offset);
     if (elf->Read((uint8_t*)ph_table, ph_size) != ph_size) {
-        DEBUG_LOG("Error: Could not read Program Headers");
+        KDBG1("Error: Could not read Program Headers");
         delete[] ph_table;
         // Ideally kill the process here too
         return nullptr;
@@ -58,6 +59,8 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
         elf_program_header* ph = &ph_table[i];
 
         if (ph->type != 1) continue;  // PT_LOAD only
+        KDBG3("Segment: Virt=0x%x MemSize=0x%x FileSize=0x%x", ph->virt_addr, ph->mem_size,
+              ph->file_size);
 
         // Calculate alignment
         uint32_t start = (uint32_t)ph->virt_addr;
@@ -71,13 +74,14 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
         for (uint32_t addr = page_start; addr < page_end; addr += PAGE_SIZE) {
             uint32_t phys_frame = (uint32_t)pmm_alloc_block_low(256 * 1024 * 1024);
             if (!phys_frame) {
-                DEBUG_LOG("ELF Load: Out of low memory for segment pages!");
+                KDBG1("ELF Load: Out of low memory for segment pages!");
                 delete[] ph_table;
                 return nullptr;
             }
             this->pager->MapPage(pELF->page_directory, addr, phys_frame,
                                  PAGE_PRESENT | PAGE_RW | PAGE_USER  // Allow User Mode Access
             );
+            KDBG3("Mapped Page: Virt=0x%x Phys=0x%x", addr, phys_frame);
         }
 
         // Load Data into those pages
@@ -136,9 +140,9 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
 
     pELF->heap.startAddress = heap_start;
     pELF->heap.endAddress = heap_end;
-    pELF->heap.maxAddress = heap_end + (1024 * 1024 * 16);  // Allow growing up to 16MB later
+    pELF->heap.maxAddress = heap_end + (1024 * 1024 * 32);  // Allow growing up to 32MB later
 
-    DEBUG_LOG("ELF Loaded. Entry: 0x%x Heap: 0x%x - 0x%x", header.entry, heap_start, heap_end);
+    KDBG1("ELF Loaded. Entry: 0x%x Heap: 0x%x - 0x%x", header.entry, heap_start, heap_end);
 
     return pELF;
 };

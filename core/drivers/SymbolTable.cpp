@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "KSYMT"
 #include <core/drivers/SymbolTable.h>
 
 KernelSymbol SymbolTable::symbols[1024];
@@ -13,7 +14,7 @@ int SymbolTable::count = 0;
 
 void SymbolTable::Register(const char* name, uint32_t addr) {
     if (count >= 1024) {
-        printf("Error: Kernel Symbol Table Full!\n");
+        KDBG1("Error: Kernel Symbol Table Full!\n");
         return;
     }
     symbols[count].name = name;

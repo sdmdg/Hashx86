@@ -6,7 +6,7 @@
  * @version     1.0.0-beta
  */
 
-#include <console.h>
+#define KDBG_COMPONENT "PCI"
 #include <core/pci.h>
 
 PeripheralComponentInterconnectDeviceDescriptor::PeripheralComponentInterconnectDeviceDescriptor() {
@@ -114,6 +114,8 @@ PeripheralComponentInterconnectController::FindHardwareDevice(uint16_t vendorID,
                 if (dev->vendor_id == 0x0000 || dev->vendor_id == 0xFFFF) continue;
 
                 if (dev->vendor_id == vendorID && dev->device_id == deviceID) {
+                    KDBG2("Found Hardware: Vendor=0x%x Device=0x%x at Bus=%d Device=%d Func=%d",
+                          dev->vendor_id, dev->device_id, dev->bus, dev->device, dev->function);
                     return dev;
                 }
             }
@@ -134,10 +136,14 @@ extern "C" {
 uint32_t pci_find_bar0(uint16_t vendor, uint16_t device) {
     PeripheralComponentInterconnectController pci;
     PeripheralComponentInterconnectDeviceDescriptor* dev = pci.FindHardwareDevice(vendor, device);
-    if (dev->vendor_id == 0) return 0;
+    if (dev->vendor_id == 0) {
+        KDBG1("Failed to find device Vendor=0x%x Device=0x%x for BAR0", vendor, device);
+        return 0;
+    }
 
     // Return BAR0 Address directly
     BaseAddressRegister bar = pci.GetBaseAddressRegister(dev->bus, dev->device, dev->function, 0);
+    KDBG2("Found BAR0 for Vendor=0x%x Device=0x%x at 0x%x", vendor, device, (uint32_t)bar.address);
     return (uint32_t)bar.address;
 }
 
@@ -149,7 +155,10 @@ void pci_enable_bus_master(uint16_t vendor, uint16_t device) {
         uint32_t cmd = pci.Read(dev->bus, dev->device, dev->function, 0x04);
         if ((cmd & 0x07) != 0x07) {
             pci.Write(dev->bus, dev->device, dev->function, 0x04, cmd | 0x07);
+            KDBG2("Enabled Bus Master for Vendor=0x%x Device=0x%x", vendor, device);
         }
+    } else {
+        KDBG1("Failed to find device Vendor=0x%x Device=0x%x to enable Bus Master", vendor, device);
     }
 }
 }
