@@ -8,6 +8,7 @@
 #include <debug.h>
 #include <gui/eventHandler.h>
 #include <gui/gui.h>
+#include <gui/listview.h>
 #include <types.h>
 #include <utils/linkedList.h>
 
@@ -18,6 +19,7 @@ typedef enum {
     EVENT = 0x3,
     DESKTOP = 0x4,
     LABEL = 0x5,
+    LISTVIEW = 0x6,
 } REQ_Element;
 
 typedef enum {
@@ -28,6 +30,9 @@ typedef enum {
     GET = 0x4,
     SET_TEXT = 0x5,
     SET_FONT_SIZE = 0x6,
+    SET_ITEMS = 0x7,
+    CLEAR_ITEMS = 0x8,
+    GET_SELECTED = 0x9,
 } REQ_MODE;
 
 struct WidgetData {
@@ -52,11 +57,12 @@ public:
     ~HguiHandler();
 
     virtual uint32_t HandleInterrupt(uint32_t esp);
-    virtual uint32_t HandleWidget(uint32_t esp);
-    virtual uint32_t HandleWindow(uint32_t esp);
-    virtual uint32_t HandleButton(uint32_t esp);
-    virtual uint32_t HandleLabel(uint32_t esp);
-    virtual uint32_t HandleEvent(uint32_t esp);
+    virtual int32_t HandleWidget(uint32_t esp);
+    virtual int32_t HandleWindow(uint32_t esp);
+    virtual int32_t HandleButton(uint32_t esp);
+    virtual int32_t HandleLabel(uint32_t esp);
+    virtual int32_t HandleListView(uint32_t esp);
+    virtual int32_t HandleEvent(uint32_t esp);
     void RemoveAppByPID(uint32_t PID);
     Widget* FindWidgetByID(uint32_t searchID);
     uint32_t getNewID();

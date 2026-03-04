@@ -4,8 +4,10 @@
 GPP = g++
 AR = ar
 
+INCLUDES = -Iinclude
+
 # Flags: Note the include path points to the local 'include' folder
-CPPFLAGS = -m32 -g -ffreestanding -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common -Iinclude
+CPPFLAGS = -m32 -g -ffreestanding -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common $(INCLUDES)
 
 # Automatically find all .cpp files inside Hx86/ and subdirectories
 SRCS := $(shell find Hx86 -name '*.cpp')

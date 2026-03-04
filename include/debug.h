@@ -28,12 +28,25 @@ void writeSerial(char c);
         printf("[%s] " format "\n", component, ##__VA_ARGS__); \
     } while (0)
 
+#define KDBGN__EMIT(level, component, format, ...)           \
+    do {                                                     \
+        printf("[%s] " format "", component, ##__VA_ARGS__); \
+    } while (0)
+
 #if KDBG_ENABLE && (KDBG_LEVEL >= 1)
 #define KDBG_L1(component, format, ...) KDBG__EMIT(1, component, format, ##__VA_ARGS__)
 #define KDBG1(format, ...) KDBG__EMIT(1, KDBG_COMPONENT, format, ##__VA_ARGS__)
 #else
 #define KDBG_L1(component, format, ...) ((void)0)
 #define KDBG1(format, ...) ((void)0)
+#endif
+
+#if KDBG_ENABLE && (KDBG_LEVEL >= 1)
+#define KDBG_L1N(component, format, ...) KDBGN__EMIT(1, component, format, ##__VA_ARGS__)
+#define KDBG1N(format, ...) KDBGN__EMIT(1, KDBG_COMPONENT, format, ##__VA_ARGS__)
+#else
+#define KDBG_L1N(component, format, ...) ((void)0)
+#define KDBG1N(format, ...) ((void)0)
 #endif
 
 #if KDBG_ENABLE && (KDBG_LEVEL >= 2)

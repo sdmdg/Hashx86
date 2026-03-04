@@ -80,7 +80,7 @@ void *kbrk(int size) {
         int request_size = (needed + 4095) & ~4095;                  // Page align
         if (request_size < 1024 * 1024) request_size = 1024 * 1024;  // Min 1MB
 
-        int32_t res = syscall_sbrk(request_size);
+        int32_t res = syscall_brk(request_size);
         if (res == -1) return NULL;
 
         g_total_size += request_size;

@@ -20,49 +20,46 @@ HguiHandler::~HguiHandler() {}
 
 uint32_t HguiHandler::HandleInterrupt(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
+    int32_t ret = -1;
 
     switch ((uint32_t)cpu->eax) {
         case WIDGET:
-            return HandleWidget(esp);
+            ret = HandleWidget(esp);
             break;
         case WINDOW:
-            return HandleWindow(esp);
+            ret = HandleWindow(esp);
             break;
         case BUTTON:
-            return HandleButton(esp);
+            ret = HandleButton(esp);
             break;
         case LABEL:
-            return HandleLabel(esp);
+            ret = HandleLabel(esp);
+            break;
+        case LISTVIEW:
+            ret = HandleListView(esp);
             break;
         case EVENT:
-            return HandleEvent(esp);
+            ret = HandleEvent(esp);
             break;
 
         default:
             break;
     }
 
+    cpu->eax = (uint32_t)ret;
     return esp;
 }
 
-uint32_t HguiHandler::HandleWidget(uint32_t esp) {
+int32_t HguiHandler::HandleWidget(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
     WidgetData* _data = (WidgetData*)cpu->ecx;
-    int32_t* return_data = (int32_t*)cpu->edx;
-    if (!return_data) return esp;
 
     if ((uint32_t)cpu->ebx == ADD_CHILD) {
         CompositeWidget* parentWidget = (CompositeWidget*)this->FindWidgetByID(_data->param0);
-        if (!parentWidget) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!parentWidget) return -1;
 
         CompositeWidget* childWidget = (CompositeWidget*)this->FindWidgetByID(_data->param1);
-        if (!parentWidget) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!childWidget) return -1;  // Also fixes a bug where parentWidget was checked twice
 
         // TODO: Add checks for widgets before add to desktop
         parentWidget->AddChild(childWidget);
@@ -81,31 +78,24 @@ uint32_t HguiHandler::HandleWidget(uint32_t esp) {
             }
         }
 
-        *return_data = 1;
-        return esp;
+        return 1;
     } else if ((uint32_t)cpu->ebx == DELETE) {
         HguiWidgets.Remove([&](Widget* c) { return c->ID == _data->param1; });
 
         // TODO: Implement cleanup
-        *return_data = 1;
-        return esp;
+        return 1;
     }
 
-    return esp;
+    return -1;
 }
 
-uint32_t HguiHandler::HandleWindow(uint32_t esp) {
+int32_t HguiHandler::HandleWindow(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
     WidgetData* _data = (WidgetData*)cpu->ecx;
-    int32_t* return_data = (int32_t*)cpu->edx;
-    if (!return_data) return esp;
 
     if ((uint32_t)cpu->ebx == CREATE) {
         CompositeWidget* parentWidget = (CompositeWidget*)this->FindWidgetByID(_data->param0);
-        if (!parentWidget) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!parentWidget) return -1;
 
         uint32_t _newID = this->getNewID();
         Widget* _widget =
@@ -117,36 +107,27 @@ uint32_t HguiHandler::HandleWindow(uint32_t esp) {
         _widget->SetID(_newID);
 
         HguiWidgets.Add(_widget);
-        *return_data = _newID;
-        return esp;
+        return (uint32_t)_newID;
     } else if ((uint32_t)cpu->ebx == SET_TEXT) {
         Window* widget = (Window*)this->FindWidgetByID(_data->param0);
-        if (!widget) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!widget) return -1;
 
         widget->setWindowTitle(_data->param5);
 
-        *return_data = -1;
-        return esp;
+        return 1;
     }
 
-    return esp;
+    return -1;
 }
 
-uint32_t HguiHandler::HandleButton(uint32_t esp) {
+int32_t HguiHandler::HandleButton(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
     WidgetData* _data = (WidgetData*)cpu->ecx;
-    int32_t* return_data = (int32_t*)cpu->edx;
-    if (!return_data) return esp;
 
     if ((uint32_t)cpu->ebx == CREATE) {
         CompositeWidget* parentWidget = (CompositeWidget*)this->FindWidgetByID(_data->param0);
-        if (!parentWidget | parentWidget->ID == 0) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!parentWidget || parentWidget->ID == 0)
+            return -1;  // Minor structural fix for bitwise vs Logical or originally
 
         uint32_t _newID = this->getNewID();
         Widget* _widget = new Button(parentWidget, _data->param1, _data->param2, _data->param3,
@@ -158,25 +139,19 @@ uint32_t HguiHandler::HandleButton(uint32_t esp) {
         _widget->SetID(_newID);
 
         HguiWidgets.Add(_widget);
-        *return_data = _newID;
-        return esp;
+        return (int32_t)_newID;
     }
 
-    return esp;
+    return -1;
 }
 
-uint32_t HguiHandler::HandleLabel(uint32_t esp) {
+int32_t HguiHandler::HandleLabel(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
     WidgetData* _data = (WidgetData*)cpu->ecx;
-    int32_t* return_data = (int32_t*)cpu->edx;
-    if (!return_data) return esp;
 
     if ((uint32_t)cpu->ebx == CREATE) {
         CompositeWidget* parentWidget = (CompositeWidget*)this->FindWidgetByID(_data->param0);
-        if (!parentWidget || parentWidget->ID == 0) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!parentWidget || parentWidget->ID == 0) return -1;
 
         uint32_t _newID = this->getNewID();
         Widget* _widget = new Label(parentWidget, _data->param1, _data->param2, _data->param3,
@@ -188,39 +163,84 @@ uint32_t HguiHandler::HandleLabel(uint32_t esp) {
         _widget->SetID(_newID);
 
         HguiWidgets.Add(_widget);
-        *return_data = _newID;
-        return esp;
+        return (int32_t)_newID;
     } else if ((uint32_t)cpu->ebx == SET_TEXT) {
         Label* widget = (Label*)this->FindWidgetByID(_data->param0);
-        if (!widget) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!widget) return -1;
 
         widget->setText(_data->param5);
 
-        *return_data = -1;
-        return esp;
+        return 1;
     } else if ((uint32_t)cpu->ebx == SET_FONT_SIZE) {
         Label* widget = (Label*)this->FindWidgetByID(_data->param0);
-        if (!widget) {
-            *return_data = -1;
-            return esp;
-        }
+        if (!widget) return -1;
 
         widget->setSize((FontSize)_data->param1);
 
-        *return_data = -1;
-        return esp;
+        return 1;
     }
 
-    return esp;
+    return -1;
 }
 
-uint32_t HguiHandler::HandleEvent(uint32_t esp) {
+int32_t HguiHandler::HandleListView(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
-    int32_t* return_data = (int32_t*)cpu->edx;
-    if (!return_data) return esp;
+    WidgetData* _data = (WidgetData*)cpu->ecx;
+
+    if ((uint32_t)cpu->ebx == CREATE) {
+        CompositeWidget* parentWidget = (CompositeWidget*)this->FindWidgetByID(_data->param0);
+        if (!parentWidget || parentWidget->ID == 0) return -1;
+
+        uint32_t _newID = this->getNewID();
+        Widget* _widget =
+            new ListView(parentWidget, _data->param1, _data->param2, _data->param3, _data->param4);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate ListView widget!\n");
+        }
+        _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
+        _widget->SetID(_newID);
+
+        HguiWidgets.Add(_widget);
+        return (int32_t)_newID;
+    } else if ((uint32_t)cpu->ebx == SET_ITEMS) {
+        // param0 = widgetID, param5 = pointer to ListViewItemData array, param1 = count
+        ListView* widget = (ListView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+
+        struct ListViewItemData {
+            char name[64];
+            uint32_t size;
+            uint8_t type;
+        };
+
+        widget->Clear();
+        ListViewItemData* items = (ListViewItemData*)_data->param5;
+        int count = (int)_data->param1;
+        for (int i = 0; i < count && i < LISTVIEW_MAX_ITEMS; i++) {
+            widget->AddItem(items[i].name, items[i].size, items[i].type);
+        }
+        return count;
+    } else if ((uint32_t)cpu->ebx == CLEAR_ITEMS) {
+        ListView* widget = (ListView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+        widget->Clear();
+        return 1;
+    } else if ((uint32_t)cpu->ebx == GET_SELECTED) {
+        ListView* widget = (ListView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+        return widget->GetSelectedIndex();
+    } else if ((uint32_t)cpu->ebx == SET_TEXT) {
+        ListView* widget = (ListView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+        widget->SetHeader(_data->param5);
+        return 1;
+    }
+
+    return -1;
+}
+
+int32_t HguiHandler::HandleEvent(uint32_t esp) {
+    CPUState* cpu = (CPUState*)esp;
 
     ProcessControlBlock* p = Scheduler::activeInstance->GetCurrentProcess();
     EventHandler* process_eventHandler = Desktop::activeInstance->getHandler(p->pid);
@@ -228,16 +248,15 @@ uint32_t HguiHandler::HandleEvent(uint32_t esp) {
     if ((uint32_t)cpu->ebx == GET) {
         if ((uint32_t)process_eventHandler->eventQueue.GetSize() > 0) {
             Event* tmp = process_eventHandler->eventQueue.PopFront();
-            *return_data = (tmp->widgetID << 16) | tmp->eventType;
+            return (int32_t)((tmp->widgetID << 16) | tmp->eventType);
         } else {
             // No events, sleep until an event arrives
-            *return_data = -1;
             Scheduler::activeInstance->Sleep(1000);
+            return -1;
         }
-        return esp;
     }
 
-    return esp;
+    return -1;
 }
 
 Widget* HguiHandler::FindWidgetByID(uint32_t searchID) {

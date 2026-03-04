@@ -278,6 +278,23 @@ bool FAT32::IsDirectoryEmpty(uint32_t dirCluster) {
 
 // --- Public API ---
 File* FAT32::Open(char* path) {
+    if (!path || path[0] == 0 || (path[0] == '/' && path[1] == 0)) {
+        File* root = new File();
+        if (!root) {
+            HALT("CRITICAL: Failed to allocate File object!\n");
+        }
+
+        // Construct a root dir file
+        root->name[0] = '/';
+        root->name[1] = 0;
+        root->size = 0;
+        root->id = bpb.rootCluster;
+        root->position = 0;
+        root->filesystem = this;
+        root->flags = 1;  // Directory
+        return root;
+    }
+
     char filename[13];
     uint32_t parentCluster = ParsePath(path, filename);
 
@@ -309,14 +326,17 @@ File* FAT32::Open(char* path) {
     file->position = 0;
     file->filesystem = this;
 
-    if (entry.attributes & 0x10) file->flags = 1;  // Directory Flag
+    if (entry.attributes & 0x10) {
+        file->flags = 1;  // Directory Flag
+        if (file->id == 0) file->id = bpb.rootCluster;
+    }
 
     return file;
 }
 
 // Reads from the file's CURRENT position (offset) using the Cluster ID directly
-void FAT32::ReadStream(File* file, uint8_t* buffer, uint32_t length) {
-    if (!file) return;
+uint32_t FAT32::ReadStream(File* file, uint8_t* buffer, uint32_t length) {
+    if (!file || !buffer || length == 0) return 0;
 
     uint32_t currentCluster = file->id;
     uint32_t offset = file->position;
@@ -327,7 +347,7 @@ void FAT32::ReadStream(File* file, uint8_t* buffer, uint32_t length) {
     uint32_t clusterOffset = offset % clusterSize;
 
     for (int i = 0; i < clustersToSkip; i++) {
-        if (currentCluster >= 0x0FFFFFF8) return;  // End of file reached prematurely
+        if (currentCluster >= 0x0FFFFFF8) return 0;  // End reached before offset
         currentCluster = GetFATEntry(currentCluster);
     }
 
@@ -352,12 +372,14 @@ void FAT32::ReadStream(File* file, uint8_t* buffer, uint32_t length) {
                 if (bytesRead < length) {
                     buffer[bytesRead++] = secBuff[b];
                 } else {
-                    return;  // Done
+                    return bytesRead;  // Done
                 }
             }
         }
         currentCluster = GetFATEntry(currentCluster);
     }
+
+    return bytesRead;
 }
 
 void FAT32::ListRoot() {

@@ -42,6 +42,7 @@ objects = asm/common_handler.o \
           gui/fonts/font.o \
           gui/Hgui.o \
           gui/label.o \
+          gui/listview.o \
           gui/renderer/nina.o \
           gui/taskbar.o \
           gui/widget.o \
@@ -162,6 +163,7 @@ hdd:
 
 	-sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/SYS32/MeMView.bin
 	-sudo cp user_prog/test/prog.bin /mnt/vdi_p1/SYS32/test.bin
+	-sudo cp user_prog/Explorer/prog.bin /mnt/vdi_p1/SYS32/Explorer.bin
 	-sudo cp user_prog/Game3D/prog.bin /mnt/vdi_p1/ProgFile/Game3D/Game3D.bin
 
 # 	5. Cleanup

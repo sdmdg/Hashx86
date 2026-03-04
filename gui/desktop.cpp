@@ -49,6 +49,7 @@ Desktop::Desktop(int32_t w, int32_t h)
 
     // Add application launchers
     taskbar->AddApp("MemViewer", "Memory inspector", "SYS32/MEMVIEW.BIN");
+    taskbar->AddApp("Explorer", "File Manager", "SYS32/EXPLORER.BIN");
     taskbar->AddApp("Calculator", "Calculator GUI", "SYS32/TEST.BIN");
     taskbar->AddApp("Game3D", "3D Game Engine", "PROGFILE/GAME3D/GAME3D.BIN");
 

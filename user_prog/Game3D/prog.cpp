@@ -3,7 +3,7 @@
  * @brief       3D Game Engine
  *
  * @date        28/01/2026
- * @version     1.0.0
+ * @version     2.0.0
  */
 
 /*
@@ -30,9 +30,9 @@
 #define SC_Q 0x10
 #define SC_E 0x12
 
-// Internal render resolution (half the screen)
-#define RENDER_W 800
-#define RENDER_H 450
+// Internal render resolution
+#define RENDER_W 1024
+#define RENDER_H 576
 
 // ============================================================================
 // Sky Sphere Generator
@@ -114,18 +114,23 @@ uint8_t* LoadFileData(const char* filename, uint32_t* outSize) {
         return nullptr;
     }
 
-    uint32_t actualSize = 0;
-    int32_t result = syscall_read_file(filename, buffer, maxSize, &actualSize);
-
-    if (result <= 0) {
-        printf("Failed to load file: %s\n", filename);
+    int32_t fd = syscall_open(filename, 0);
+    if (fd < 0) {
+        printf("Failed to open file: %s\n", filename);
         delete[] buffer;
         return nullptr;
     }
 
-    // IMPORTANT: Use the actual bytes read (result), not the reported file size
-    uint32_t bytesRead = (uint32_t)result;
-    if (outSize) *outSize = bytesRead;
+    int32_t bytesRead = syscall_read(fd, (char*)buffer, maxSize);
+    syscall_close(fd);
+
+    if (bytesRead <= 0) {
+        printf("Failed to read file: %s\n", filename);
+        delete[] buffer;
+        return nullptr;
+    }
+
+    if (outSize) *outSize = (uint32_t)bytesRead;
     printf("Loaded file: %s (%d bytes)\n", filename, bytesRead);
     return buffer;
 }
@@ -153,7 +158,7 @@ static void BlitUpscale(uint32_t* dest, int destW, int destH, uint32_t* src, int
 extern "C" void _start(void* arg) {
     init_sys(arg);
 
-    printf("[Game3D] Starting 3D Engine...\n");
+    printf("[Game3D] Starting 3D Engine v2.0...\n");
 
     // 1. Get framebuffer
     FramebufferInfo fb = syscall_get_framebuffer();
@@ -162,7 +167,7 @@ extern "C" void _start(void* arg) {
     int screenH = (int)fb.height;
     printf("[Game3D] Framebuffer: %dx%d @ 0x%x\n", screenW, screenH, fb.buffer);
 
-    // Allocate internal render buffer at half resolution
+    // Allocate internal render buffer
     uint32_t* renderBuffer = new uint32_t[RENDER_W * RENDER_H];
     if (!renderBuffer) {
         printf("[Game3D] FATAL: Failed to allocate render buffer!\n");
@@ -178,8 +183,8 @@ extern "C" void _start(void* arg) {
 
     printf("[Game3D] Render at %dx%d, upscale to %dx%d\n", RENDER_W, RENDER_H, screenW, screenH);
 
-    // Generate Sky Sphere
-    Mesh* skyMesh = GenerateSkySphere(16, 16);
+    // Generate Sky Sphere (low poly: 8x16 = 256 tris, fast enough)
+    Mesh* skyMesh = GenerateSkySphere(8, 16);
 
     // Load Textures from disk
     Bitmap* skyTexture = nullptr;
@@ -230,6 +235,13 @@ extern "C" void _start(void* arg) {
     sceneLights[0] = Light(Vec3(-0.3f, -1.0f, -0.2f), 0.8f);
     sceneLights[1] = Light(Vec3(0.5f, -0.5f, 0.5f), 0.3f);
     sceneLights[2] = Light(Vec3(0.2f, 0.3f, 1.0f), 0.4f);
+
+    // Setup Shadow Mapping (from primary light)
+    renderer->SetupShadows(Vec3(-0.3f, -1.0f, -0.2f),  // Same as primary light direction
+                           60.0f,                      // Ortho half-size (covers 120x120 unit area)
+                           1.0f,                       // Near
+                           200.0f                      // Far
+    );
 
     // Camera State
     float camX = 0.0f, camY = 5.0f, camZ = -10.0f;
@@ -287,10 +299,22 @@ extern "C" void _start(void* arg) {
         if (camPitch > 1.5f) camPitch = 1.5f;
         if (camPitch < -1.5f) camPitch = -1.5f;
 
+        // ====================================================================
+        // SHADOW PASS - Render depth from light's perspective
+        // Only walls cast shadows (floor self-shadowing causes acne artifacts)
+        // ====================================================================
+        renderer->BeginShadowPass(camX, camY, camZ);
+
+        if (wallMesh) renderer->RenderMeshToShadowMap(wallMesh);
+
+        renderer->EndShadowPass();
+
+        // ====================================================================
         // RENDER TO INTERNAL BUFFER
+        // ====================================================================
         renderer->Clear(renderBuffer, 0xFF87CEEB);
 
-        // Draw sky
+        // Draw sky sphere
         if (skyMesh && skyTexture) {
             renderer->SetMaterial(1.0f, 0.0f, 0.0f);
             renderer->BindTexture(skyTexture);
@@ -306,7 +330,7 @@ extern "C" void _start(void* arg) {
                                sceneLights, activeLightCount);
         }
 
-        // Draw walls
+        // Draw walls/teapot
         if (wallMesh) {
             renderer->SetMaterial(0.2f, 0.3f, 8.0f);
             renderer->BindTexture(stoneTexture);
@@ -314,23 +338,19 @@ extern "C" void _start(void* arg) {
                                sceneLights, activeLightCount);
         }
 
-        // Draw crosshair on render buffer
+        // Draw crosshair
         int cx = RENDER_W / 2;
         int cy = RENDER_H / 2;
-        for (int dy = -1; dy <= 1; dy++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                int px = cx + dx;
-                int py = cy + dy;
-                if (px >= 0 && px < RENDER_W && py >= 0 && py < RENDER_H) {
-                    renderBuffer[py * RENDER_W + px] = 0xFF00FF00;
-                }
-            }
+        for (int i = -4; i <= 4; i++) {
+            if (cx + i >= 0 && cx + i < RENDER_W) renderBuffer[cy * RENDER_W + cx + i] = 0xFFFFFFFF;
+            if (cy + i >= 0 && cy + i < RENDER_H)
+                renderBuffer[(cy + i) * RENDER_W + cx] = 0xFFFFFFFF;
         }
 
         // UPSCALE TO SCREEN
         BlitUpscale(screenBuffer, screenW, screenH, renderBuffer, RENDER_W, RENDER_H);
 
-        // Frame delay (~60fps)
+        // Frame delay (~60fps target)
         syscall_sleep(16);
     }
 }

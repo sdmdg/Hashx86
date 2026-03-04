@@ -31,10 +31,13 @@ public:
     // Moves the cursor
     void Seek(uint32_t pos);
 
-    // Writes
     void Write(uint8_t* buffer, uint32_t length);
 
     void Close();
 };
+
+int32_t AllocateFd(File* file);
+File* GetFileByFd(uint32_t fd);
+void ReleaseFd(uint32_t fd);
 
 #endif

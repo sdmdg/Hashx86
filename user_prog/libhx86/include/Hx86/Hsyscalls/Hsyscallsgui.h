@@ -1,7 +1,6 @@
 #ifndef HSYSCALLSGUI_H
 #define HSYSCALLSGUI_H
 
-#include <Hx86/Hsyscalls/syscalls.h>
 #include <Hx86/stdint.h>
 
 typedef enum {
@@ -11,6 +10,7 @@ typedef enum {
     EVENT = 0x3,
     DESKTOP = 0x4,
     LABEL = 0x5,
+    LISTVIEW = 0x6,
 } REQ_Element;
 
 typedef enum {
@@ -21,6 +21,9 @@ typedef enum {
     GET = 0x4,
     SET_TEXT = 0x5,
     SET_FONT_SIZE = 0x6,
+    SET_ITEMS = 0x7,
+    CLEAR_ITEMS = 0x8,
+    GET_SELECTED = 0x9,
 } REQ_MODE;
 
 uint32_t HguiAPI(REQ_Element element, REQ_MODE mode, void* data);

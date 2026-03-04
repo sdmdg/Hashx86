@@ -288,14 +288,14 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     // even if the BSOD drawing code itself faults.
     uint32_t faulting_addr;
     asm volatile("mov %%cr2, %0" : "=r"(faulting_addr));
-    KDBG1("\n=== EXCEPTION 0x%x === Error: 0x%x\n", interruptNumber, state->error);
-    KDBG1("EIP: 0x%x  CS: 0x%x  EFLAGS: 0x%x\n", state->eip, state->cs, state->eflags);
-    KDBG1("EAX: 0x%x  EBX: 0x%x  ECX: 0x%x  EDX: 0x%x\n", state->eax, state->ebx, state->ecx,
+    KDBG1("\n=== EXCEPTION 0x%x === Error: 0x%x", interruptNumber, state->error);
+    KDBG1("EIP: 0x%x  CS: 0x%x  EFLAGS: 0x%x", state->eip, state->cs, state->eflags);
+    KDBG1("EAX: 0x%x  EBX: 0x%x  ECX: 0x%x  EDX: 0x%x", state->eax, state->ebx, state->ecx,
           state->edx);
-    KDBG1("ESP: 0x%x  EBP: 0x%x  CR2: 0x%x\n", state->esp, state->ebp, faulting_addr);
+    KDBG1("ESP: 0x%x  EBP: 0x%x  CR2: 0x%x", state->esp, state->ebp, faulting_addr);
     bool isUserFault = (state->cs & 0x3) == 3;
     if (isUserFault && scheduler && scheduler->currentThread) {
-        KDBG1("FAULT IN USER MODE: TID=%d PID=%d\n", scheduler->currentThread->tid,
+        KDBG1("FAULT IN USER MODE: TID=%d PID=%d", scheduler->currentThread->tid,
               scheduler->currentThread->pid);
     }
     KernelSymbolTable::PrintStackTrace(20);
@@ -309,14 +309,14 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     // User-mode stack trace: walk EBP chain via physical address translation
     if (isUserFault && scheduler && scheduler->currentThread && scheduler->currentThread->parent) {
         uint32_t* userPD = scheduler->currentThread->parent->page_directory;
-        KDBG1("\n[ User Stack Trace (EBP chain) ]\n");
-        KDBG1(" 0x%x  <-- faulting EIP\n", state->eip);
+        KDBG1("\n[ User Stack Trace (EBP chain) ]");
+        KDBG1(" 0x%x  <-- faulting EIP", state->eip);
 
         uint32_t userEBP = state->ebp;
         for (int i = 0; i < 32 && userEBP >= 0x1000; i++) {
             uint32_t physAddr = pager->GetPhysicalAddress(userPD, userEBP);
             if (!physAddr) {
-                KDBG1(" (EBP 0x%x not mapped)\n", userEBP);
+                KDBG1(" (EBP 0x%x not mapped)", userEBP);
                 break;
             }
 
@@ -325,7 +325,7 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
             uint32_t retAddr = frame[1];  // return address at [EBP+4]
 
             if (retAddr == 0) break;
-            KDBG1(" 0x%x\n", retAddr);
+            KDBG1(" 0x%x", retAddr);
 
             userEBP = nextEBP;
         }

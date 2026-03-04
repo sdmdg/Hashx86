@@ -7,6 +7,7 @@
  */
 
 #include <Hx86/Hgui/desktop.h>
+#include <Hx86/Hx86.h>
 
 Desktop* Desktop::activeInstance = nullptr;
 

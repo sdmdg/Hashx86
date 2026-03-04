@@ -124,25 +124,14 @@ ProcessControlBlock* ELFLoader::loadELF(File* elf, void* args) {
 
     delete[] ph_table;
 
-    // Allocate User Heap (Simple)
+    // Set up heap segment — no pages pre-allocated, brk will grow on demand
     max_virt_end = (max_virt_end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
-    const int HEAP_PAGE_COUNT = 64;  // 256KB Initial Heap (will grow via sys_sbrk)
-    uint32_t heap_start = max_virt_end;
-    uint32_t heap_end = heap_start + HEAP_PAGE_COUNT * PAGE_SIZE;
+    pELF->heap.startAddress = max_virt_end;
+    pELF->heap.endAddress = max_virt_end;  // Zero-size initially, grown by brk
+    pELF->heap.maxAddress = max_virt_end + (1024 * 1024 * 256);  // Allow growing up to 256MB
 
-    for (uint32_t addr = heap_start; addr < heap_end; addr += PAGE_SIZE) {
-        uint32_t phys_frame = (uint32_t)pmm_alloc_block();
-        // The heap allocator doesn't require zeroed pages
-        this->pager->MapPage(pELF->page_directory, addr, phys_frame,
-                             PAGE_PRESENT | PAGE_RW | PAGE_USER);
-    }
-
-    pELF->heap.startAddress = heap_start;
-    pELF->heap.endAddress = heap_end;
-    pELF->heap.maxAddress = heap_end + (1024 * 1024 * 32);  // Allow growing up to 32MB later
-
-    KDBG1("ELF Loaded. Entry: 0x%x Heap: 0x%x - 0x%x", header.entry, heap_start, heap_end);
+    KDBG1("ELF Loaded. Entry: 0x%x Heap start: 0x%x", header.entry, max_virt_end);
 
     return pELF;
 };

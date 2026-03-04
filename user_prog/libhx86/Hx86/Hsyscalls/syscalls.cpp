@@ -12,108 +12,138 @@ void syscall_exit(uint32_t status = 0) {
     asm volatile("int $0x80" : : "a"(sys_exit), "b"(status));
 }
 
-HeapData syscall_heap() {
-    int32_t retun_data = -1;
-
-    uint32_t retun_data1 = 0;
-    uint32_t retun_data2 = 0;
-    multi_para_model data = {retun_data1, retun_data2, 0, 0, 0};
+int32_t syscall_read(uint32_t fd, char* buf, uint32_t count) {
+    int32_t return_data = -1;
     asm volatile("int $0x80"
-                 :
-                 : "a"(sys_Hcall), "b"(Hsys_getHeap), "c"((void*)&data), "d"((void*)&retun_data));
-
-    while (retun_data == -1);
-    HeapData heapdata = {data.param0, data.param1};
-    return heapdata;
+                 : "=a"(return_data)
+                 : "a"(sys_read), "b"(fd), "c"(buf), "d"(count)
+                 : "memory");
+    return return_data;
 }
 
-uint32_t syscall_register_event_handler(void (*entrypoint)(void*), void* arg) {
-    int32_t retun_data = -1;
-    multi_para_model data = {(uint32_t)arg, (uint32_t)entrypoint, 0, 0, 0};
-    asm volatile("int $0x80"
-                 :
-                 : "a"(sys_Hcall), "b"(Hsys_regEventH), "c"(&data), "d"((void*)&retun_data));
+int32_t syscall_open(const char* path, int32_t flags) {
+    int32_t return_data = -1;
+    asm volatile("int $0x80" : "=a"(return_data) : "a"(sys_open), "b"(path), "c"(flags) : "memory");
+    return return_data;
+}
 
-    while (retun_data == -1);
-    return (uint32_t)retun_data;
+int32_t syscall_close(uint32_t fd) {
+    int32_t return_data = -1;
+    asm volatile("int $0x80" : "=a"(return_data) : "a"(sys_close), "b"(fd) : "memory");
+    return return_data;
+}
+
+int32_t syscall_execve(const char* path, char* const argv[], char* const envp[]) {
+    int32_t return_data = -1;
+    asm volatile("int $0x80"
+                 : "=a"(return_data)
+                 : "a"(sys_execve), "b"(path), "c"(argv), "d"(envp)
+                 : "memory");
+    return return_data;
+}
+
+int32_t syscall_brk(int32_t increment) {
+    int32_t current_brk;
+    int32_t new_brk;
+
+    // Get current brk
+    asm volatile("int $0x80" : "=a"(current_brk) : "a"(sys_brk), "b"(0));
+
+    if (increment == 0) {
+        return current_brk;
+    }
+
+    // Set new brk
+    asm volatile("int $0x80" : "=a"(new_brk) : "a"(sys_brk), "b"(current_brk + increment));
+
+    if (new_brk == -1 || new_brk == current_brk) {
+        return -1;  // Failed to allocate
+    }
+
+    return current_brk;  // Return old program break on success
+}
+
+int32_t syscall_stat(const char* path, struct stat* statbuf) {
+    int32_t return_data = -1;
+    asm volatile("int $0x80"
+                 : "=a"(return_data)
+                 : "a"(sys_stat), "b"(path), "c"(statbuf)
+                 : "memory");
+    return return_data;
 }
 
 uint32_t syscall_clone(void (*entrypoint)(void*), void* arg) {
-    int32_t retun_data = -1;
+    int32_t return_data = -1;
+    // We pass entrypoint via clone_flags (ebx) temporarily, and arg via child_stack (ecx)
     asm volatile("int $0x80"
-                 :
-                 : "a"(sys_clone), "b"(entrypoint), "c"(arg), "d"((void*)&retun_data));
+                 : "=a"(return_data)
+                 : "a"(sys_clone), "b"(entrypoint), "c"(arg)
+                 : "memory");
 
-    while (retun_data == -1);
-    return (uint32_t)retun_data;
+    return (uint32_t)return_data;
 }
 
-void syscall_sleep(uint32_t ms) {
-    asm volatile("int $0x80" : : "a"(sys_sleep), "b"(ms));
+int32_t syscall_getdents(uint32_t fd, struct linux_dirent* dirp, uint32_t count) {
+    int32_t return_data = -1;
+    asm volatile("int $0x80"
+                 : "=a"(return_data)
+                 : "a"(sys_getdents), "b"(fd), "c"(dirp), "d"(count)
+                 : "memory");
+    return return_data;
+}
+
+void syscall_nanosleep(struct timespec* req, struct timespec* rem) {
+    asm volatile("int $0x80" : : "a"(sys_nanosleep), "b"(req), "c"(rem) : "memory");
 }
 
 void syscall_debug(const char* str) {
     asm volatile("int $0x80" : : "a"(sys_debug), "b"(str));
 }
 
-int32_t syscall_sbrk(int32_t increment) {
-    int32_t return_data;
-    asm volatile("int $0x80" : : "a"(sys_sbrk), "b"(increment), "d"(&return_data));
-    return return_data;
-}
-
 uint32_t syscall_peek_memory(uint32_t address, uint32_t size) {
+    int32_t val = 0;
     int32_t return_data = 0;
     asm volatile("int $0x80"
-                 :
-                 : "a"(sys_peek_memory), "b"(address), "c"(size), "d"((void*)&return_data)
+                 : "=a"(return_data)
+                 : "a"(sys_peek_memory), "b"(address), "c"(size), "d"(&val)
                  : "memory");
-    return (uint32_t)return_data;
+    return (uint32_t)val;
 }
 
 uint32_t syscall_Hgui(uint32_t element, uint32_t mode, void* data) {
-    int32_t retun_data;
-    asm volatile("int $0x81" : : "a"(element), "b"(mode), "c"(data), "d"((void*)&retun_data));
-
-    while (!retun_data);
-    return (uint32_t)retun_data;
+    int32_t return_data = -1;
+    asm volatile("int $0x81" : "=a"(return_data) : "a"(element), "b"(mode), "c"(data));
+    return (uint32_t)return_data;
 }
 
-FramebufferInfo syscall_get_framebuffer() {
-    int32_t retun_data = -1;
-    multi_para_model data = {0, 0, 0, 0, 0};
+uint32_t syscall_register_event_handler(void (*entrypoint)(void*), void* arg) {
+    int32_t return_data = -1;
     asm volatile("int $0x80"
-                 :
-                 : "a"(sys_Hcall), "b"(Hsys_getFramebuffer), "c"((void*)&data),
-                   "d"((void*)&retun_data)
+                 : "=a"(return_data)
+                 : "a"(sys_Hcall), "b"(Hsys_regEventH), "c"(arg), "d"(entrypoint)
                  : "memory");
-    while (retun_data == -1);
-    FramebufferInfo info;
-    info.buffer = data.param0;
-    info.width = data.param1;
-    info.height = data.param2;
-    return info;
+
+    return (uint32_t)return_data;
 }
 
 void syscall_get_input(InputState* state) {
-    int32_t retun_data = -1;
-    multi_para_model data = {(uint32_t)state, 0, 0, 0, 0};
+    int32_t return_data = -1;
     asm volatile("int $0x80"
-                 :
-                 : "a"(sys_Hcall), "b"(Hsys_getInput), "c"((void*)&data), "d"((void*)&retun_data)
+                 : "=a"(return_data)
+                 : "a"(sys_Hcall), "b"(Hsys_getInput), "c"(state)
                  : "memory");
-    while (retun_data == -1);
 }
-
-int32_t syscall_read_file(const char* filename, uint8_t* buffer, uint32_t maxSize,
-                          uint32_t* actualSize) {
-    int32_t retun_data = -1;
-    multi_para_model data = {(uint32_t)filename, (uint32_t)buffer, maxSize, 0, 0};
+FramebufferInfo syscall_get_framebuffer() {
+    uint32_t buffer = 0, width = 0, height = 0;
+    int32_t return_data = -1;
     asm volatile("int $0x80"
-                 :
-                 : "a"(sys_Hcall), "b"(Hsys_readFile), "c"((void*)&data), "d"((void*)&retun_data)
+                 : "=a"(return_data)
+                 : "a"(sys_Hcall), "b"(Hsys_getFramebuffer), "c"(&buffer), "d"(&width), "S"(&height)
                  : "memory");
-    // retun_data == -1 means failure; don't spin-wait
-    if (actualSize) *actualSize = data.param3;
-    return retun_data;
+
+    FramebufferInfo info;
+    info.buffer = buffer;
+    info.width = width;
+    info.height = height;
+    return info;
 }

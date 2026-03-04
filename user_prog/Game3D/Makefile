@@ -7,7 +7,7 @@ LD = ld
 INCLUDES = -Iinclude -I../libhx86/include
 
 # Compiler Flags
-CPPFLAGS = -m32 -g -ffreestanding -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common $(INCLUDES)
+CPPFLAGS = -m32 -O2 -g -ffreestanding -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-common $(INCLUDES)
 
 # Linker Flags: Link against the static library in ../libhx86
 LDFLAGS = -melf_i386 -L../libhx86 -lhx86

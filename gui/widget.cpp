@@ -91,7 +91,7 @@ void Widget::SetFocussable(bool focussable) {
 // Child Management
 
 bool Widget::AddChild(Widget* child) {
-    childrenList.Add(child);
+    childrenList.PushBack(child);
     child->parent = this;
     this->MarkDirty();
     return true;

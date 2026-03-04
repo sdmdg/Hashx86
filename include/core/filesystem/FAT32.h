@@ -62,7 +62,7 @@ public:
 
     // User API
     File* Open(char* path);
-    void ReadStream(File* file, uint8_t* buffer, uint32_t length);
+    uint32_t ReadStream(File* file, uint8_t* buffer, uint32_t length);
     void ListRoot();
     void ListDir(char* path);
     void CreateFile(char* path);

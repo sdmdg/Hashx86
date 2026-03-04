@@ -3,42 +3,38 @@
 #define SYSCALLS_H
 
 #include <core/interrupts.h>
+#include <core/syscalls_x86.h>
 #include <debug.h>
 #include <gui/Hgui.h>
 #include <gui/gui.h>
 #include <types.h>
 
-typedef enum {
-    sys_restart = 0,
-    sys_exit = 1,
-    sys_fork = 2,
-    sys_read = 3,
-    sys_write = 4,
-    sys_open = 5,
-    sys_close = 6,
-    sys_sleep = 7,
-    sys_sbrk = 8,
-    sys_peek_memory = 9,
-    sys_clone = 41,
-    sys_Hcall = 199,
-    sys_debug = 200,
-} SYSCALL;
-
-typedef enum {
-    Hsys_getHeap = 0,
-    Hsys_regEventH = 1,
-    Hsys_getFramebuffer = 2,
-    Hsys_getInput = 3,
-    Hsys_readFile = 4
-} HSYSCALL;
-
-struct multi_para_model {
-    uint32_t param0;
-    uint32_t param1;
-    uint32_t param2;
-    uint32_t param3;
-    uint32_t param4;
+struct timespec {
+    int32_t tv_sec;
+    int32_t tv_nsec;
 };
+
+struct stat {
+    uint32_t st_dev;      // ID of device containing file
+    uint32_t st_ino;      // Inode number
+    uint32_t st_mode;     // File type and mode
+    uint32_t st_nlink;    // Number of hard links
+    uint32_t st_uid;      // User ID of owner
+    uint32_t st_gid;      // Group ID of owner
+    uint32_t st_rdev;     // Device ID (if special file)
+    uint32_t st_size;     // Total size, in bytes
+    uint32_t st_blksize;  // Block size for filesystem I/O
+    uint32_t st_blocks;   // Number of 512B blocks allocated
+};
+
+struct linux_dirent {
+    uint32_t d_ino;     // Inode number
+    uint32_t d_off;     // Offset to next linux_dirent
+    uint16_t d_reclen;  // Length of this linux_dirent
+    char d_name[];      // Filename (null-terminated)
+};
+
+typedef enum { Hsys_regEventH = 1, Hsys_getFramebuffer = 2, Hsys_getInput = 3 } HSYSCALL;
 
 class SyscallHandler : public InterruptHandler {
 public:
@@ -50,14 +46,24 @@ public:
 
 class SyscallHandlers {
 public:
-    static void Handle_sys_restart(uint32_t esp);
-    static void Handle_sys_exit(uint32_t esp);
-    static void Handle_sys_clone(uint32_t esp);
-    static void Handle_sys_sleep(uint32_t esp);
-    static void Handle_sys_sbrk(uint32_t esp);
-    static void Handle_sys_debug(uint32_t esp);
-    static void Handle_sys_peek_memory(uint32_t esp);
-    static void Handle_sys_Hcall(uint32_t esp);
+    static int32_t Handle_sys_restart_syscall();
+    static int32_t Handle_sys_exit(uint32_t status);
+    static int32_t Handle_sys_read(uint32_t fd, char* buf, uint32_t count);
+    static int32_t Handle_sys_open(const char* path, int32_t flags);
+    static int32_t Handle_sys_close(uint32_t fd);
+    static int32_t Handle_sys_execve(const char* path, char* const argv[], char* const envp[]);
+    static int32_t Handle_sys_brk(uint32_t brk);
+    static int32_t Handle_sys_stat(const char* path, struct stat* statbuf);
+    static int32_t Handle_sys_clone(uint32_t clone_flags, void* child_stack, void* parent_tid,
+                                    void* tls, void* child_tid);
+    static int32_t Handle_sys_getdents(uint32_t fd, struct linux_dirent* dirp, uint32_t count);
+    static int32_t Handle_sys_nanosleep(struct timespec* req, struct timespec* rem);
+
+    static int32_t Handle_sys_debug(char* str);
+    static int32_t Handle_sys_peek_memory(uint32_t address, uint32_t size, int32_t* return_data);
+
+    static int32_t Handle_sys_Hcall(uint32_t hcall_id, uint32_t arg1, uint32_t arg2, uint32_t arg3,
+                                    uint32_t arg4);
 };
 
 #endif  // SYSCALLS_H
