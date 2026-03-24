@@ -29,8 +29,8 @@
 #include <debug.h>
 #include <gui/Hgui.h>
 #include <gui/bmp.h>
-#include <gui/gui.h>
 #include <gui/fonts/vga.h>
+#include <gui/gui.h>
 #include <gui/renderer/nina.h>
 #include <stdint.h>
 #include <stdlib.h>

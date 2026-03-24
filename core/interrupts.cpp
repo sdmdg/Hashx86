@@ -7,10 +7,12 @@
  */
 
 #define KDBG_COMPONENT "IDT"
+#include <core/CrashReporter.h>
 #include <core/Iguard.h>
 #include <core/KernelSymbolResolver.h>
 #include <core/filesystem/FAT32.h>
 #include <core/interrupts.h>
+#include <gui/Hgui.h>
 
 static uint16_t HWInterruptOffset = 0x20;
 extern void FlushSerial();
@@ -302,12 +304,10 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     // FLUSH serial NOW before Deactivate/BSOD, because BSOD code may fault
     FlushSerial();
 
-    Deactivate();
-    this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
-    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
-
     // User-mode stack trace: walk EBP chain via physical address translation
     if (isUserFault && scheduler && scheduler->currentThread && scheduler->currentThread->parent) {
+        uint32_t crashedPid = scheduler->currentThread->pid;
+        uint32_t crashedTid = scheduler->currentThread->tid;
         uint32_t* userPD = scheduler->currentThread->parent->page_directory;
         KDBG1("\n[ User Stack Trace (EBP chain) ]");
         KDBG1(" 0x%x  <-- faulting EIP", state->eip);
@@ -329,7 +329,30 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
 
             userEBP = nextEBP;
         }
+
+        CrashReporter::ShowUserCrashDialog(crashedPid, crashedTid, interruptNumber, state->error,
+                                           state->eip, faulting_addr, (uint32_t)timerTicks);
+
+        scheduler->KillProcess(crashedPid);
+        if (Desktop::activeInstance) {
+            Desktop::activeInstance->RemoveAppByPID(crashedPid);
+        }
+        if (HguiHandler::activeInstance) {
+            HguiHandler::activeInstance->RemoveAppByPID(crashedPid);
+        }
+
+        // Release framebuffer ownership if the crashed app held fullscreen mode.
+        if (g_stop_gui_rendering && g_gui_owner_pid == (int)crashedPid) {
+            g_stop_gui_rendering = false;
+            g_gui_owner_pid = -1;
+            if (Desktop::activeInstance) Desktop::activeInstance->MarkDirty();
+        }
+
+        return (uint32_t)scheduler->Schedule((CPUState*)esp);
     }
+    Deactivate();
+    this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
+    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
 
     // PANIC
     g_GraphicsDriver->FillRectangle(0, 0, GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);

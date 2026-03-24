@@ -33,6 +33,12 @@ public:
     ProcessControlBlock* CreateProcess(bool isKernel, void (*entrypoint)(void*), void* arg);
     ThreadControlBlock* CreateThread(ProcessControlBlock* parent, void (*entrypoint)(void*),
                                      void* arg);
+    ThreadControlBlock* CloneCurrentThread(CPUState* parentContext, uint32_t clone_flags,
+                                           void* child_stack, void* parent_tid, void* tls,
+                                           void* child_tid);
+    ThreadControlBlock* CloneCurrentProcess(CPUState* parentContext, uint32_t clone_flags,
+                                            void* child_stack, void* parent_tid, void* tls,
+                                            void* child_tid);
 
     bool KillProcess(uint32_t pid);
     void TerminateThread(ThreadControlBlock* thread);

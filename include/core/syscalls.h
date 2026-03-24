@@ -54,8 +54,9 @@ public:
     static int32_t Handle_sys_execve(const char* path, char* const argv[], char* const envp[]);
     static int32_t Handle_sys_brk(uint32_t brk);
     static int32_t Handle_sys_stat(const char* path, struct stat* statbuf);
-    static int32_t Handle_sys_clone(uint32_t clone_flags, void* child_stack, void* parent_tid,
-                                    void* tls, void* child_tid);
+    static int32_t Handle_sys_clone(CPUState* parent_context, uint32_t clone_flags,
+                                    void* child_stack, void* parent_tid, void* tls,
+                                    void* child_tid);
     static int32_t Handle_sys_getdents(uint32_t fd, struct linux_dirent* dirp, uint32_t count);
     static int32_t Handle_sys_nanosleep(struct timespec* req, struct timespec* rem);
 

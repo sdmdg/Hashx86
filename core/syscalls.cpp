@@ -9,12 +9,12 @@
 #define KDBG_COMPONENT "SYSCALL"
 #include <core/drivers/keyboard.h>
 #include <core/drivers/mouse.h>
+#include <core/filesystem/File.h>
 #include <core/filesystem/msdospart.h>
 #include <core/globals.h>
 #include <core/paging.h>
 #include <core/pmm.h>
 #include <core/syscalls.h>
-#include <core/filesystem/File.h>
 
 SyscallHandler::SyscallHandler(uint8_t InterruptNumber, InterruptManager* interruptManager)
     : InterruptHandler(InterruptNumber + 0x20, interruptManager) {}
@@ -70,7 +70,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
 
         case sys_clone:
             return_val = SyscallHandlers::Handle_sys_clone(
-                cpu->ebx, (void*)cpu->ecx, (void*)cpu->edx, (void*)cpu->esi, (void*)cpu->edi);
+                cpu, cpu->ebx, (void*)cpu->ecx, (void*)cpu->edx, (void*)cpu->esi, (void*)cpu->edi);
             break;
 
         case sys_getdents:
@@ -305,20 +305,35 @@ int32_t SyscallHandlers::Handle_sys_stat(const char* path, struct stat* statbuf)
     return -1;
 }
 
-int32_t SyscallHandlers::Handle_sys_clone(uint32_t clone_flags, void* child_stack, void* parent_tid,
-                                          void* tls, void* child_tid) {
-    KDBG1("sys_clone: Creating a new Thread");
+int32_t SyscallHandlers::Handle_sys_clone(CPUState* parent_context, uint32_t clone_flags,
+                                          void* child_stack, void* parent_tid, void* tls,
+                                          void* child_tid) {
+    Scheduler* sched = Scheduler::activeInstance;
+    if (!sched || !parent_context) return -1;
 
-    ProcessControlBlock* current_process = Scheduler::activeInstance->GetCurrentProcess();
+    KDBG1("sys_clone: flags=0x%x child_stack=0x%x", clone_flags, (uint32_t)child_stack);
 
-    // Fallback/adapt to old thread creation (we're hacking clone to map to CreateThread)
-    // Note: older logic passed entrypoint via EBX and arg via ECX.
-    // We assume child_stack holds the argument context here for now just to maintain compilation.
-    // In reality sys_clone behaves fundamentally different than thread spawning like this,
-    // but we will maintain functional parity.
-    return (int32_t)Scheduler::activeInstance->CreateThread(
-        current_process, reinterpret_cast<void (*)(void*)>(clone_flags),
-        reinterpret_cast<void*>(child_stack));
+    constexpr uint32_t CLONE_VM = 0x00000100;
+
+    ThreadControlBlock* child = nullptr;
+    if (clone_flags & CLONE_VM) {
+        child = sched->CloneCurrentThread(parent_context, clone_flags, child_stack, parent_tid, tls,
+                                          child_tid);
+        if (!child) {
+            KDBG1("sys_clone: failed to clone thread");
+            return -1;
+        }
+    } else {
+        child = sched->CloneCurrentProcess(parent_context, clone_flags, child_stack, parent_tid,
+                                           tls, child_tid);
+        if (!child) {
+            KDBG1("sys_clone: failed to clone process");
+            return -1;
+        }
+    }
+
+    // Parent return value: child TID (child sees 0 via cloned context->eax).
+    return (int32_t)child->tid;
 }
 
 int32_t SyscallHandlers::Handle_sys_getdents(uint32_t fd, struct linux_dirent* dirp,

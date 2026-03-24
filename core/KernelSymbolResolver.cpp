@@ -122,7 +122,7 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
     // Get the current EBP register
     asm volatile("mov %%ebp, %0" : "=r"(stack));
 
-    KDBG1("\n[ Stack Trace ]");
+    KDBG1("[ Stack Trace ]");
 
     for (unsigned int i = 0; i < maxFrames; ++i) {
         // If the stack pointer is null or invalid, stop
@@ -133,15 +133,25 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
         // would cause a page fault and infinite loop since activeInstance=0.
         if ((uint32_t)stack < 0x1000 || (uint32_t)stack >= 0x10000000) break;
 
-        // Print
-        uint32_t offset = 0;
-        const char* name = KernelSymbolTable::Lookup(stack->eip, &offset);
-        if (name)
-            KDBG1(" 0x%x <%s+%d>", stack->eip, name, (int32_t)offset);
-        else
-            KDBG1(" 0x%x", stack->eip);
+        /*
+        [K.SYMBOL] [ Stack Trace ]
+        Bypass [K.SYMBOL] 0 <InterruptManager::DohandleException(unsigned char, unsigned int)+328>
+        Bypass [K.SYMBOL] 1 <InterruptManager::handleException(unsigned char, unsigned int)+72>
+        Bypass [K.SYMBOL] 2 <InterruptManager::HandleInterruptRequest0x81()+80>
+        */
+        if (i > 2) {
+            // Print
+            uint32_t offset = 0;
+            const char* name = Lookup(stack->eip, &offset);
+            if (name)
+                KDBG1(" 0x%x <%s+%d>", stack->eip, name, (int32_t)offset);
+            else
+                KDBG1(" 0x%x", stack->eip);
+        }
 
         // Move to the previous frame (walk up the stack)
         stack = stack->ebp;
     }
+
+    KDBG1("[ End of Stack Trace ]\n");
 }

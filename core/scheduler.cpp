@@ -226,6 +226,212 @@ ThreadControlBlock* Scheduler::CreateThread(ProcessControlBlock* parent, void (*
     return tcb;
 }
 
+ThreadControlBlock* Scheduler::CloneCurrentThread(CPUState* parentContext, uint32_t clone_flags,
+                                                  void* child_stack, void* parent_tid, void* tls,
+                                                  void* child_tid) {
+    InterruptGuard guard;
+
+    if (!currentThread || !currentThread->parent || !parentContext) {
+        return nullptr;
+    }
+
+    ProcessControlBlock* parent = currentThread->parent;
+    ThreadControlBlock* tcb = new ThreadControlBlock();
+    if (!tcb) return nullptr;
+
+    tcb->tid = _tidCounter++;
+    tcb->parent = parent;
+    tcb->pid = parent->pid;
+    tcb->wakeTime = 0;
+
+    // Each thread still needs its own kernel stack for IRQ/syscall context switches.
+    tcb->stack = (uint8_t*)kmalloc(KERNEL_STACK_SIZE);
+    if (!tcb->stack) {
+        delete tcb;
+        return nullptr;
+    }
+
+    uint32_t* stackTop = (uint32_t*)(tcb->stack + KERNEL_STACK_SIZE);
+    tcb->context = (CPUState*)((uint8_t*)stackTop - sizeof(CPUState));
+    memcpy(tcb->context, parentContext, sizeof(CPUState));
+
+    // Linux clone contract: child returns 0 from clone.
+    tcb->context->eax = 0;
+
+    // If a child stack is provided, child resumes with that user stack pointer.
+    if (child_stack) {
+        tcb->context->esp = (uint32_t)child_stack;
+    }
+
+    // Best-effort handling for common TID reporting flags.
+    constexpr uint32_t CLONE_PARENT_SETTID = 0x00100000;
+    constexpr uint32_t CLONE_CHILD_SETTID = 0x01000000;
+    constexpr uint32_t USER_LOWER_BOUND = 0x10000000;
+
+    if ((clone_flags & CLONE_PARENT_SETTID) && parent_tid &&
+        (uint32_t)parent_tid >= USER_LOWER_BOUND) {
+        *((uint32_t*)parent_tid) = tcb->tid;
+    }
+    if ((clone_flags & CLONE_CHILD_SETTID) && child_tid &&
+        (uint32_t)child_tid >= USER_LOWER_BOUND) {
+        *((uint32_t*)child_tid) = tcb->tid;
+    }
+
+    // TLS install is architecture-ABI specific; keep ignored for now.
+    (void)tls;
+
+    parent->threads.PushBack(tcb);
+    tcb->state = THREAD_STATE_READY;
+    readyQueue.PushBack(tcb);
+
+    KDBG1("CloneCurrentThread parent TID=%d -> child TID=%d PID=%d EIP=0x%x ESP=0x%x",
+          currentThread->tid, tcb->tid, tcb->pid, tcb->context->eip, tcb->context->esp);
+
+    return tcb;
+}
+
+ThreadControlBlock* Scheduler::CloneCurrentProcess(CPUState* parentContext, uint32_t clone_flags,
+                                                   void* child_stack, void* parent_tid, void* tls,
+                                                   void* child_tid) {
+    InterruptGuard guard;
+
+    if (!currentThread || !currentThread->parent || !parentContext) {
+        return nullptr;
+    }
+
+    ProcessControlBlock* parent = currentThread->parent;
+    if (parent->isKernelProcess) {
+        KDBG1("CloneCurrentProcess: kernel process clone is unsupported");
+        return nullptr;
+    }
+
+    ProcessControlBlock* childProc = new ProcessControlBlock();
+    if (!childProc) return nullptr;
+
+    childProc->pid = _pidCounter++;
+    childProc->isKernelProcess = false;
+    childProc->parent = parent;
+    childProc->page_directory = _pager->CreateProcessDirectory();
+    childProc->heap = parent->heap;
+
+    if (!childProc->page_directory) {
+        delete childProc;
+        return nullptr;
+    }
+
+    auto freeChildAddressSpace = [&]() {
+        for (uint32_t pd = 64; pd < 768; pd++) {
+            if (!(childProc->page_directory[pd] & PAGE_PRESENT)) continue;
+
+            uint32_t* pt = (uint32_t*)(childProc->page_directory[pd] & 0xFFFFF000);
+            for (uint32_t i = 0; i < 1024; i++) {
+                if (!(pt[i] & PAGE_PRESENT)) continue;
+                uint32_t phys = pt[i] & 0xFFFFF000;
+                if (phys && phys != _trampolinePhys) {
+                    pmm_free_block((void*)phys);
+                }
+                pt[i] = 0;
+            }
+
+            pmm_free_block((void*)(childProc->page_directory[pd] & 0xFFFFF000));
+            childProc->page_directory[pd] = 0;
+        }
+
+        pmm_free_block(childProc->page_directory);
+        childProc->page_directory = nullptr;
+    };
+
+    // Duplicate user-space mappings [256MB, 3GB) page-by-page.
+    for (uint32_t pd = 64; pd < 768; pd++) {
+        if (!(parent->page_directory[pd] & PAGE_PRESENT)) continue;
+
+        uint32_t* parentTable = (uint32_t*)(parent->page_directory[pd] & 0xFFFFF000);
+        for (uint32_t pt = 0; pt < 1024; pt++) {
+            if (!(parentTable[pt] & PAGE_PRESENT)) continue;
+
+            uint32_t srcPhys = parentTable[pt] & 0xFFFFF000;
+            uint32_t dstPhys = (uint32_t)pmm_alloc_block_low(256 * 1024 * 1024);
+            if (!dstPhys) {
+                KDBG1("CloneCurrentProcess: out of low memory while copying pages");
+                freeChildAddressSpace();
+                delete childProc;
+                return nullptr;
+            }
+
+            memcpy((void*)dstPhys, (void*)srcPhys, PAGE_SIZE);
+
+            uint32_t virt = (pd << 22) | (pt << 12);
+            uint32_t flags = parentTable[pt] & 0xFFF;
+            if (!_pager->MapPage(childProc->page_directory, virt, dstPhys, flags)) {
+                pmm_free_block((void*)dstPhys);
+                freeChildAddressSpace();
+                delete childProc;
+                return nullptr;
+            }
+        }
+    }
+
+    ThreadControlBlock* tcb = new ThreadControlBlock();
+    if (!tcb) {
+        freeChildAddressSpace();
+        delete childProc;
+        return nullptr;
+    }
+
+    tcb->tid = _tidCounter++;
+    tcb->parent = childProc;
+    tcb->pid = childProc->pid;
+    tcb->wakeTime = 0;
+    tcb->stack = (uint8_t*)kmalloc(KERNEL_STACK_SIZE);
+    if (!tcb->stack) {
+        delete tcb;
+        freeChildAddressSpace();
+        delete childProc;
+        return nullptr;
+    }
+
+    uint32_t* stackTop = (uint32_t*)(tcb->stack + KERNEL_STACK_SIZE);
+    tcb->context = (CPUState*)((uint8_t*)stackTop - sizeof(CPUState));
+    memcpy(tcb->context, parentContext, sizeof(CPUState));
+    tcb->context->eax = 0;
+
+    if (child_stack) {
+        tcb->context->esp = (uint32_t)child_stack;
+    }
+
+    constexpr uint32_t CLONE_PARENT_SETTID = 0x00100000;
+    constexpr uint32_t CLONE_CHILD_SETTID = 0x01000000;
+    constexpr uint32_t USER_LOWER_BOUND = 0x10000000;
+
+    if ((clone_flags & CLONE_PARENT_SETTID) && parent_tid &&
+        (uint32_t)parent_tid >= USER_LOWER_BOUND) {
+        *((uint32_t*)parent_tid) = tcb->tid;
+    }
+
+    if ((clone_flags & CLONE_CHILD_SETTID) && child_tid &&
+        (uint32_t)child_tid >= USER_LOWER_BOUND) {
+        uint32_t childTidPhys =
+            _pager->GetPhysicalAddress(childProc->page_directory, (uint32_t)child_tid);
+        if (childTidPhys) {
+            *((uint32_t*)childTidPhys) = tcb->tid;
+        }
+    }
+
+    // TLS setup is deferred until TLS/GDT model support is wired.
+    (void)tls;
+
+    childProc->threads.PushBack(tcb);
+    tcb->state = THREAD_STATE_READY;
+    readyQueue.PushBack(tcb);
+    globalProcessList.PushBack(childProc);
+
+    KDBG1("CloneCurrentProcess parent PID=%d/TID=%d -> child PID=%d/TID=%d EIP=0x%x ESP=0x%x",
+          parent->pid, currentThread->tid, childProc->pid, tcb->tid, tcb->context->eip,
+          tcb->context->esp);
+
+    return tcb;
+}
+
 bool Scheduler::KillProcess(uint32_t pid) {
     ProcessControlBlock* target = nullptr;
     int pCount = globalProcessList.GetSize();

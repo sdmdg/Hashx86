@@ -22,6 +22,7 @@ objects = asm/common_handler.o \
           core/filesystem/FAT32.o \
           core/filesystem/File.o \
           core/filesystem/msdospart.o \
+		  core/CrashReporter.o \
           core/gdt.o \
           core/globals.o \
           core/interrupts.o \
@@ -41,9 +42,12 @@ objects = asm/common_handler.o \
           gui/elements/window_action_button_round.o \
           gui/fonts/font.o \
           gui/Hgui.o \
+		  gui/infodialog.o \
           gui/label.o \
           gui/listview.o \
+          gui/progressbar.o \
           gui/renderer/nina.o \
+		  gui/terminalview.o \
           gui/taskbar.o \
           gui/widget.o \
           gui/window.o \
@@ -108,9 +112,7 @@ build:
 
 runq:
 	qemu-system-i386 -cdrom kernel.iso -boot d -vga std -serial stdio -m 1G \
-    -drive file=HDD.vdi,format=vdi \
-    -audiodev pa,id=snd0 \
-    -device ac97,audiodev=snd0
+    -drive file=$(QEMU_DISK),format=vdi
 
 run:
 	make clean
@@ -164,6 +166,7 @@ hdd:
 	-sudo cp user_prog/MeMView/prog.bin /mnt/vdi_p1/SYS32/MeMView.bin
 	-sudo cp user_prog/test/prog.bin /mnt/vdi_p1/SYS32/test.bin
 	-sudo cp user_prog/Explorer/prog.bin /mnt/vdi_p1/SYS32/Explorer.bin
+	-sudo cp user_prog/Terminal/prog.bin /mnt/vdi_p1/SYS32/TERMINAL.BIN
 	-sudo cp user_prog/Game3D/prog.bin /mnt/vdi_p1/ProgFile/Game3D/Game3D.bin
 
 # 	5. Cleanup

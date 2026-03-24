@@ -25,7 +25,6 @@ void drvPrintf(const char* format, ...) {
 #endif
 }
 
-
 /**
  * @brief Constructs a DriverManager object.
  *
