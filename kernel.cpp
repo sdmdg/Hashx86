@@ -20,6 +20,158 @@ extern "C" void __cxa_pure_virtual() {
     HALT("Pure Virtual Function Called! System Halted.");
 }
 
+namespace {
+constexpr int BOOTMSG_CHAR_W = 8;
+constexpr int BOOTMSG_CHAR_H = 8;
+constexpr int BOOTMSG_CHAR_SPACING = 1;
+constexpr int BOOTMSG_LINE_SPACING = 2;
+constexpr int BOOTMSG_MARGIN_X = 10;
+constexpr int BOOTMSG_MARGIN_Y = 10;
+constexpr int BOOTMSG_PANEL_PADDING = 6;
+constexpr int BOOTMSG_MAX_LINES = 12;
+constexpr int BOOTMSG_MAX_COLS = 192;
+constexpr uint32_t BOOTMSG_PANEL_COLOR = 0xFF000000;
+
+char g_bootMsgLines[BOOTMSG_MAX_LINES][BOOTMSG_MAX_COLS];
+int g_bootMsgLineCount = 0;
+
+int min_int(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+void PushBootMsgLine(const char* text) {
+    if (!text) return;
+
+    if (g_bootMsgLineCount >= BOOTMSG_MAX_LINES) {
+        for (int i = 1; i < BOOTMSG_MAX_LINES; i++) {
+            strcpy(g_bootMsgLines[i - 1], g_bootMsgLines[i]);
+        }
+        g_bootMsgLineCount = BOOTMSG_MAX_LINES - 1;
+    }
+
+    int dst = g_bootMsgLineCount;
+    int i = 0;
+    for (; text[i] != '\0' && i < BOOTMSG_MAX_COLS - 1; i++) {
+        g_bootMsgLines[dst][i] = text[i];
+    }
+    g_bootMsgLines[dst][i] = '\0';
+    g_bootMsgLineCount++;
+}
+
+void DrawBootRect(GraphicsDriver* driver, int x, int y, int w, int h, uint32_t color) {
+    if (!driver || w <= 0 || h <= 0) return;
+
+    int x0 = x;
+    int y0 = y;
+    int x1 = x + w;
+    int y1 = y + h;
+
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > (int)driver->GetWidth()) x1 = (int)driver->GetWidth();
+    if (y1 > (int)driver->GetHeight()) y1 = (int)driver->GetHeight();
+
+    for (int py = y0; py < y1; py++) {
+        for (int px = x0; px < x1; px++) {
+            driver->PutPixel(px, py, color);
+        }
+    }
+}
+
+void DrawBootGlyph(GraphicsDriver* driver, int x, int y, char c, uint32_t color) {
+    const uint8_t* glyph = GetGlyph(c);
+    for (int row = 0; row < BOOTMSG_CHAR_H; row++) {
+        uint8_t bits = glyph[row];
+        for (int col = 0; col < BOOTMSG_CHAR_W; col++) {
+            if (bits & (1 << (7 - col))) {
+                driver->PutPixel(x + col, y + row, color);
+            }
+        }
+    }
+}
+
+void DrawBootLine(GraphicsDriver* driver, int x, int y, const char* text, uint32_t color,
+                  int maxCols) {
+    if (!driver || !text || maxCols <= 0) return;
+
+    int penX = x;
+    int cols = 0;
+    for (int i = 0; text[i] != '\0' && cols < maxCols; i++) {
+        if (text[i] == '\n') break;
+        DrawBootGlyph(driver, penX, y, text[i], color);
+        penX += BOOTMSG_CHAR_W + BOOTMSG_CHAR_SPACING;
+        cols++;
+    }
+}
+}  // namespace
+
+void bootMSG(const char* msg) {
+    if (!msg || !g_GraphicsDriver) {
+        KDBG1("Graphics driver is not initialized.");
+        return;
+    }
+
+    const int screenW = (int)g_GraphicsDriver->GetWidth();
+    const int screenH = (int)g_GraphicsDriver->GetHeight();
+    const int lineStep = BOOTMSG_CHAR_H + BOOTMSG_LINE_SPACING;
+
+    int maxCols = (screenW - (BOOTMSG_MARGIN_X * 2) - (BOOTMSG_PANEL_PADDING * 2)) /
+                  (BOOTMSG_CHAR_W + BOOTMSG_CHAR_SPACING);
+    if (maxCols <= 0) return;
+    if (maxCols > BOOTMSG_MAX_COLS - 1) maxCols = BOOTMSG_MAX_COLS - 1;
+
+    char lineBuf[BOOTMSG_MAX_COLS];
+    int lineLen = 0;
+
+    for (int i = 0;; i++) {
+        char c = msg[i];
+
+        if (c == '\r') {
+            continue;
+        }
+
+        if (c == '\0' || c == '\n') {
+            lineBuf[lineLen] = '\0';
+            PushBootMsgLine(lineBuf);
+            lineLen = 0;
+            if (c == '\0') break;
+            continue;
+        }
+
+        if (lineLen >= maxCols) {
+            lineBuf[lineLen] = '\0';
+            PushBootMsgLine(lineBuf);
+            lineLen = 0;
+            if (c == ' ') continue;
+        }
+
+        if (lineLen < BOOTMSG_MAX_COLS - 1) {
+            lineBuf[lineLen++] = c;
+        }
+    }
+
+    int maxVisible = (screenH / 3 - BOOTMSG_PANEL_PADDING * 2) / lineStep;
+    if (maxVisible < 1) maxVisible = 1;
+    if (maxVisible > BOOTMSG_MAX_LINES) maxVisible = BOOTMSG_MAX_LINES;
+
+    int visible = min_int(g_bootMsgLineCount, maxVisible);
+    int panelH = visible * lineStep + BOOTMSG_PANEL_PADDING * 2;
+    int panelW = maxCols * (BOOTMSG_CHAR_W + BOOTMSG_CHAR_SPACING) + BOOTMSG_PANEL_PADDING * 2;
+    int panelX = BOOTMSG_MARGIN_X;
+    int panelY = screenH - BOOTMSG_MARGIN_Y - panelH;
+
+    DrawBootRect(g_GraphicsDriver, panelX, panelY, panelW, panelH, BOOTMSG_PANEL_COLOR);
+
+    int firstLine = g_bootMsgLineCount - visible;
+    for (int i = 0; i < visible; i++) {
+        int y = panelY + BOOTMSG_PANEL_PADDING + i * lineStep;
+        DrawBootLine(g_GraphicsDriver, panelX + BOOTMSG_PANEL_PADDING, y,
+                     g_bootMsgLines[firstLine + i], 0xFFFFFFFF, maxCols);
+    }
+
+    g_GraphicsDriver->Flush();
+}
+
 int get_kernel_memory_map(KERNEL_MEMORY_MAP* kmap, MultibootInfo* mboot_info) {
     if (kmap == NULL) return -1;
     kmap->kernel.k_start_addr = (uint32_t)&__kernel_section_start;
@@ -496,9 +648,12 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         g_GraphicsDriver->Flush();
     }
 
+    bootMSG("[BOOT] Graphics initialized");
+
     delete bootImg;
 
     // Load Font File
+    bootMSG("[BOOT] Loading fonts");
     g_fManager = new FontManager();
     if (!g_fManager) {
         HALT("CRITICAL: Failed to allocate FontManager!\n");
@@ -526,7 +681,10 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         g_GraphicsDriver->Flush();
     }
 
+    bootMSG("[BOOT] UI assets ready");
+
     // Load Desktop //
+    bootMSG("[BOOT] Initializing kernel services");
     Desktop* desktop = new Desktop(GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT);
     if (!desktop) {
         HALT("CRITICAL: Failed to allocate Desktop!\n");
@@ -555,8 +713,10 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
         HALT("CRITICAL: Failed to allocate DriverManager!\n");
     }
 
+    bootMSG("[BOOT] Initializing PCI devices");
     init_pci(g_bootPartition, g_driverManager);
 
+    bootMSG("[BOOT] Starting input drivers");
     MouseDriver* mouse = new MouseDriver(g_interrupts, desktop);
     if (!mouse) {
         HALT("CRITICAL: Failed to allocate MouseDriver!\n");
@@ -569,6 +729,7 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     g_driverManager->AddDriver(keyboard);
 
     // PROCESS MAIN //
+    bootMSG("[BOOT] Loading desktop");
     DesktopArgs* desktopArgs = new DesktopArgs{g_GraphicsDriver, desktop, g_bootPartition};
     if (!desktopArgs) {
         HALT("CRITICAL: Failed to allocate DesktopArgs!\n");
@@ -598,9 +759,11 @@ extern "C" void kernelMain(void* multiboot_structure, uint32_t magicnumber) {
     }
 
     KDBG1("Welcome to #x86!");
+    bootMSG("[BOOT] Activating system drivers");
     g_driverManager->ActivateAll();
     KDBG1("System Drivers Activated.");
     g_interrupts->Activate();
+    bootMSG("[BOOT] System ready");
     KDBG1("Interrupts Enabled. Entering Halt Loop.");
 
     while (1) {
