@@ -72,15 +72,16 @@ int32_t syscall_stat(const char* path, struct stat* statbuf) {
     return return_data;
 }
 
-uint32_t syscall_clone(void (*entrypoint)(void*), void* arg) {
+int32_t syscall_clone(uint32_t clone_flags, void* child_stack, void* parent_tid, void* tls,
+                      void* child_tid) {
     int32_t return_data = -1;
-    // We pass entrypoint via clone_flags (ebx) temporarily, and arg via child_stack (ecx)
     asm volatile("int $0x80"
                  : "=a"(return_data)
-                 : "a"(sys_clone), "b"(entrypoint), "c"(arg)
+                 : "a"(sys_clone), "b"(clone_flags), "c"(child_stack), "d"(parent_tid), "S"(tls),
+                   "D"(child_tid)
                  : "memory");
 
-    return (uint32_t)return_data;
+    return return_data;
 }
 
 int32_t syscall_getdents(uint32_t fd, struct linux_dirent* dirp, uint32_t count) {

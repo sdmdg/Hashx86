@@ -6,7 +6,7 @@
  * @version     1.0.0
  */
 
-#define KDBG_COMPONENT "BMP"
+#define KDBG_COMPONENT "GUI:BMP"
 #include <core/filesystem/FAT32.h>
 #include <core/filesystem/msdospart.h>
 #include <gui/bmp.h>

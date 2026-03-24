@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "GUI"
 #include <gui/Hgui.h>
 
 HguiHandler* HguiHandler::activeInstance = nullptr;
@@ -13,7 +14,10 @@ HguiHandler* HguiHandler::activeInstance = nullptr;
 HguiHandler::HguiHandler(uint8_t InterruptNumber, InterruptManager* interruptManager)
     : InterruptHandler(InterruptNumber + 0x20, interruptManager) {
     this->activeInstance = this;
-    HguiWidgets.Add(Desktop::activeInstance);
+
+    if (Desktop::activeInstance) {
+        HguiWidgets.Add(Desktop::activeInstance);
+    }
 }
 
 HguiHandler::~HguiHandler() {}
@@ -37,6 +41,9 @@ uint32_t HguiHandler::HandleInterrupt(uint32_t esp) {
             break;
         case LISTVIEW:
             ret = HandleListView(esp);
+            break;
+        case TERMINAL_VIEW:
+            ret = HandleTerminalView(esp);
             break;
         case EVENT:
             ret = HandleEvent(esp);
@@ -239,19 +246,83 @@ int32_t HguiHandler::HandleListView(uint32_t esp) {
     return -1;
 }
 
+int32_t HguiHandler::HandleTerminalView(uint32_t esp) {
+    CPUState* cpu = (CPUState*)esp;
+    WidgetData* _data = (WidgetData*)cpu->ecx;
+
+    if ((uint32_t)cpu->ebx == CREATE) {
+        CompositeWidget* parentWidget = (CompositeWidget*)this->FindWidgetByID(_data->param0);
+        if (!parentWidget || parentWidget->ID == 0) return -1;
+
+        uint32_t _newID = this->getNewID();
+        Widget* _widget =
+            new TerminalView(parentWidget, (int32_t)_data->param1, (int32_t)_data->param2,
+                             (int32_t)_data->param3, (int32_t)_data->param4, _data->param5);
+        if (!_widget) {
+            HALT("CRITICAL: Failed to allocate TerminalView widget!\n");
+        }
+        _widget->SetPID(Scheduler::activeInstance->GetCurrentProcess()->pid);
+        _widget->SetID(_newID);
+
+        HguiWidgets.Add(_widget);
+        return (int32_t)_newID;
+    } else if ((uint32_t)cpu->ebx == SET_TEXT) {
+        TerminalView* widget = (TerminalView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+
+        widget->setText(_data->param5);
+        return 1;
+    } else if ((uint32_t)cpu->ebx == SET_FONT_SIZE) {
+        TerminalView* widget = (TerminalView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+
+        widget->setSize((FontSize)_data->param1);
+        return 1;
+    } else if ((uint32_t)cpu->ebx == SET_SCROLL_META) {
+        TerminalView* widget = (TerminalView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+
+        widget->setScrollMeta((int)_data->param1, (int)_data->param2, (int)_data->param3);
+        return 1;
+    } else if ((uint32_t)cpu->ebx == GET_SCROLL_ACTION) {
+        TerminalView* widget = (TerminalView*)this->FindWidgetByID(_data->param0);
+        if (!widget) return -1;
+
+        return widget->consumeScrollAction();
+    }
+
+    return -1;
+}
+
 int32_t HguiHandler::HandleEvent(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
 
+    if (!Scheduler::activeInstance || !Desktop::activeInstance) {
+        return -1;
+    }
+
     ProcessControlBlock* p = Scheduler::activeInstance->GetCurrentProcess();
+    if (!p) {
+        return -1;
+    }
+
     EventHandler* process_eventHandler = Desktop::activeInstance->getHandler(p->pid);
+    if (!process_eventHandler) {
+        return -1;
+    }
 
     if ((uint32_t)cpu->ebx == GET) {
         if ((uint32_t)process_eventHandler->eventQueue.GetSize() > 0) {
             Event* tmp = process_eventHandler->eventQueue.PopFront();
-            return (int32_t)((tmp->widgetID << 16) | tmp->eventType);
+            if (!tmp) {
+                return -1;
+            }
+
+            int32_t encoded = (int32_t)((tmp->widgetID << 16) | tmp->eventType);
+            delete tmp;
+            return encoded;
         } else {
-            // No events, sleep until an event arrives
-            Scheduler::activeInstance->Sleep(1000);
+            // No pending events; return immediately so user-space can poll other inputs.
             return -1;
         }
     }
@@ -270,7 +341,10 @@ Widget* HguiHandler::FindWidgetByID(uint32_t searchID) {
 
 void HguiHandler::RemoveAppByPID(uint32_t PID) {
     HguiWidgets.Remove([&](Widget* c) { return c->PID == PID; });
-    Desktop::activeInstance->deleteEventHandler(PID);
+
+    if (Desktop::activeInstance) {
+        Desktop::activeInstance->deleteEventHandler(PID);
+    }
 }
 
 uint32_t HguiHandler::getNewID() {

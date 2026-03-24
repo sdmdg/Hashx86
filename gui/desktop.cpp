@@ -51,6 +51,7 @@ Desktop::Desktop(int32_t w, int32_t h)
     taskbar->AddApp("MemViewer", "Memory inspector", "SYS32/MEMVIEW.BIN");
     taskbar->AddApp("Explorer", "File Manager", "SYS32/EXPLORER.BIN");
     taskbar->AddApp("Calculator", "Calculator GUI", "SYS32/TEST.BIN");
+    taskbar->AddApp("Terminal", "CLI preview", "SYS32/TERMINAL.BIN");
     taskbar->AddApp("Game3D", "3D Game Engine", "PROGFILE/GAME3D/GAME3D.BIN");
 
     // NOTE: Taskbar is NOT added to childrenList.
@@ -206,6 +207,19 @@ void Desktop::RemoveAppByPID(uint32_t pid) {
     }
 }
 
+void Desktop::Focus(Widget* widget) {
+    if (!widget) return;
+
+    // Find and remove the widget from the list
+    bool found = childrenList.Remove([&](Widget* w) { return w == widget; });
+
+    // If found, add it to the back (top of Z-order)
+    if (found) {
+        childrenList.PushBack(widget);
+        this->isDirty = true;  // Force a full redraw
+    }
+}
+
 // -- Inputs --
 
 void Desktop::GetFocus(Widget* widget) {
@@ -213,7 +227,7 @@ void Desktop::GetFocus(Widget* widget) {
     CompositeWidget::GetFocus(widget);
 
     // Update taskbar tab to reflect the newly focused window
-    if (taskbar && widget) {
+    if (taskbar) {
         taskbar->SetActiveTab(widget);
     }
 }

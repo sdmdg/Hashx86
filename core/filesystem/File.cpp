@@ -59,7 +59,7 @@ namespace {
 constexpr uint32_t FD_MIN = 3;
 constexpr uint32_t FD_MAX = 128;
 File* g_fdTable[FD_MAX] = {nullptr};
-}
+}  // namespace
 
 int32_t AllocateFd(File* file) {
     if (!file) return -1;

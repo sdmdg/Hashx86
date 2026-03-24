@@ -20,6 +20,7 @@ typedef enum {
     DESKTOP = 0x4,
     LABEL = 0x5,
     LISTVIEW = 0x6,
+    TERMINAL_VIEW = 0x7,
 } REQ_Element;
 
 typedef enum {
@@ -33,6 +34,8 @@ typedef enum {
     SET_ITEMS = 0x7,
     CLEAR_ITEMS = 0x8,
     GET_SELECTED = 0x9,
+    SET_SCROLL_META = 0xA,
+    GET_SCROLL_ACTION = 0xB,
 } REQ_MODE;
 
 struct WidgetData {
@@ -62,6 +65,7 @@ public:
     virtual int32_t HandleButton(uint32_t esp);
     virtual int32_t HandleLabel(uint32_t esp);
     virtual int32_t HandleListView(uint32_t esp);
+    virtual int32_t HandleTerminalView(uint32_t esp);
     virtual int32_t HandleEvent(uint32_t esp);
     void RemoveAppByPID(uint32_t PID);
     Widget* FindWidgetByID(uint32_t searchID);

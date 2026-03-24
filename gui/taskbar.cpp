@@ -480,6 +480,8 @@ Taskbar::~Taskbar() {
 }
 
 void Taskbar::AddApp(const char* name, const char* description, const char* binPath) {
+    if (!startMenu) return;
+
     startMenu->AddApp(name, description, binPath);
 
     // Reposition menu Y to sit just above the taskbar
@@ -487,6 +489,8 @@ void Taskbar::AddApp(const char* name, const char* description, const char* binP
 }
 
 void Taskbar::ToggleStartMenu() {
+    if (!startMenu || !startButton) return;
+
     if (startMenu->isVisible) {
         CloseStartMenu();
     } else {
@@ -498,6 +502,8 @@ void Taskbar::ToggleStartMenu() {
 }
 
 void Taskbar::CloseStartMenu() {
+    if (!startMenu || !startButton) return;
+
     if (startMenu->isVisible) {
         startMenu->isVisible = false;
         startButton->SetActive(false);

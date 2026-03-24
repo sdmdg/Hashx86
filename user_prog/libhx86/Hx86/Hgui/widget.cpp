@@ -13,6 +13,9 @@ Widget::Widget(Widget* parent, int32_t x, int32_t y, uint32_t w, uint32_t h) {
     this->onClickPtr = nullptr;
     this->callbackInstance = nullptr;
     this->onClickMemberPtr = nullptr;
+    this->onKeyPressPtr = nullptr;
+    this->keyCallbackInstance = nullptr;
+    this->onKeyPressMemberPtr = nullptr;
     this->ID = 0;
     this->pid = 0;
 }
@@ -67,6 +70,16 @@ void Widget::OnClick(void (*callback)()) {
 void Widget::OnClick(void* instance, void (*callback)(void*)) {
     callbackInstance = instance;
     onClickMemberPtr = callback;
+}
+
+void Widget::OnKeyPress(void (*callback)(uint8_t scancode, bool shiftPressed)) {
+    onKeyPressPtr = callback;
+}
+
+void Widget::OnKeyPress(void* instance,
+                        void (*callback)(void*, uint8_t scancode, bool shiftPressed)) {
+    keyCallbackInstance = instance;
+    onKeyPressMemberPtr = callback;
 }
 
 CompositeWidget::CompositeWidget(Widget* parent, int32_t x, int32_t y, uint32_t w, uint32_t h)

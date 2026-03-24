@@ -47,6 +47,7 @@ public:
     uint32_t getNewID();
     void RemoveAppByPID(uint32_t PID);
     void GetFocus(Widget* widget) override;
+    void Focus(Widget* widget);
 
     Taskbar* GetTaskbar() {
         return taskbar;

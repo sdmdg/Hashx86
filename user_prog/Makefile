@@ -1,6 +1,7 @@
 SUBDIRS = MeMView\
 		  test\
 		  Explorer\
+		  Terminal\
 		  Game3D
 
 .PHONY: all libhx86 $(SUBDIRS) clean

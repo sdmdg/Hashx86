@@ -11,6 +11,7 @@ typedef enum {
     DESKTOP = 0x4,
     LABEL = 0x5,
     LISTVIEW = 0x6,
+    TERMINAL_VIEW = 0x7,
 } REQ_Element;
 
 typedef enum {
@@ -24,6 +25,8 @@ typedef enum {
     SET_ITEMS = 0x7,
     CLEAR_ITEMS = 0x8,
     GET_SELECTED = 0x9,
+    SET_SCROLL_META = 0xA,
+    GET_SCROLL_ACTION = 0xB,
 } REQ_MODE;
 
 uint32_t HguiAPI(REQ_Element element, REQ_MODE mode, void* data);

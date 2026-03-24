@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "GUI:WIDGET"
 #include <gui/widget.h>
 
 // Widget Base Class
@@ -86,6 +87,13 @@ void Widget::SetFocus(bool result) {
 
 void Widget::SetFocussable(bool focussable) {
     this->isFocussable = focussable;
+
+    if (!focussable && isFocused) {
+        SetFocus(false);
+        if (parent) {
+            parent->GetFocus(nullptr);
+        }
+    }
 }
 
 // Child Management
@@ -99,7 +107,12 @@ bool Widget::AddChild(Widget* child) {
 
 bool Widget::RemoveChild(Widget* child) {
     bool result = childrenList.Remove([&](Widget* c) { return c == child; });
-    if (result) (this->MarkDirty());
+    if (result) {
+        if (child && child->parent == this) {
+            child->parent = nullptr;
+        }
+        this->MarkDirty();
+    }
     return result;
 }
 
@@ -155,8 +168,17 @@ CompositeWidget::CompositeWidget(CompositeWidget* parent, int32_t x, int32_t y, 
 CompositeWidget::~CompositeWidget() {}
 
 void CompositeWidget::GetFocus(Widget* widget) {
+    if (widget && !widget->isFocussable) {
+        widget = nullptr;
+    }
+
+    if (focusedChild == widget) {
+        if (parent) parent->GetFocus(this);
+        return;
+    }
+
     // Deselect previous child
-    if (focusedChild && focusedChild != widget) {
+    if (focusedChild) {
         focusedChild->SetFocus(false);
     }
 
@@ -170,6 +192,15 @@ void CompositeWidget::GetFocus(Widget* widget) {
     }
 
     if (parent) parent->GetFocus(this);
+}
+
+bool CompositeWidget::RemoveChild(Widget* child) {
+    if (focusedChild == child) {
+        focusedChild->SetFocus(false);
+        focusedChild = nullptr;
+    }
+
+    return Widget::RemoveChild(child);
 }
 
 void CompositeWidget::Draw(GraphicsDriver* gc) {
@@ -198,9 +229,8 @@ void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
     if (clicked) {
         GetFocus(clicked);
     } else {
-        // Background click
-        /* if (focusedChild) focusedChild->SetFocus(false);
-           focusedChild = nullptr; */
+        // Background click clears current focus in this container.
+        GetFocus(nullptr);
     }
 }
 

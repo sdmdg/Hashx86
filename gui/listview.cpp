@@ -229,6 +229,8 @@ void ListView::RedrawToCache() {
 void ListView::OnMouseDown(int32_t mx, int32_t my, uint8_t button) {
     if (!isVisible) return;
 
+    Widget::OnMouseDown(mx, my, button);
+
     int localY = my - this->y;
     int localX = mx - this->x;
 
@@ -244,9 +246,20 @@ void ListView::OnMouseDown(int32_t mx, int32_t my, uint8_t button) {
             if (!new_event) {
                 HALT("CRITICAL: Failed to allocate ListView click event!\n");
             }
+
+            if (!Desktop::activeInstance) {
+                delete new_event;
+                return;
+            }
+
             EventHandler* handler = Desktop::activeInstance->getHandler(this->PID);
-            if (handler) {
-                handler->eventQueue.Add(new_event);
+            if (!handler) {
+                delete new_event;
+                return;
+            }
+
+            handler->eventQueue.Add(new_event);
+            if (g_scheduler && handler->thread) {
                 g_scheduler->WakeThread(handler->thread);
             }
         }
@@ -256,6 +269,7 @@ void ListView::OnMouseDown(int32_t mx, int32_t my, uint8_t button) {
 void ListView::OnMouseUp(int32_t, int32_t, uint8_t) {}
 
 void ListView::OnMouseMove(int32_t, int32_t oldy, int32_t mx, int32_t my) {
+    if (!isFocused) return;
     int localY = my - this->y;
     if (localY > LISTVIEW_HEADER_HEIGHT) {
         int hovered = scrollOffset + (localY - LISTVIEW_HEADER_HEIGHT - 1) / LISTVIEW_ITEM_HEIGHT;
