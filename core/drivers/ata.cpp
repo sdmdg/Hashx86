@@ -135,8 +135,33 @@ void AdvancedTechnologyAttachment::Write28(uint32_t sectorNum, uint8_t* data, ui
     uint8_t status3 = commandPort.Read();
     uint8_t status4 = commandPort.Read();
 
-    while ((status & 0x80) == 0x80) status = commandPort.Read();
-    while ((status & 0x08) != 0x08) status = commandPort.Read();
+    // Wait BSY clear with timeout/error escape
+    uint32_t timeout = 1000000;
+    while ((status & 0x80) == 0x80 && timeout--) {
+        status = commandPort.Read();
+        if ((status & 0x01) == 0x01) {
+            KDBG1("WRITE ERROR (BSY wait)");
+            return;
+        }
+    }
+    if (timeout == 0) {
+        KDBG1("WRITE TIMEOUT waiting BSY clear");
+        return;
+    }
+
+    // Wait DRQ with timeout/error escape
+    timeout = 1000000;
+    while ((status & 0x08) != 0x08 && timeout--) {
+        status = commandPort.Read();
+        if ((status & 0x01) == 0x01) {
+            KDBG1("WRITE ERROR (DRQ wait)");
+            return;
+        }
+    }
+    if (timeout == 0) {
+        KDBG1("WRITE TIMEOUT waiting DRQ");
+        return;
+    }
 
     // --- OPTIMIZED WRITE ---
     // If we are writing a full sector, use outsw

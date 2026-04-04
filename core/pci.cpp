@@ -111,13 +111,18 @@ PeripheralComponentInterconnectController::FindHardwareDevice(uint16_t vendorID,
                 PeripheralComponentInterconnectDeviceDescriptor* dev =
                     GetDeviceDescriptor(bus, device, function);
 
-                if (dev->vendor_id == 0x0000 || dev->vendor_id == 0xFFFF) continue;
+                if (dev->vendor_id == 0x0000 || dev->vendor_id == 0xFFFF) {
+                    delete dev;
+                    continue;
+                }
 
                 if (dev->vendor_id == vendorID && dev->device_id == deviceID) {
                     KDBG2("Found Hardware: Vendor=0x%x Device=0x%x at Bus=%d Device=%d Func=%d",
                           dev->vendor_id, dev->device_id, dev->bus, dev->device, dev->function);
                     return dev;
                 }
+
+                delete dev;
             }
         }
     }

@@ -300,7 +300,7 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
         KDBG1("FAULT IN USER MODE: TID=%d PID=%d", scheduler->currentThread->tid,
               scheduler->currentThread->pid);
     }
-    KernelSymbolTable::PrintStackTrace(20);
+    KernelSymbolTable::PrintStackTrace(20, state->eip, state->ebp);
     // FLUSH serial NOW before Deactivate/BSOD, because BSOD code may fault
     FlushSerial();
 

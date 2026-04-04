@@ -376,8 +376,25 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
     PeripheralComponentInterconnectDeviceDescriptor* dev = nullptr;
 
     if (dev == nullptr) dev = pciCheck->FindHardwareDevice(0x1234, 0x1111);
-    if (dev->vendor_id == 0) dev = pciCheck->FindHardwareDevice(0x80EE, 0xBEEF);
-    if (dev->vendor_id == 0) dev = pciCheck->FindHardwareDevice(0x15AD, 0x0405);
+    if (!dev) {
+        HALT("CRITICAL: PCI scan failed while searching for BGA hardware!\n");
+    }
+
+    if (dev->vendor_id == 0) {
+        delete dev;
+        dev = pciCheck->FindHardwareDevice(0x80EE, 0xBEEF);
+        if (!dev) {
+            HALT("CRITICAL: PCI scan failed while searching for VBox graphics hardware!\n");
+        }
+    }
+
+    if (dev->vendor_id == 0) {
+        delete dev;
+        dev = pciCheck->FindHardwareDevice(0x15AD, 0x0405);
+        if (!dev) {
+            HALT("CRITICAL: PCI scan failed while searching for VMware graphics hardware!\n");
+        }
+    }
 
     // Only Proceed if Device Found
     if (dev->vendor_id != 0) {
@@ -447,7 +464,13 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
     // ---------------------------------------------------------
 
     // Check for AC97 (0x8086:0x2415)
+    KDBG1("PCI graphics scan complete. Scanning audio hardware...");
     dev = pciCheck->FindHardwareDevice(0x8086, 0x2415);
+    if (!dev) {
+        KDBG1("PCI audio scan failed (null descriptor). Skipping audio init.");
+        delete pciCheck;
+        return;
+    }
 
     if (dev->vendor_id != 0) {
         char* driverName = "DRIVERS/ac97.sys";
@@ -486,7 +509,12 @@ void init_pci(FAT32* boot_partition, DriverManager* driverManager) {
             drvFile->Close();
             delete drvFile;
         }
+    } else {
+        KDBG1("No AC97 audio hardware found.");
     }
+
+    delete dev;
+    KDBG1("PCI init complete.");
     delete pciCheck;
 };
 
@@ -532,6 +560,7 @@ void pDesktop(void* arg) {
         }
 
         if (desktop->isDirty || desktop->MouseMoved()) {
+            screen->ResetFlushStats();
             desktop->Draw(screen);
             uint32_t end = timerTicks;
             uint32_t diff = (uint32_t)(end - start);
@@ -540,7 +569,8 @@ void pDesktop(void* arg) {
             screen->FillRectangle(5, 5, 50, 35, 0x0);
             screen->DrawString(10, 10, buf, VBE_font, 0xFFFFFFFF);
             screen->DrawString(25, 10, "ms", VBE_font, 0xFFFFFFFF);
-            screen->Flush();
+
+            desktop->Flush(screen);
         } else {
             Scheduler::activeInstance->Sleep(16);
         }
