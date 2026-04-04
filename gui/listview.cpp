@@ -32,6 +32,118 @@ ListView::ListView(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h)
 
 ListView::~ListView() {}
 
+void ListView::FormatSizeText(ListViewItem& item) {
+    if (item.type == 1) {
+        strcpy(item.sizeText, "<DIR>");
+        return;
+    }
+
+    uint32_t value = item.size;
+    char unit0 = 'B';
+    char unit1 = '\0';
+
+    if (value >= 1024) {
+        value /= 1024;
+        unit0 = 'K';
+        unit1 = 'B';
+    }
+
+    char tmp[16];
+    int pos = 0;
+    if (value == 0) {
+        tmp[pos++] = '0';
+    } else {
+        while (value > 0 && pos < 15) {
+            tmp[pos++] = (char)('0' + (value % 10));
+            value /= 10;
+        }
+    }
+
+    int out = 0;
+    for (int i = pos - 1; i >= 0 && out < 15; i--) {
+        item.sizeText[out++] = tmp[i];
+    }
+
+    if (out < 15) item.sizeText[out++] = ' ';
+    if (out < 15) item.sizeText[out++] = unit0;
+    if (unit1 != '\0' && out < 15) item.sizeText[out++] = unit1;
+    item.sizeText[out] = '\0';
+}
+
+bool ListView::IsVisibleIndex(int index) const {
+    if (index < 0 || index >= itemCount) return false;
+
+    int contentH = h - LISTVIEW_HEADER_HEIGHT - 2;
+    if (contentH <= 0) return false;
+
+    int visibleItems = contentH / LISTVIEW_ITEM_HEIGHT;
+    if (visibleItems <= 0) return false;
+
+    int startItem = scrollOffset;
+    int endItem = startItem + visibleItems;
+    if (endItem > itemCount) endItem = itemCount;
+
+    return index >= startItem && index < endItem;
+}
+
+void ListView::DrawItemRowToCache(int index) {
+    if (!IsVisibleIndex(index) || !items[index].valid) return;
+
+    int itemY = LISTVIEW_HEADER_HEIGHT + 1 + (index - scrollOffset) * LISTVIEW_ITEM_HEIGHT;
+
+    uint32_t bgColor;
+    if (index == selectedIndex) {
+        bgColor = LISTVIEW_ITEM_BG_SELECTED;
+    } else if (index == hoveredIndex) {
+        bgColor = LISTVIEW_ITEM_BG_HOVER;
+    } else {
+        bgColor = (index % 2 == 0) ? LISTVIEW_ITEM_BG_EVEN : LISTVIEW_ITEM_BG_ODD;
+    }
+    NINA::activeInstance->FillRectangle(cache, w, h, 1, itemY, w - 2, LISTVIEW_ITEM_HEIGHT, bgColor);
+
+    uint32_t iconColor;
+    switch (items[index].type) {
+        case 1:
+            iconColor = LISTVIEW_ICON_DIR;
+            break;
+        case 2:
+            iconColor = LISTVIEW_ICON_EXE;
+            break;
+        default:
+            iconColor = LISTVIEW_ICON_FILE;
+            break;
+    }
+    NINA::activeInstance->FillCircle(cache, w, h, 12, itemY + LISTVIEW_ITEM_HEIGHT / 2, 4, iconColor);
+
+    NINA::activeInstance->DrawString(cache, w, h, 22, itemY + 2, items[index].name, font,
+                                     LISTVIEW_ITEM_TEXT);
+
+    uint32_t sizeColor = (items[index].type == 1) ? 0xFF89B4FA : 0xFF6C7086;
+    NINA::activeInstance->DrawString(cache, w, h, w - 80, itemY + 2, items[index].sizeText, font,
+                                     sizeColor);
+}
+
+void ListView::FastRefreshRows(int oldIndex, int newIndex) {
+    bool touched = false;
+
+    if (oldIndex >= 0) {
+        DrawItemRowToCache(oldIndex);
+        if (IsVisibleIndex(oldIndex)) touched = true;
+    }
+
+    if (newIndex >= 0 && newIndex != oldIndex) {
+        DrawItemRowToCache(newIndex);
+        if (IsVisibleIndex(newIndex)) touched = true;
+    }
+
+    // Keep ListView cache hot while only invalidating parent composition.
+    if (touched && parent) {
+        parent->MarkDirty();
+    } else if (newIndex >= 0 || oldIndex >= 0) {
+        MarkDirty();
+    }
+}
+
 void ListView::Clear() {
     itemCount = 0;
     scrollOffset = 0;
@@ -54,6 +166,7 @@ void ListView::AddItem(const char* name, uint32_t size, uint8_t type) {
     item.name[i] = 0;
     item.size = size;
     item.type = type;
+    FormatSizeText(item);
     item.valid = true;
     itemCount++;
     MarkDirty();
@@ -109,92 +222,7 @@ void ListView::RedrawToCache() {
     // Draw items
     for (int i = startItem; i < endItem; i++) {
         if (!items[i].valid) continue;
-
-        int itemY = LISTVIEW_HEADER_HEIGHT + 1 + (i - startItem) * LISTVIEW_ITEM_HEIGHT;
-
-        // Background
-        uint32_t bgColor;
-        if (i == selectedIndex) {
-            bgColor = LISTVIEW_ITEM_BG_SELECTED;
-        } else if (i == hoveredIndex) {
-            bgColor = LISTVIEW_ITEM_BG_HOVER;
-        } else {
-            bgColor = (i % 2 == 0) ? LISTVIEW_ITEM_BG_EVEN : LISTVIEW_ITEM_BG_ODD;
-        }
-        NINA::activeInstance->FillRectangle(cache, w, h, 1, itemY, w - 2, LISTVIEW_ITEM_HEIGHT,
-                                            bgColor);
-
-        // Icon indicator (small colored circle)
-        uint32_t iconColor;
-        switch (items[i].type) {
-            case 1:
-                iconColor = LISTVIEW_ICON_DIR;
-                break;
-            case 2:
-                iconColor = LISTVIEW_ICON_EXE;
-                break;
-            default:
-                iconColor = LISTVIEW_ICON_FILE;
-                break;
-        }
-        NINA::activeInstance->FillCircle(cache, w, h, 12, itemY + LISTVIEW_ITEM_HEIGHT / 2, 4,
-                                         iconColor);
-
-        // Name text
-        NINA::activeInstance->DrawString(cache, w, h, 22, itemY + 2, items[i].name, font,
-                                         LISTVIEW_ITEM_TEXT);
-
-        // Size text (if not directory)
-        if (items[i].type != 1) {
-            char sizeStr[16];
-            // Simple size formatting
-            uint32_t sz = items[i].size;
-            if (sz >= 1024) {
-                int kb = sz / 1024;
-                // Manual itoa
-                int pos = 0;
-                char tmp[16];
-                if (kb == 0) {
-                    tmp[pos++] = '0';
-                } else {
-                    while (kb > 0) {
-                        tmp[pos++] = '0' + (kb % 10);
-                        kb /= 10;
-                    }
-                }
-                // Reverse
-                for (int j = 0; j < pos; j++) {
-                    sizeStr[j] = tmp[pos - 1 - j];
-                }
-                sizeStr[pos] = ' ';
-                sizeStr[pos + 1] = 'K';
-                sizeStr[pos + 2] = 'B';
-                sizeStr[pos + 3] = 0;
-            } else {
-                int pos = 0;
-                char tmp[16];
-                uint32_t v = sz;
-                if (v == 0) {
-                    tmp[pos++] = '0';
-                } else {
-                    while (v > 0) {
-                        tmp[pos++] = '0' + (v % 10);
-                        v /= 10;
-                    }
-                }
-                for (int j = 0; j < pos; j++) {
-                    sizeStr[j] = tmp[pos - 1 - j];
-                }
-                sizeStr[pos] = ' ';
-                sizeStr[pos + 1] = 'B';
-                sizeStr[pos + 2] = 0;
-            }
-            NINA::activeInstance->DrawString(cache, w, h, w - 80, itemY + 2, sizeStr, font,
-                                             0xFF6C7086);
-        } else {
-            NINA::activeInstance->DrawString(cache, w, h, w - 80, itemY + 2, "<DIR>", font,
-                                             0xFF89B4FA);
-        }
+        DrawItemRowToCache(i);
     }
 
     // Scrollbar (if needed)
@@ -238,8 +266,9 @@ void ListView::OnMouseDown(int32_t mx, int32_t my, uint8_t button) {
         int clickedItem =
             scrollOffset + (localY - LISTVIEW_HEADER_HEIGHT - 1) / LISTVIEW_ITEM_HEIGHT;
         if (clickedItem >= 0 && clickedItem < itemCount) {
+            int oldSelected = selectedIndex;
             selectedIndex = clickedItem;
-            MarkDirty();
+            FastRefreshRows(oldSelected, selectedIndex);
 
             // Fire click event
             Event* new_event = new Event{this->ID, ON_CLICK};
@@ -270,15 +299,30 @@ void ListView::OnMouseUp(int32_t, int32_t, uint8_t) {}
 
 void ListView::OnMouseMove(int32_t, int32_t oldy, int32_t mx, int32_t my) {
     if (!isFocused) return;
+    (void)oldy;
+
     int localY = my - this->y;
+    int localX = mx - this->x;
+    if (localX <= 0 || localX >= w - LISTVIEW_SCROLLBAR_WIDTH || localY <= LISTVIEW_HEADER_HEIGHT ||
+        localY >= h - 1) {
+        if (hoveredIndex >= 0) {
+            int old = hoveredIndex;
+            hoveredIndex = -1;
+            FastRefreshRows(old, -1);
+        }
+        return;
+    }
+
     if (localY > LISTVIEW_HEADER_HEIGHT) {
         int hovered = scrollOffset + (localY - LISTVIEW_HEADER_HEIGHT - 1) / LISTVIEW_ITEM_HEIGHT;
         if (hovered >= 0 && hovered < itemCount && hovered != hoveredIndex) {
+            int old = hoveredIndex;
             hoveredIndex = hovered;
-            MarkDirty();
+            FastRefreshRows(old, hoveredIndex);
         }
     } else if (hoveredIndex >= 0) {
+        int old = hoveredIndex;
         hoveredIndex = -1;
-        MarkDirty();
+        FastRefreshRows(old, -1);
     }
 }

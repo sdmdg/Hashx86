@@ -14,10 +14,21 @@
  */
 class Desktop : public CompositeWidget, public MouseEventHandler, public KeyboardEventHandler {
 protected:
+    enum DrawMode {
+        DRAW_NONE = 0,
+        DRAW_FULL,
+        DRAW_CURSOR_ONLY,
+    };
+
     uint32_t MouseX;
     uint32_t MouseY;
     uint32_t current_id = 1000;
     Bitmap* Wallpaper;
+    DrawMode lastDrawMode = DRAW_NONE;
+    int32_t flushOldCursorX = 0;
+    int32_t flushOldCursorY = 0;
+    int32_t flushNewCursorX = 0;
+    int32_t flushNewCursorY = 0;
 
     // -- Cursor Optimization Buffers --
     int32_t oldMouseX = 0;
@@ -43,6 +54,7 @@ public:
 
     // The Master Draw function
     void Draw(GraphicsDriver* gc) override;
+    void Flush(GraphicsDriver* gc);
 
     uint32_t getNewID();
     void RemoveAppByPID(uint32_t PID);

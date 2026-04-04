@@ -8,6 +8,14 @@
 
 #include <core/drivers/GraphicsDriver.h>
 
+namespace {
+uint32_t g_flushStatsBytes = 0;
+}
+
+uint32_t& GraphicsDriver::FlushStatsRef() {
+    return g_flushStatsBytes;
+}
+
 GraphicsDriver::GraphicsDriver(uint32_t w, uint32_t h, uint32_t b, uint32_t* vram) {
     this->width = w;
     this->height = h;
@@ -35,7 +43,40 @@ void GraphicsDriver::Flush() {
     if (videoMemory && backBuffer) {
         uint32_t size = width * height * sizeof(uint32_t);
         memcpy(videoMemory, backBuffer, size);
+        FlushStatsRef() += size;
     }
+}
+
+void GraphicsDriver::FlushRect(int32_t x, int32_t y, uint32_t w, uint32_t h) {
+    if (!videoMemory || !backBuffer || w == 0 || h == 0) {
+        return;
+    }
+
+    int32_t x0 = x;
+    int32_t y0 = y;
+    int32_t x1 = x + (int32_t)w;
+    int32_t y1 = y + (int32_t)h;
+
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > (int32_t)width) x1 = (int32_t)width;
+    if (y1 > (int32_t)height) y1 = (int32_t)height;
+
+    if (x0 >= x1 || y0 >= y1) {
+        return;
+    }
+
+    const uint32_t rowPixels = (uint32_t)(x1 - x0);
+    const uint32_t rowBytes = rowPixels * sizeof(uint32_t);
+    uint32_t copied = 0;
+
+    for (int32_t row = y0; row < y1; row++) {
+        uint32_t offset = (uint32_t)row * width + (uint32_t)x0;
+        memcpy(videoMemory + offset, backBuffer + offset, rowBytes);
+        copied += rowBytes;
+    }
+
+    FlushStatsRef() += copied;
 }
 
 void GraphicsDriver::PrecomputeAlphaTable() {

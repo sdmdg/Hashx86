@@ -12,6 +12,7 @@
 
 struct ListViewItem {
     char name[64];
+    char sizeText[16];
     uint32_t size;
     uint8_t type;  // 0 = file, 1 = directory, 2 = executable
     bool valid;
@@ -25,6 +26,11 @@ private:
     int selectedIndex;
     int hoveredIndex;
     char headerText[32];
+
+    void FormatSizeText(ListViewItem& item);
+    bool IsVisibleIndex(int index) const;
+    void DrawItemRowToCache(int index);
+    void FastRefreshRows(int oldIndex, int newIndex);
 
 public:
     ListView(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h);
