@@ -6,7 +6,9 @@
 </p>
 
 
-**Status**: 🚧 This project is currently under development.
+> ⚠️ **Notice:** This repository is archived and no longer actively maintained. 
+> Development has moved to the official organization repository:
+> **[https://github.com/Hashx86-OS/Hashx86-OS](https://github.com/Hashx86-OS/Hashx86-OS)**
 
 Hashx86 is a minimalistic operating system built for the **x86 architecture**. Designed primarily for educational and experimental purposes, it provides basic functionality and serves as a foundation for exploring OS concepts and low-level system programming.
 
