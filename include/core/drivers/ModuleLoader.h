@@ -1,12 +1,12 @@
 #ifndef MODULE_LOADER_H
 #define MODULE_LOADER_H
 
-#include <console.h>
 #include <core/drivers/SymbolTable.h>
 #include <core/drivers/driver_info.h>
 #include <core/elf.h>
 #include <core/filesystem/File.h>
 #include <core/memory.h>
+#include <debug.h>
 #include <types.h>
 
 extern "C" void __cxa_pure_virtual();

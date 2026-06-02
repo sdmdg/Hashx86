@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "GUI:NINA"
 #include <gui/renderer/nina.h>
 
 NINA* NINA::activeInstance = nullptr;

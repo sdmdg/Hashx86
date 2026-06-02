@@ -6,7 +6,9 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "MSDOSPART"
 #include <core/filesystem/msdospart.h>
+#include <debug.h>
 
 FAT32* MSDOSPartitionTable::partitions[4] = {0, 0, 0, 0};
 MSDOSPartitionTable* MSDOSPartitionTable::activeInstance = nullptr;
@@ -18,12 +20,12 @@ MSDOSPartitionTable::MSDOSPartitionTable(AdvancedTechnologyAttachment* ata) {
 MSDOSPartitionTable::~MSDOSPartitionTable(){};
 
 void MSDOSPartitionTable::Initialize() {
-    printf("Initializing Disk...\n");
+    KDBG1("Initializing Disk...");
 
     // Get Drive Size from ATA
     uint32_t totalSectors = ata->GetSizeInSectors();
     if (totalSectors == 0) {
-        printf("Error: Could not identify drive size.\n");
+        KDBG1("Error: Could not identify drive size.");
         return;
     }
 
@@ -36,8 +38,8 @@ void MSDOSPartitionTable::Initialize() {
     uint32_t p1_start = 63;
     uint32_t p2_start = 63 + p1_size;
 
-    printf("Partition 1: Start %d, Size %d\n", (int32_t)p1_start, (int32_t)p1_size);
-    printf("Partition 2: Start %d, Size %d\n", (int32_t)p2_start, (int32_t)p2_size);
+    KDBG2("Partition 1: Start %d, Size %d", (int32_t)p1_start, (int32_t)p1_size);
+    KDBG2("Partition 2: Start %d, Size %d", (int32_t)p2_start, (int32_t)p2_size);
 
     // Create MBR
     MasterBootRecord mbr;
@@ -80,7 +82,7 @@ void MSDOSPartitionTable::Initialize() {
     FAT32::FormatRaw(ata, p1_start, p1_size);
     FAT32::FormatRaw(ata, p2_start, p2_size);
 
-    printf("Initialization Complete.\n");
+    KDBG1("Initialization Complete.");
 
     return;
 }
@@ -91,9 +93,9 @@ void MSDOSPartitionTable::ReadPartitions() {
 
     // Check Signature. If invalid, Initialize drive.
     if (mbr.magicnumber != 0xAA55) {
-        printf("MBR Invalid. Initializing Drive...\n");
+        KDBG1("MBR Invalid. Initializing Drive...");
         Initialize();
-        printf("Please copy the OS data files using 'make hdd' command.\n");
+        KDBG1("Please copy the OS data files using 'make hdd' command.");
         asm volatile("hlt");
         while (1);
     }
@@ -101,10 +103,9 @@ void MSDOSPartitionTable::ReadPartitions() {
     for (int i = 0; i < 4; i++) {
         if (mbr.primaryPartition[i].partition_id == 0) continue;
 
-        printf("Partition %d ", i);
-        if (mbr.primaryPartition[i].bootable == 0x80) printf("[Bootable] ");
-        printf("Type 0x%x Start %d\n", mbr.primaryPartition[i].partition_id,
-               mbr.primaryPartition[i].start_lba);
+        KDBG2("Partition %d %sType 0x%x Start %d", i,
+              (mbr.primaryPartition[i].bootable == 0x80) ? "[Bootable] " : "",
+              mbr.primaryPartition[i].partition_id, mbr.primaryPartition[i].start_lba);
 
         // Mount FAT32
         if (mbr.primaryPartition[i].partition_id == 0x0C ||
@@ -114,15 +115,6 @@ void MSDOSPartitionTable::ReadPartitions() {
                 HALT("CRITICAL: Failed to allocate FAT32 filesystem!\n");
             }
             this->partitions[partitionsCounter++] = fat32;
-
-            /*             fat32.CreateFile("file1.txt");
-                        fat32.MakeDirectory("DIR1");
-                        fat32.CreateFile("DIR1/file1.txt");
-                        fat32.WriteFile("DIR1/file1.txt", (uint8_t*)"Hello, World!", 13);
-                        uint8_t buffer[101];
-                        fat32.ReadFile((char*)"DIR1/file1.txt", buffer, 33);
-                        printf("%s\n", (char*)buffer);
-             */
         }
     }
 }

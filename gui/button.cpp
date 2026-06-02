@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "GUI:BUTTON"
 #include <gui/button.h>
 
 Button::Button(Widget* parent, int32_t x, int32_t y, uint32_t w, uint32_t h, const char* label)
@@ -89,8 +90,11 @@ void Button::RedrawToCache() {
     isDirty = false;
 }
 
-void Button::OnMouseDown(int32_t, int32_t, uint8_t) {
+void Button::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
     if (!isVisible) return;
+
+    Widget::OnMouseDown(x, y, button);
+
     isPressed = true;
     MarkDirty();
 }
@@ -102,13 +106,31 @@ void Button::OnMouseUp(int32_t x, int32_t y, uint8_t) {
         isPressed = false;
         MarkDirty();
 
+        // Only emit click if release is still inside button bounds.
+        if (!ContainsCoordinate(x, y)) {
+            return;
+        }
+
         Event* new_event = new Event{this->ID, ON_CLICK};
         if (!new_event) {
             HALT("CRITICAL: Failed to allocate button click event!\n");
         }
+
+        if (!Desktop::activeInstance) {
+            delete new_event;
+            return;
+        }
+
         EventHandler* handler = Desktop::activeInstance->getHandler(this->PID);
+        if (!handler) {
+            delete new_event;
+            return;
+        }
+
         handler->eventQueue.Add(new_event);
-        g_scheduler->WakeThread(handler->thread);
+        if (g_scheduler && handler->thread) {
+            g_scheduler->WakeThread(handler->thread);
+        }
     }
 }
 

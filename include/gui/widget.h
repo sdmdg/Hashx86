@@ -94,6 +94,7 @@ public:
     virtual ~CompositeWidget();
 
     virtual void GetFocus(Widget* widget) override;
+    virtual bool RemoveChild(Widget* child) override;
     virtual void Draw(GraphicsDriver* gc) override;
 
     // Event routing

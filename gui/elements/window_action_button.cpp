@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "GUI:WINDOW.ACBTN"
 #include <gui/elements/window_action_button.h>
 
 ACButton::ACButton(Widget* parent, int32_t x, int32_t y, const char* label)

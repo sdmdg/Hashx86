@@ -2,6 +2,7 @@
 #define BITMAP_H
 
 #include <core/filesystem/File.h>
+#include <debug.h>
 #include <types.h>
 
 #pragma pack(push, 1)

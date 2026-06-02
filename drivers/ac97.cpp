@@ -6,13 +6,13 @@
  * @version     1.0.0
  */
 
-#include <console.h>
 #include <core/driver.h>
 #include <core/drivers/AudioDriver.h>
 #include <core/drivers/driver_info.h>
 #include <core/interrupts.h>
 #include <core/memory.h>
 #include <core/pci.h>
+#include <debug.h>
 #include <utils/string.h>
 
 /* ================= IDs ================= */

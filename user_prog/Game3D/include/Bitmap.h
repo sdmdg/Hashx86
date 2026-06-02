@@ -31,7 +31,7 @@ struct BitmapInfoHeader {
 
 class Bitmap {
 public:
-    // Load from a raw file buffer (e.g. from syscall_read_file)
+    // Load from a raw file buffer (e.g. from syscall_read)
     Bitmap(uint8_t* rawData, uint32_t rawSize);
     // Create a solid-color bitmap
     Bitmap(int width, int height, uint32_t color);

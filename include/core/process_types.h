@@ -70,6 +70,7 @@ struct ProcessControlBlock {
     uint32_t* page_directory;
 
     LinkedList<ThreadControlBlock*> threads;
+    ProcessControlBlock* parent;
     bool isKernelProcess;
     HeapSegment heap;
 };

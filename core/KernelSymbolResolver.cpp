@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "K.SYMBOL"
 #include <core/KernelSymbolResolver.h>
 
 static char* fileBuffer = nullptr;
@@ -14,16 +15,15 @@ static uint32_t symbolCount = 0;
 
 void KernelSymbolTable::Load(FAT32* fs, const char* path) {
     if (!fs) return;
-
-    printf("[KernelSymbolTable] Loading map file: %s\n", path);
+    KDBG1("Loading map file: %s", path);
     File* file = fs->Open((char*)path);
     if (!file) {
-        printf("[KernelSymbolTable] Failed to open %s\n", path);
+        KDBG1("Failed to open %s", path);
         return;
     }
 
     if (file->size == 0) {
-        printf("[KernelSymbolTable] Map file is empty!\n");
+        KDBG1("Map file is empty!");
         file->Close();
         delete file;
         return;
@@ -86,7 +86,7 @@ void KernelSymbolTable::Load(FAT32* fs, const char* path) {
         while (*cursor != '\n' && *cursor != '\r' && *cursor != 0) cursor++;
     }
 
-    printf("[KernelSymbolTable] Parsed %d functions.\n", (int32_t)symbolCount);
+    KDBG1("Parsed %d functions.", (int32_t)symbolCount);
 }
 
 const char* KernelSymbolTable::Lookup(uint32_t eip, uint32_t* offset) {
@@ -116,15 +116,46 @@ const char* KernelSymbolTable::Lookup(uint32_t eip, uint32_t* offset) {
     return nullptr;
 }
 
-void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
+void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames, uint32_t faultEip,
+                                        uint32_t faultEbp) {
     StackFrame* stack;
+    uint32_t currentEip = 0;
+    unsigned int skipInternalFrames = 4;
+    uint32_t walkedEips[64];
+    unsigned int walkedCount = 0;
 
-    // Get the current EBP register
-    asm volatile("mov %%ebp, %0" : "=r"(stack));
+    if (faultEbp != 0) {
+        stack = (StackFrame*)faultEbp;
+        // faultEbp already points at the crashing context, so don't hide early frames.
+        skipInternalFrames = 0;
+    } else {
+        // Fallback: current call-site EBP.
+        asm volatile("mov %%ebp, %0" : "=r"(stack));
+    }
 
-    printf("\n[ Stack Trace ]\n");
+    // Capture the current instruction pointer explicitly.
+    asm volatile("call 1f\n\t"
+                 "1: pop %0"
+                 : "=r"(currentEip));
 
-    for (unsigned int i = 0; i < maxFrames; ++i) {
+    KDBG1("[ Stack Trace ]");
+
+    unsigned int printed = 0;
+
+    if (faultEip != 0 && printed < maxFrames) {
+        uint32_t faultOffset = 0;
+        const char* faultName = Lookup(faultEip, &faultOffset);
+        if (faultName)
+            KDBG1(" #%d 0x%x <%s+%d> [FAULT]", (int32_t)printed, faultEip, faultName,
+                  (int32_t)faultOffset);
+        else
+            KDBG1(" #%d 0x%x [FAULT]", (int32_t)printed, faultEip);
+        printed++;
+    }
+
+    (void)currentEip;
+
+    for (unsigned int i = 0; i < 64; ++i) {
         // If the stack pointer is null or invalid, stop
         if (!stack) break;
 
@@ -133,15 +164,30 @@ void KernelSymbolTable::PrintStackTrace(unsigned int maxFrames) {
         // would cause a page fault and infinite loop since activeInstance=0.
         if ((uint32_t)stack < 0x1000 || (uint32_t)stack >= 0x10000000) break;
 
-        // Print
-        uint32_t offset = 0;
-        const char* name = KernelSymbolTable::Lookup(stack->eip, &offset);
-        if (name)
-            printf(" 0x%x <%s+%d>\n", stack->eip, name, (int32_t)offset);
-        else
-            printf(" 0x%x\n", stack->eip);
+        /*
+        [K.SYMBOL] [ Stack Trace ]
+        Bypass [K.SYMBOL] 0 <InterruptManager::DohandleException(unsigned char, unsigned int)+328>
+        Bypass [K.SYMBOL] 1 <InterruptManager::handleException(unsigned char, unsigned int)+72>
+        Bypass [K.SYMBOL] 2 <InterruptManager::HandleInterruptRequest0x81()+80>
+        */
+        walkedEips[walkedCount++] = stack->eip;
 
         // Move to the previous frame (walk up the stack)
         stack = stack->ebp;
     }
+
+    // Print only meaningful frames after skipping interrupt/tracer internals.
+    for (unsigned int i = skipInternalFrames; i < walkedCount && printed < maxFrames; ++i) {
+        if (faultEip != 0 && walkedEips[i] == faultEip) continue;
+
+        uint32_t offset = 0;
+        const char* name = Lookup(walkedEips[i], &offset);
+        if (name)
+            KDBG1(" #%d 0x%x <%s+%d>", (int32_t)printed, walkedEips[i], name, (int32_t)offset);
+        else
+            KDBG1(" #%d 0x%x", (int32_t)printed, walkedEips[i]);
+        printed++;
+    }
+
+    KDBG1("[ End of Stack Trace ]\n");
 }

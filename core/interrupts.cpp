@@ -6,10 +6,13 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "IDT"
+#include <core/CrashReporter.h>
 #include <core/Iguard.h>
 #include <core/KernelSymbolResolver.h>
 #include <core/filesystem/FAT32.h>
 #include <core/interrupts.h>
+#include <gui/Hgui.h>
 
 static uint16_t HWInterruptOffset = 0x20;
 extern void FlushSerial();
@@ -174,21 +177,21 @@ InterruptManager::InterruptManager(Scheduler* scheduler, Paging* pager)
 InterruptManager::~InterruptManager() {}
 
 void InterruptManager::Activate() {
-    DEBUG_LOG("Activating InterruptManager.");
+    KDBG1("Activating InterruptManager.");
     /*     if (activeInstance != 0){
-            DEBUG_LOG("An active InterruptManager found.");
+            KDBG1("An active InterruptManager found.");
             activeInstance->Deactivate();
         } */
     asm("sti");
-    DEBUG_LOG("InterruptManager Activated.");
+    KDBG1("InterruptManager Activated.");
 }
 
 void InterruptManager::Deactivate() {
     if (activeInstance == this) {
-        DEBUG_LOG("Deactivating InterruptManager.");
+        KDBG1("Deactivating InterruptManager.");
         activeInstance = 0;
         asm("cli");
-        DEBUG_LOG("InterruptManager Deactivated.");
+        KDBG1("InterruptManager Deactivated.");
     }
 }
 
@@ -210,8 +213,8 @@ uint32_t InterruptManager::handleException(uint8_t interruptNumber, uint32_t esp
         // The first exception handler already called Deactivate() + cli.
         // Returning esp would iret back to the faulting instruction → infinite loop!
 
-        printf("DOUBLE FAULT: Nested exception 0x%x while handling previous exception. HALTING.\n",
-               interruptNumber);
+        KDBG1("DOUBLE FAULT: Nested exception 0x%x while handling previous exception. HALTING.\n",
+              interruptNumber);
         // MUST hard-flush serial before halting, otherwise exception info is lost!
         // Keep calling FlushSerial (it drains while hardware is ready)
         // Loop until the hardware has had time to accept all bytes
@@ -244,7 +247,7 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
         esp = handlers[interruptNumber]->HandleInterrupt(esp);
     } else if (interruptNumber != HWInterruptOffset && interruptNumber != 0x2E &&
                interruptNumber != 0x2F) {
-        printf("UNHANDLED INTERRUPT: 0x%x\n", interruptNumber);
+        KDBG1("UNHANDLED INTERRUPT: 0x%x\n", interruptNumber);
     }
 
     // After a syscall (int 0x80 arrives as 0xA0 because ASM adds IRQ_BASE=0x20),
@@ -287,35 +290,33 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     // even if the BSOD drawing code itself faults.
     uint32_t faulting_addr;
     asm volatile("mov %%cr2, %0" : "=r"(faulting_addr));
-    printf("\n=== EXCEPTION 0x%x === Error: 0x%x\n", interruptNumber, state->error);
-    printf("EIP: 0x%x  CS: 0x%x  EFLAGS: 0x%x\n", state->eip, state->cs, state->eflags);
-    printf("EAX: 0x%x  EBX: 0x%x  ECX: 0x%x  EDX: 0x%x\n", state->eax, state->ebx, state->ecx,
-           state->edx);
-    printf("ESP: 0x%x  EBP: 0x%x  CR2: 0x%x\n", state->esp, state->ebp, faulting_addr);
+    KDBG1("\n=== EXCEPTION 0x%x === Error: 0x%x", interruptNumber, state->error);
+    KDBG1("EIP: 0x%x  CS: 0x%x  EFLAGS: 0x%x", state->eip, state->cs, state->eflags);
+    KDBG1("EAX: 0x%x  EBX: 0x%x  ECX: 0x%x  EDX: 0x%x", state->eax, state->ebx, state->ecx,
+          state->edx);
+    KDBG1("ESP: 0x%x  EBP: 0x%x  CR2: 0x%x", state->esp, state->ebp, faulting_addr);
     bool isUserFault = (state->cs & 0x3) == 3;
     if (isUserFault && scheduler && scheduler->currentThread) {
-        printf("FAULT IN USER MODE: TID=%d PID=%d\n", scheduler->currentThread->tid,
-               scheduler->currentThread->pid);
+        KDBG1("FAULT IN USER MODE: TID=%d PID=%d", scheduler->currentThread->tid,
+              scheduler->currentThread->pid);
     }
-    KernelSymbolTable::PrintStackTrace(20);
+    KernelSymbolTable::PrintStackTrace(20, state->eip, state->ebp);
     // FLUSH serial NOW before Deactivate/BSOD, because BSOD code may fault
     FlushSerial();
 
-    Deactivate();
-    this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
-    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
-
     // User-mode stack trace: walk EBP chain via physical address translation
     if (isUserFault && scheduler && scheduler->currentThread && scheduler->currentThread->parent) {
+        uint32_t crashedPid = scheduler->currentThread->pid;
+        uint32_t crashedTid = scheduler->currentThread->tid;
         uint32_t* userPD = scheduler->currentThread->parent->page_directory;
-        printf("\n[ User Stack Trace (EBP chain) ]\n");
-        printf(" 0x%x  <-- faulting EIP\n", state->eip);
+        KDBG1("\n[ User Stack Trace (EBP chain) ]");
+        KDBG1(" 0x%x  <-- faulting EIP", state->eip);
 
         uint32_t userEBP = state->ebp;
         for (int i = 0; i < 32 && userEBP >= 0x1000; i++) {
             uint32_t physAddr = pager->GetPhysicalAddress(userPD, userEBP);
             if (!physAddr) {
-                printf(" (EBP 0x%x not mapped)\n", userEBP);
+                KDBG1(" (EBP 0x%x not mapped)", userEBP);
                 break;
             }
 
@@ -324,11 +325,34 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
             uint32_t retAddr = frame[1];  // return address at [EBP+4]
 
             if (retAddr == 0) break;
-            printf(" 0x%x\n", retAddr);
+            KDBG1(" 0x%x", retAddr);
 
             userEBP = nextEBP;
         }
+
+        CrashReporter::ShowUserCrashDialog(crashedPid, crashedTid, interruptNumber, state->error,
+                                           state->eip, faulting_addr, (uint32_t)timerTicks);
+
+        scheduler->KillProcess(crashedPid);
+        if (Desktop::activeInstance) {
+            Desktop::activeInstance->RemoveAppByPID(crashedPid);
+        }
+        if (HguiHandler::activeInstance) {
+            HguiHandler::activeInstance->RemoveAppByPID(crashedPid);
+        }
+
+        // Release framebuffer ownership if the crashed app held fullscreen mode.
+        if (g_stop_gui_rendering && g_gui_owner_pid == (int)crashedPid) {
+            g_stop_gui_rendering = false;
+            g_gui_owner_pid = -1;
+            if (Desktop::activeInstance) Desktop::activeInstance->MarkDirty();
+        }
+
+        return (uint32_t)scheduler->Schedule((CPUState*)esp);
     }
+    Deactivate();
+    this->pager->SwitchDirectory(this->pager->KernelPageDirectory);
+    Font* g_GraphicsDriver_font = FontManager::activeInstance->getNewFont();
 
     // PANIC
     g_GraphicsDriver->FillRectangle(0, 0, GUI_SCREEN_WIDTH, GUI_SCREEN_HEIGHT, 0x0);
@@ -486,7 +510,7 @@ uint32_t InterruptManager::DohandleException(uint8_t interruptNumber, uint32_t e
     wait(10000);
     // END OF PANIC
 
-    DEBUG_LOG("Attempting system reboot...\n");
+    KDBG1("Attempting system reboot...\n");
 
     Port8Bit keyboard_command_port(0x64);
 

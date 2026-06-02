@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "K.MODULELDR"
 #include <core/drivers/ModuleLoader.h>
 
 // ELF Macros for x86 Relocation
@@ -21,7 +22,7 @@ void* ModuleLoader::LoadMatchingDriver(File* file, uint16_t target_vid, uint16_t
 
     // Read the header
     if (!ModuleLoader::Probe(file, &manifest)) {
-        printf("[ModuleLoader] Error: File is not a valid driver (Missing .driver_info)\n");
+        KDBG1("Error: File is not a valid driver (Missing .driver_info)");
         return 0;
     }
 
@@ -39,13 +40,12 @@ void* ModuleLoader::LoadMatchingDriver(File* file, uint16_t target_vid, uint16_t
     }
 
     if (match) {
-        printf("[ModuleLoader] Match: %s v%s supports hardware %x:%x. Loading...\n", manifest.name,
-               manifest.version, target_vid, target_did);
+        KDBG1("Match: %s v%s supports hardware %x:%x. Loading...", manifest.name, manifest.version,
+              target_vid, target_did);
         return ModuleLoader::LoadDriver(file);
 
     } else {
-        printf("[ModuleLoader] Skip: %s does not support %x:%x\n", manifest.name, target_vid,
-               target_did);
+        KDBG2("Skip: %s does not support %x:%x", manifest.name, target_vid, target_did);
         return 0;
     }
 }
@@ -59,11 +59,11 @@ void* ModuleLoader::LoadDriver(File* file) {
     file->Read((uint8_t*)&header, sizeof(header));
 
     if (header.magic != ELF_MAGIC) {
-        printf("Module Error: Invalid ELF Magic\n");
+        KDBG1("Module Error: Invalid ELF Magic");
         return 0;
     }
     if (header.type != 1) {  // ET_REL = 1 (Relocatable)
-        printf("Module Error: Not a relocatable object (.o)\n");
+        KDBG1("Module Error: Not a relocatable object (.o)");
         return 0;
     }
 
@@ -150,13 +150,13 @@ void* ModuleLoader::LoadDriver(File* file) {
                 uint32_t sym_val = 0;
 
                 if (symtab[sym_idx].shndx == 0) {
-                    // SHN_UNDEF: External Symbol (e.g. printf)
+                    // SHN_UNDEF: External Symbol
                     // Lookup in Kernel Symbol Table
                     const char* name = strtab_sym + symtab[sym_idx].name;
                     sym_val = SymbolTable::Lookup(name);
 
                     if (sym_val == 0) {
-                        printf("Module Link Error: Undefined symbol '%s'\n", name);
+                        KDBG1("Module Link Error: Undefined symbol '%s'", name);
                     }
                 } else {
                     // Internal Symbol (defined in another section of this module)
@@ -265,9 +265,7 @@ bool ModuleLoader::Probe(File* file, DriverManifest* info) {
                     found = true;
                 }
             } else {
-                printf(
-                    "[ModuleLoader] Warning: '.driver_info' section too small (Old driver "
-                    "version?)\n");
+                KDBG1("Warning: '.driver_info' section too small (Old driver version?)");
             }
             break;  // Stop searching once found
         }

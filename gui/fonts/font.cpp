@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "GUI:FONT"
 #include <gui/fonts/font.h>
 
 #define FONT_MAGIC 0x464E5432  // "FNT2"
@@ -130,7 +131,7 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
     ptr += 2;
 
     if (magic != FONT_MAGIC) {
-        DEBUG_LOG("Error: Invalid font magic");
+        KDBG1("Error: Invalid font magic");
         return;
     }
 
@@ -195,8 +196,8 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
 
         new_font_file->font_data_list[size][style] = new_font;
 
-        DEBUG_LOG("Font loaded: size=%d, style=%d, glyphs=%d, kernings=%d", size, style,
-                  glyph_count, kerning_count);
+        KDBG1("Font loaded: size=%d, style=%d, glyphs=%d, kernings=%d", size, style, glyph_count,
+              kerning_count);
     }
 
     font_list->Add(new_font_file);
@@ -204,7 +205,7 @@ void FontManager::LoadFile(uint32_t mod_start, uint32_t mod_end) {
 
 void FontManager::LoadFile(File* file) {
     if (file->size == 0) {
-        printf("Font error, file not found or empty: %s", file);
+        KDBG1("Font error, file not found or empty: %s", file);
     }
 
     uint8_t* buffer = new uint8_t[file->size + 1];

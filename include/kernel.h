@@ -5,6 +5,7 @@
 #include <core/KernelSymbolResolver.h>
 #include <core/driver.h>
 #include <core/drivers/AudioDriver.h>
+#include <core/drivers/AudioMixer.h>
 #include <core/drivers/GraphicsDriver.h>
 #include <core/drivers/ata.h>
 #include <core/drivers/keyboard.h>
@@ -28,6 +29,7 @@
 #include <debug.h>
 #include <gui/Hgui.h>
 #include <gui/bmp.h>
+#include <gui/fonts/vga.h>
 #include <gui/gui.h>
 #include <gui/renderer/nina.h>
 #include <stdint.h>

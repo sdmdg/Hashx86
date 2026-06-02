@@ -6,10 +6,12 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "GUI:LABEL"
 #include <gui/label.h>
 
 Label::Label(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, const char* text)
     : Widget(parent, x, y, w, h) {
+    this->isFocussable = false;
     this->font = FontManager::activeInstance->getNewFont();
     this->text = new char[strlen(text) + 1];
     if (!this->text) {
@@ -24,6 +26,8 @@ Label::~Label() {
 }
 
 void Label::setText(const char* newText) {
+    if (this->text && strcmp(this->text, newText) == 0) return;
+
     if (this->text) delete[] this->text;
     this->text = new char[strlen(newText) + 1];
     if (!this->text) {

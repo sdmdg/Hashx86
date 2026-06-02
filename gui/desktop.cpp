@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "GUI:DESKTOP"
 #include <gui/desktop.h>
 
 Desktop* Desktop::activeInstance = nullptr;
@@ -16,7 +17,7 @@ Desktop::Desktop(int32_t w, int32_t h)
     MouseY = h / 2;
     activeInstance = this;
 
-    DEBUG_LOG("DESKTOP Initialized with ID 0x%x", this->ID);
+    KDBG1("DESKTOP Initialized with ID 0x%x", this->ID);
 
     // Initialize Wallpaper
     char* wallpaperName = (char*)"BITMAPS/DESKTOP.BMP";
@@ -48,7 +49,9 @@ Desktop::Desktop(int32_t w, int32_t h)
 
     // Add application launchers
     taskbar->AddApp("MemViewer", "Memory inspector", "SYS32/MEMVIEW.BIN");
+    taskbar->AddApp("Explorer", "File Manager", "SYS32/EXPLORER.BIN");
     taskbar->AddApp("Calculator", "Calculator GUI", "SYS32/TEST.BIN");
+    taskbar->AddApp("Terminal", "CLI preview", "SYS32/TERMINAL.BIN");
     taskbar->AddApp("Game3D", "3D Game Engine", "PROGFILE/GAME3D/GAME3D.BIN");
 
     // NOTE: Taskbar is NOT added to childrenList.
@@ -83,6 +86,8 @@ EventHandler* Desktop::getHandler(uint32_t pid) {
 
 void Desktop::Draw(GraphicsDriver* gc) {
     InterruptGuard guard;
+    lastDrawMode = DRAW_NONE;
+
     uint32_t screenW = gc->GetWidth();
     uint32_t screenH = gc->GetHeight();
     uint32_t* vesaBuffer = gc->GetBackBuffer();
@@ -137,6 +142,7 @@ void Desktop::Draw(GraphicsDriver* gc) {
         this->isDirty = false;
         oldMouseX = MouseX;
         oldMouseY = MouseY;
+        lastDrawMode = DRAW_FULL;
         return;
     }
 
@@ -145,6 +151,11 @@ void Desktop::Draw(GraphicsDriver* gc) {
     // Optimization: If nothing else changed, just undraw/redraw cursor.
     // -----------------------------------------------------------------
     if (MouseX != oldMouseX || MouseY != oldMouseY) {
+        flushOldCursorX = oldMouseX;
+        flushOldCursorY = oldMouseY;
+        flushNewCursorX = MouseX;
+        flushNewCursorY = MouseY;
+
         // ERASE OLD CURSOR (Restore saved pixels)
         if (hasBackBuffer) {
             for (int y = 0; y < CURSOR_SIZE; y++) {
@@ -180,7 +191,28 @@ void Desktop::Draw(GraphicsDriver* gc) {
         // Update History
         oldMouseX = MouseX;
         oldMouseY = MouseY;
+        lastDrawMode = DRAW_CURSOR_ONLY;
     }
+}
+
+void Desktop::Flush(GraphicsDriver* gc) {
+    if (!gc) return;
+
+    if (lastDrawMode == DRAW_FULL) {
+        gc->Flush();
+        return;
+    }
+
+    if (lastDrawMode == DRAW_CURSOR_ONLY) {
+        gc->FlushRect(flushOldCursorX, flushOldCursorY, CURSOR_SIZE, CURSOR_SIZE);
+
+        if (flushOldCursorX != flushNewCursorX || flushOldCursorY != flushNewCursorY) {
+            gc->FlushRect(flushNewCursorX, flushNewCursorY, CURSOR_SIZE, CURSOR_SIZE);
+        }
+        return;
+    }
+
+    gc->Flush();
 }
 
 uint32_t Desktop::getNewID() {
@@ -204,6 +236,19 @@ void Desktop::RemoveAppByPID(uint32_t pid) {
     }
 }
 
+void Desktop::Focus(Widget* widget) {
+    if (!widget) return;
+
+    // Find and remove the widget from the list
+    bool found = childrenList.Remove([&](Widget* w) { return w == widget; });
+
+    // If found, add it to the back (top of Z-order)
+    if (found) {
+        childrenList.PushBack(widget);
+        this->isDirty = true;  // Force a full redraw
+    }
+}
+
 // -- Inputs --
 
 void Desktop::GetFocus(Widget* widget) {
@@ -211,7 +256,7 @@ void Desktop::GetFocus(Widget* widget) {
     CompositeWidget::GetFocus(widget);
 
     // Update taskbar tab to reflect the newly focused window
-    if (taskbar && widget) {
+    if (taskbar) {
         taskbar->SetActiveTab(widget);
     }
 }

@@ -6,10 +6,25 @@
  * @version     1.1.0-beta
  */
 
+#define KDBG_COMPONENT "DRIVER.MGR"
 #include <core/driver.h>
 
 extern "C" void pci_enable_bus_master(uint16_t vendor, uint16_t device);
 extern "C" void pci_find_bar0(uint16_t vendor, uint16_t device);
+extern void vprintf(const char* format, va_list args);
+
+void drvPrintf(const char* format, ...) {
+#if KDBG_ENABLE && (KDBG_LEVEL >= 1)
+    printf("[%s] ", KDBG_COMPONENT);
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+#else
+    (void)format;
+#endif
+}
+
 /**
  * @brief Constructs a DriverManager object.
  *
@@ -18,11 +33,11 @@ extern "C" void pci_find_bar0(uint16_t vendor, uint16_t device);
  * Export symbols to load dynamic drivers.
  */
 DriverManager::DriverManager() {
-    PRINT("DriverManager", "Loading...\n");
+    KDBG1("Loading...");
     numDrivers = 0;
 
     // Export Kernel Symbols
-    void (*printf_ptr)(const char*, ...) = printf;
+    void (*printf_ptr)(const char*, ...) = drvPrintf;
     SymbolTable::Register("printf", (uint32_t)printf_ptr);
     SymbolTable::Register("_Z6printfPKcz", (uint32_t)printf_ptr);
 
@@ -98,10 +113,9 @@ void DriverManager::AddDriver(Driver* drv) {
 void DriverManager::ActivateAll() {
     for (int i = 0; i < numDrivers; i++) {
         if (!drivers[i]->is_Active) {
-            PRINT("DriverManager", "Starting Driver: %s",
-                  drivers[i]->driverName);  // Log driver name.
-            drivers[i]->Activate();         // Activate the driver.
-            printf("[ OK ]\n");             // Indicate success for the driver.
+            KDBG1("Activating Driver: %s", drivers[i]->driverName);
+            drivers[i]->Activate();  // Activate the driver.
+            KDBG1("Driver %s: [OK]", drivers[i]->driverName);
         }
     }
 }

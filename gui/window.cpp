@@ -6,6 +6,7 @@
  * @version     1.0.0
  */
 
+#define KDBG_COMPONENT "GUI:WINDOW"
 #include <gui/window.h>
 
 Window::Window(CompositeWidget* parent, int32_t x, int32_t y, int32_t w, int32_t h)
@@ -36,13 +37,30 @@ Window::~Window() {
 void Window::OnClose() {
     if (this->parent) this->parent->MarkDirty();
 
+    // Kernel/system windows may not have a GUI event handler.
+    // In that case, hide directly instead of dereferencing a null handler.
+    if (!Desktop::activeInstance) {
+        this->setVisible(false);
+        if (this->parent) this->parent->RemoveChild(this);
+        return;
+    }
+
+    EventHandler* handler = Desktop::activeInstance->getHandler(this->PID);
+    if (!handler) {
+        this->setVisible(false);
+        if (this->parent) this->parent->RemoveChild(this);
+        return;
+    }
+
     Event* new_event = new Event{this->ID, ON_WINDOW_CLOSE};
     if (!new_event) {
         HALT("CRITICAL: Failed to allocate window close event!\n");
     }
-    EventHandler* handler = Desktop::activeInstance->getHandler(this->PID);
+
     handler->eventQueue.Add(new_event);
-    g_scheduler->WakeThread(handler->thread);
+    if (g_scheduler && handler->thread) {
+        g_scheduler->WakeThread(handler->thread);
+    }
 }
 
 void Window::setWindowTitle(const char* title) {
@@ -86,7 +104,9 @@ void Window::Draw(GraphicsDriver* gc) {
 }
 
 void Window::RedrawToCache() {
+    uint32_t borderColor = isFocused ? WINDOW_BORDER_COLOR_PRESSED : WINDOW_BORDER_COLOR_NORMAL;
     NINA::activeInstance->FillRoundedRectangle(cache, w, h, 0, 0, w, h, 6, WINDOW_BACKGROUND_COLOR);
+    NINA::activeInstance->DrawRoundedRectangle(cache, w, h, 0, 0, w, h, 6, borderColor);
     NINA::activeInstance->DrawBitmap(cache, w, h, 4, 2, (const uint32_t*)icon_main_20x20, 20, 20);
     NINA::activeInstance->DrawString(cache, w, h, 28, 3, windowTitle, font, WINDOW_TITLE_COLOR);
 
@@ -107,6 +127,9 @@ void Window::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
     // Check Header Area (Top 25 pixels)
     if (localX >= 0 && localX <= w - 26 && localY >= 0 && localY <= 25) {
         isDragging = (button == 1);
+        if (isDragging && parent) {
+            ((Desktop*)parent)->Focus(this);
+        }
     }
 
     // Pass original coordinates to base (it handles converting for children)

@@ -21,7 +21,8 @@ class KernelSymbolTable {
 public:
     static void Load(FAT32* fs, const char* path);
     static const char* Lookup(uint32_t address, uint32_t* offset);
-    static void PrintStackTrace(unsigned int maxFrames);
+    static void PrintStackTrace(unsigned int maxFrames, uint32_t faultEip = 0,
+                                uint32_t faultEbp = 0);
 };
 
 #endif  // KERNELSYMBOLRESOLVER_H

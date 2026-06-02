@@ -8,5 +8,6 @@
 #include <Hx86/memory.h>
 
 void init_sys(void* arg);
+void syscall_sleep(uint32_t ms);
 
 #endif  // Hx86_H

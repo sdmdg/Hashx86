@@ -1,7 +1,7 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-#include <console.h>
+#include <debug.h>
 #include <types.h>
 #include <utils/string.h>
 

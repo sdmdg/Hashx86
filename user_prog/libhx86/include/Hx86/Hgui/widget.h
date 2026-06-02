@@ -48,6 +48,11 @@ public:
     void* callbackInstance;
     void (*onClickMemberPtr)(void*);
 
+    // Keyboard callback hooks used by Desktop event/input dispatcher
+    void (*onKeyPressPtr)(uint8_t scancode, bool shiftPressed);
+    void* keyCallbackInstance;
+    void (*onKeyPressMemberPtr)(void*, uint8_t scancode, bool shiftPressed);
+
     Widget* FindWidgetByID(uint32_t searchID);
     virtual bool AddChild(Widget* child);
     virtual bool RemoveChild(Widget* child);
@@ -59,6 +64,9 @@ public:
     // Allow both global and member function callbacks
     void OnClick(void (*callback)());                       // Non-member function
     void OnClick(void* instance, void (*callback)(void*));  // Member function wrapper
+
+    void OnKeyPress(void (*callback)(uint8_t scancode, bool shiftPressed));
+    void OnKeyPress(void* instance, void (*callback)(void*, uint8_t scancode, bool shiftPressed));
 };
 
 class CompositeWidget : public Widget {

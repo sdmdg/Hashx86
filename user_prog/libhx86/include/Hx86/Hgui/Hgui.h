@@ -4,7 +4,9 @@
 #include <Hx86/Hgui/button.h>
 #include <Hx86/Hgui/desktop.h>
 #include <Hx86/Hgui/label.h>
+#include <Hx86/Hgui/listview.h>
 #include <Hx86/Hgui/messagebox.h>
+#include <Hx86/Hgui/terminalview.h>
 #include <Hx86/Hgui/window.h>
 #include <Hx86/debug.h>
 #include <Hx86/globals.h>

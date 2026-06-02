@@ -6,6 +6,7 @@
  * @version     1.0.0-beta
  */
 
+#define KDBG_COMPONENT "PAGING"
 #include <core/paging.h>
 
 Paging::Paging() : is_paging_active(false) {}
@@ -18,7 +19,7 @@ void Paging::Activate() {
     KernelPageDirectory = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
 
     if (!KernelPageDirectory || ((uint32_t)KernelPageDirectory & 0xFFF)) {
-        DEBUG_LOG("CRITICAL ERROR: Page Directory NOT Aligned! Addr: 0x%x", KernelPageDirectory);
+        KDBG1("CRITICAL ERROR: Page Directory NOT Aligned! Addr: 0x%x", KernelPageDirectory);
         while (1);  // Halt
     }
 
@@ -33,7 +34,7 @@ void Paging::Activate() {
         // Must be in identity-mapped range (<256MB)
         uint32_t* page_table = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
         if (!page_table) {
-            DEBUG_LOG("CRITICAL: Failed to allocate page table for index %d!", i);
+            KDBG1("CRITICAL: Failed to allocate page table for index %d!", i);
             while (1);
         }
         memset(page_table, 0, 4096);
@@ -56,7 +57,7 @@ void Paging::Activate() {
         // Must be in identity-mapped range (<256MB)
         uint32_t* page_table = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
         if (!page_table) {
-            DEBUG_LOG("CRITICAL: Failed to allocate high-mem page table for index %d!", i);
+            KDBG1("CRITICAL: Failed to allocate high-mem page table for index %d!", i);
             while (1);
         }
         memset(page_table, 0, 4096);
@@ -82,7 +83,7 @@ void Paging::Activate() {
     asm volatile("mov %0, %%cr0" : : "r"(cr0));
 
     is_paging_active = true;
-    DEBUG_LOG("Paging Activated. Kernel (Low) and Hardware (High) Mapped.");
+    KDBG1("Activated. Kernel (Low) and Hardware (High) Mapped.");
 }
 
 uint32_t* Paging::CreateProcessDirectory() {
@@ -104,12 +105,14 @@ uint32_t* Paging::CreateProcessDirectory() {
         new_dir[i] = KernelPageDirectory[i];
     }
 
+    KDBG2("CreateProcessDirectory addr=0x%x", new_dir);
     return new_dir;
 }
 
 void Paging::SwitchDirectory(uint32_t* new_dir) {
     if (!new_dir) return;
     asm volatile("mov %0, %%cr3" : : "r"(new_dir));
+    KDBG3("SwitchDirectory addr=0x%x", new_dir);
 }
 
 bool Paging::MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physical_addr,
@@ -123,7 +126,7 @@ bool Paging::MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physic
         uint32_t* new_table = (uint32_t*)pmm_alloc_block_low(256 * 1024 * 1024);
 
         if (!new_table) {
-            DEBUG_LOG("MapPage: Failed to allocate Page Table! Low Memory Exhausted?");
+            KDBG1("MapPage: Failed to allocate Page Table! Low Memory Exhausted?");
             return false;
         }
 
@@ -140,6 +143,7 @@ bool Paging::MapPage(uint32_t* directory, uint32_t virtual_addr, uint32_t physic
     // Without this, stale TLB entries can cause phantom page faults
     // when pages are newly mapped or permissions are changed.
     asm volatile("invlpg (%0)" ::"r"(virtual_addr) : "memory");
+    KDBG2("MapPage virt=0x%x phys=0x%x flags=0x%x", virtual_addr, physical_addr, flags);
     return true;
 }
 
